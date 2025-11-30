@@ -62,9 +62,12 @@ export default function ProposalComments({
   apiComments, 
   commentsLoading, 
   commentsError, 
-  onRefetchComments,
+  onRefetchComments: _onRefetchComments,
   quotedText: externalQuotedText = "" 
 }: ProposalCommentsProps) {
+  // 暂时不使用 onRefetchComments，避免发送评论后重新获取
+  void _onRefetchComments;
+  
   const { userInfo, userProfile } = useUserInfoStore();
   
   const [comments, setComments] = useState<Comment[]>([]);
@@ -231,10 +234,6 @@ export default function ProposalComments({
         setComments(prev => [newComment, ...prev]);
         setQuotedText("");
         setReplyToCommentId(null);
-        
-        setTimeout(() => {
-          onRefetchComments();
-        }, 1000);
       }
     } catch (error) {
       console.error('发布评论失败:', error);

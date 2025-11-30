@@ -8,7 +8,7 @@ export enum ProposalStatus {
   DRAFT = 0,           // 草稿
   REVIEW = 1,         // 社区审议中
   VOTE = 2,            // 投票中
-  MILESTONE = 1001,   // 里程碑交付中
+  MILESTONE = 1001,   // 里程碑交付中 todo: 需要修改
   APPROVED = 3,     // 已通过
   REJECTED = 4,     // 已拒绝
   ENDED = 5           // 结束
