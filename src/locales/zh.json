@@ -232,7 +232,7 @@
   "managementPage": {
     "title": "物业团队公示",
     "description": "第一届 CKB Community Fund DAO Web5 Track 物业团队，由 CKB Eco Fund 负责组建，任期一年。",
-    "futureDescription": "物业团队运行一年后，将开启完全社区化的选举，每届物业团队任期为半年。",
+    "": "物业团队运行一年后，将开启完全社区化的选举，每届物业团队任期为一年。",
     "daoManager": "DAO 物业经理",
     "positionMission": "定位与使命",
     "positionMissionDesc": "DAO 物业是一个由社区信任、受 DAO 资助、并向全体投票人负责的程序型服务与促进团队。作为中立的服务提供者和流程促进者，为社区治理提供高质量的运营、监督和技术支持。",
