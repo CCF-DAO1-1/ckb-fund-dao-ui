@@ -219,13 +219,13 @@ export default function Header() {
             >
               {t("header.governanceRules")}
             </Link>
-            <Link
+            {/* <Link
               href={createProposalHref}
               className={`mobile-nav-item ${isActive(createProposalHref) ? "active" : ""}`}
               onClick={handleMenuClick}
             >
               {t("header.createProposal")}
-            </Link>
+            </Link> */}
           </nav>
         </div>
       </div>
