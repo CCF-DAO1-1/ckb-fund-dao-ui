@@ -8,6 +8,7 @@ import storage from '@/lib/storage';
 import { encryptData } from '@/lib/encrypt';
 import { toast } from 'react-hot-toast';
 import '@/styles/ExportDIDInfoModal.css';
+import useUserInfoStore from '@/store/userInfo';
 
 const regex = /^[A-Za-z0-9]{8}$/;
 
@@ -20,6 +21,7 @@ type Step = 'password' | 'export';
 
 export default function ExportDIDInfoModal({ isOpen, onClose }: ExportDIDInfoModalProps) {
   const { t } = useTranslation();
+  const { userProfile } = useUserInfoStore();
   const [step, setStep] = useState<Step>('password');
   const [password, setPassword] = useState('');
   const [validateStatus, setValidateStatus] = useState<boolean | undefined>(undefined);
@@ -70,7 +72,7 @@ export default function ExportDIDInfoModal({ isOpen, onClose }: ExportDIDInfoMod
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'Web5DID信息.txt';
+      link.download = `${userProfile?.handle || 'Web5DID-info'}.key`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
