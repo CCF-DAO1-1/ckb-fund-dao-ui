@@ -7,14 +7,14 @@ import useUserInfoStore from "@/store/userInfo";
 import { MdCloudUpload, MdError } from "react-icons/md";
 import { ccc } from "@ckb-ccc/connector-react";
 import storage from "@/lib/storage";
-import "@/styles/ImportDidModal.css";
+import "./ImportDidModal.css";
 
 export default function WalletConnectionModal() {
   const { t } = useTranslation();
   const { userInfo, initialized, logout } = useUserInfoStore();
   const { open, wallet, signerInfo, disconnect } = ccc.useCcc();
   const isConnected = Boolean(wallet) && Boolean(signerInfo);
-  
+
   const [showModal, setShowModal] = useState(false);
   const [showWalletMismatchModal, setShowWalletMismatchModal] = useState(false);
   const [registeredWalletAddress, setRegisteredWalletAddress] = useState<string>("");
@@ -37,7 +37,7 @@ export default function WalletConnectionModal() {
       setIsVerifying(true);
       const addresses = await signerInfo.signer.getAddresses();
       const connectedAddress = addresses[0];
-      
+
       // 比较地址（不区分大小写）
       if (connectedAddress.toLowerCase() !== registeredWalletAddress.toLowerCase()) {
         // 地址不一致，显示错误弹窗并断开连接
@@ -149,7 +149,7 @@ export default function WalletConnectionModal() {
       {/* 连接钱包弹窗 */}
       <Modal
         isOpen={showModal && !showWalletMismatchModal}
-        onClose={() => {}} // 不允许关闭，必须连接钱包
+        onClose={() => { }} // 不允许关闭，必须连接钱包
         title={t("importDid.connectWallet")}
         size="small"
         showCloseButton={false}
@@ -198,10 +198,10 @@ export default function WalletConnectionModal() {
                 <button
                   className="import-did-button"
                   onClick={handleLogout}
-                  style={{ 
+                  style={{
                     width: '100%',
-                    marginTop: '12px', 
-                    backgroundColor: 'transparent', 
+                    marginTop: '12px',
+                    backgroundColor: 'transparent',
                     color: '#666',
                     border: '1px solid #ddd'
                   }}

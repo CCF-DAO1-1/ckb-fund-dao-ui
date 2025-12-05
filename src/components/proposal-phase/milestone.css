@@ -1,0 +1,176 @@
+/* 里程碑追踪组件样式 */
+@import './common.css';
+
+.milestone-tracking-card {
+  /* 基础样式继承自 .proposal-phase-card */
+  background: #262A33;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.milestone-title {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+}
+
+.milestone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.milestone-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 16px;
+}
+
+
+.milestone-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.milestone-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.milestone-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.milestone-title-text {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.milestone-status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.milestone-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: #3A3F47;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981, #34D399);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  color: #6A727B;
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 35px;
+  text-align: right;
+}
+
+.milestone-dates {
+  margin-top: 4px;
+  display: none;
+}
+
+.milestone-date {
+  color: #6A727B;
+  font-size: 12px;
+}
+
+/* 里程碑状态样式 */
+.milestone-completed .milestone-icon {
+  background: #10B981;
+  color: #fff;
+}
+
+.milestone-completed .milestone-status-badge {
+  background: #00CC9B33;
+  color: #00CC9B;
+}
+
+
+
+.milestone-in-progress .milestone-status-badge {
+  background: transparent;
+  color: #fff;
+}
+
+.milestone-pending .milestone-icon {
+  background: transparent;
+  color: #6A727B;
+  border: 2px solid #6A727B;
+}
+
+.milestone-pending .milestone-status-badge {
+  background: #3A3F47;
+  color: #6A727B;
+}
+
+.milestone-cancelled .milestone-icon {
+  background: #EF4444;
+  color: #fff;
+}
+
+.milestone-cancelled .milestone-status-badge {
+  background: #EF4444;
+  color: #fff;
+}
+
+/* 里程碑投票区域 */
+.milestone-voting-section {
+  margin-top: 20px;
+}
+
+.milestone-voting-item {
+  margin-bottom: 16px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .milestone-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .milestone-progress {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .progress-text {
+    text-align: left;
+  }
+}

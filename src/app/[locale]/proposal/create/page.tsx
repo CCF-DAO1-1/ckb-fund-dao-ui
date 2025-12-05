@@ -7,7 +7,7 @@ import "@/styles/proposal.css";
 import "@/styles/quill-editor.css";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import "react-quill-new/dist/quill.snow.css";
-import PreviewModal from "@/components/PreviewModal";
+import PreviewModal from "@/components/proposal/PreviewModal";
 import ProposalSettings from "@/components/proposal-steps/ProposalSettings";
 import ProjectBackground from "@/components/proposal-steps/ProjectBackground";
 import ProjectGoals from "@/components/proposal-steps/ProjectGoals";

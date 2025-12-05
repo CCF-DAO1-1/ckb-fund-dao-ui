@@ -1,0 +1,284 @@
+.import-did-modal .modal-content {
+  padding: 24px;
+}
+
+.import-did-content {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.import-did-step {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* 选择标签 */
+.import-did-select-label {
+  color: #fff;
+  font-size: 14px;
+  margin: 0 0 16px 0;
+  text-align: left;
+}
+
+/* 上传区域 */
+.import-did-upload-area {
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  border: 2px dashed #4C525C;
+  border-radius: 8px;
+  background: #1C2027;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 200px;
+}
+
+.import-did-upload-area:hover {
+  border-color: #00CC9B;
+  background: #262A33;
+}
+
+.import-did-icon-large {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.import-did-icon-large svg {
+  width: 64px;
+  height: 64px;
+}
+
+.import-did-icon-large.import-did-icon-success {
+  color: #00CC9B;
+}
+
+.import-did-instruction {
+  width: 100%;
+  font-size: 14px;
+  text-align: center;
+  margin: 0 0 8px 0;
+  line-height: 1.6;
+  font-weight: 500;
+  text-align: left;
+  color: #00CC9B;
+  
+}
+
+.import-did-hint {
+  color: #8A949E;
+  font-size: 12px;
+  text-align: left;
+  margin: 0;
+  
+    width: 100%;
+  line-height: 1.6;
+}
+
+/* 密码输入区域 */
+.import-did-password-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px;
+  flex: 1;
+}
+
+.import-did-password-input-container {
+  margin: 20px 0;
+  width: 100%;
+}
+
+.import-did-password-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  background: #1C2027;
+  border: 1px solid #4C525C;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+  letter-spacing: 8px;
+  transition: all 0.3s ease;
+}
+
+.import-did-password-input:focus {
+  outline: none;
+  border-color: #00CC9B;
+  box-shadow: 0 0 0 2px rgba(0, 204, 155, 0.1);
+}
+
+.import-did-password-input:disabled {
+  background: #0F1114;
+  border-color: #2C3038;
+  color: #6A727B;
+  cursor: not-allowed;
+}
+
+.import-did-password-input-error {
+  border-color: #FF4D4F !important;
+}
+
+.import-did-password-input-error:focus {
+  border-color: #FF4D4F !important;
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.1) !important;
+}
+
+.import-did-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 24px;
+  justify-content: flex-end;
+}
+
+.import-did-button {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 100px;
+}
+
+.import-did-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.import-did-button-primary {
+  background: #00CC9B;
+  color: #000;
+}
+
+.import-did-button-primary:hover:not(:disabled) {
+  background: #00B287;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 204, 155, 0.3);
+}
+
+.import-did-button-secondary {
+  background: #6A727B;
+  color: #fff;
+}
+
+.import-did-button-secondary:hover:not(:disabled) {
+  background: #5A6068;
+  transform: translateY(-1px);
+}
+
+/* 验证中 */
+.import-did-verifying {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.import-did-verifying-text {
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.import-did-icon-large {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+/* 成功状态 */
+.import-did-success {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.import-did-success-title {
+  color: #00CC9B;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  margin: 16px 0 8px 0;
+}
+
+.import-did-success-message {
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* 错误提示 */
+.import-did-error {
+  color: #FF4D4F;
+  font-size: 12px;
+  text-align: left;
+  width: 100%;
+}
+
+/* 成功弹窗样式 */
+.import-did-success-modal .modal-content {
+  padding: 24px;
+}
+
+.import-did-success-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+.import-did-success-icon {
+  font-size: 64px;
+  color: #00D4AA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.import-did-success-content .import-did-success-title {
+  color: #00D4AA;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  margin: 0;
+}
+
+.import-did-success-content .import-did-success-message {
+  color: #FFFFFF;
+  font-size: 14px;
+  text-align: center;
+  margin: 0;
+  line-height: 1.6;
+}
+

@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { getAvatarByDid, getDefaultAvatar } from '@/utils/avatarUtils';
-import '@/styles/Avatar.css';
+import './Avatar.css';
 
 interface AvatarProps {
   size?: number;
@@ -10,15 +10,15 @@ interface AvatarProps {
   did?: string;
 }
 
-export default function Avatar({ 
-  size = 24, 
-  className = '', 
+export default function Avatar({
+  size = 24,
+  className = '',
   alt = 'User Avatar',
   did
 }: AvatarProps) {
   // 如果有 did 就用 getAvatarByDid，否则用默认头像
   const avatarSrc = did ? getAvatarByDid(did) : getDefaultAvatar();
-  
+
   return (
     <div className={`avatar-container ${className}`} style={{ width: size, height: size }}>
       <Image

@@ -3,7 +3,7 @@
 import { TimelineEventStatus, ProposalTimelineProps, TimelineEvent, TimelineEventType } from '../../types/timeline';
 import { formatDate } from '../../utils/proposalUtils';
 import { useI18n } from '@/contexts/I18nContext';
-import '@/styles/timeline.css';
+import './timeline.css';
 import { useMemo } from 'react';
 
 // 事件类型配置
@@ -29,48 +29,48 @@ const eventTypeConfig: Record<TimelineEventType, { title: string; description: s
 const generateRandomMockEvents = (): TimelineEvent[] => {
   const now = Date.now();
   const events: TimelineEvent[] = [];
-  
+
   // 所有事件类型
   const allEventTypes = Object.values(TimelineEventType);
-  
+
   // 随机选择 8-15 个事件
   const eventCount = Math.floor(Math.random() * 8) + 8;
   const selectedTypes = [...allEventTypes]
     .sort(() => Math.random() - 0.5)
     .slice(0, eventCount);
-  
+
   // 按时间顺序生成事件（从过去到未来）
   const timePoints: number[] = [];
-  
+
   // 过去的事件（30-1天前）
   const pastEventCount = Math.floor(selectedTypes.length * 0.4);
   for (let i = 0; i < pastEventCount; i++) {
     const daysAgo = Math.floor(Math.random() * 30) + 1;
     timePoints.push(now - daysAgo * 24 * 60 * 60 * 1000);
   }
-  
+
   // 现在的事件（今天）
   if (Math.random() > 0.3) {
     timePoints.push(now);
   }
-  
+
   // 未来的事件（1-90天后）
   const futureEventCount = selectedTypes.length - pastEventCount - (timePoints.includes(now) ? 1 : 0);
   for (let i = 0; i < futureEventCount; i++) {
     const daysLater = Math.floor(Math.random() * 90) + 1;
     timePoints.push(now + daysLater * 24 * 60 * 60 * 1000);
   }
-  
+
   // 排序时间点
   timePoints.sort((a, b) => a - b);
-  
+
   // 生成事件
   timePoints.forEach((time, index) => {
     const type = selectedTypes[index] || selectedTypes[Math.floor(Math.random() * selectedTypes.length)];
     const config = eventTypeConfig[type];
     const isPast = time < now;
     const isFuture = time > now;
-    
+
     // 根据时间确定状态
     let status: TimelineEventStatus;
     if (isPast) {
@@ -83,7 +83,7 @@ const generateRandomMockEvents = (): TimelineEvent[] => {
       // 现在的事件：进行中
       status = TimelineEventStatus.IN_PROGRESS;
     }
-    
+
     events.push({
       id: `mock-${index + 1}-${Date.now()}`,
       type,
@@ -94,13 +94,13 @@ const generateRandomMockEvents = (): TimelineEvent[] => {
       isImportant: config.isImportant || Math.random() > 0.7,
     });
   });
-  
+
   return events;
 };
 
 export default function ProposalTimeline({ events, className = '' }: ProposalTimelineProps) {
   const { messages, locale } = useI18n();
-  
+
   // 如果没有传入 events 或 events 为空，使用随机生成的 mock 数据
   const mockEvents = useMemo(() => generateRandomMockEvents(), []);
   const displayEvents = events && events.length > 0 ? events : mockEvents;
@@ -121,7 +121,7 @@ export default function ProposalTimeline({ events, className = '' }: ProposalTim
 
 
   // 按日期排序事件（最新的在前）
-  const sortedEvents = [...displayEvents].sort((a, b) => 
+  const sortedEvents = [...displayEvents].sort((a, b) =>
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
@@ -130,8 +130,8 @@ export default function ProposalTimeline({ events, className = '' }: ProposalTim
       <h3 className="timeline-title">{messages.proposalPhase.proposalTimeline.title}</h3>
       <div className="timeline">
         {sortedEvents.map((event) => (
-          <div 
-            key={event.id} 
+          <div
+            key={event.id}
             className={`timeline-item ${getEventStatusClass(event.status)}`}
           >
             <div className={`timeline-dot ${event.status === TimelineEventStatus.IN_PROGRESS ? 'timeline-dot-active' : ''}`}>

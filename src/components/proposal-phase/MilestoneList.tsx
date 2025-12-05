@@ -2,7 +2,7 @@
 
 import { ProposalMilestone } from "@/server/proposal";
 import { useI18n } from "@/contexts/I18nContext";
-import "@/styles/proposal.css";
+import "./proposal.css";
 
 interface MilestoneListProps {
   milestones: ProposalMilestone[];
@@ -46,7 +46,7 @@ export default function MilestoneList({ milestones }: MilestoneListProps) {
           <h3 className="milestone-card-title">
             {messages.proposalDetail.milestone} {milestone.index + 1}: {milestone.title}
           </h3>
-          
+
           <div className="milestone-card-info">
             <div className="milestone-info-item">
               <span className="milestone-info-label">{messages.proposalDetail.deliveryTime}:</span>

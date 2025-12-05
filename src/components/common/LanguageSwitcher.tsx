@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useI18n } from '../contexts/I18nContext';
+import { useI18n } from '@/contexts/I18nContext';
 import { PiGlobeLight } from "react-icons/pi";
 import isMobile from "is-mobile";
 
@@ -40,9 +40,9 @@ export default function LanguageSwitcher() {
 
   const handleLanguageChange = (newLocale: 'en' | 'zh') => {
     if (!isClient) return;
-    
+
     setLocale(newLocale);
-    
+
     // 更新URL路径
     const currentPath = pathname;
     const newPath = currentPath.replace(/^\/[a-z]{2}/, `/${newLocale}`);
@@ -67,7 +67,7 @@ export default function LanguageSwitcher() {
   if (isMobileDevice) {
     return (
       <div className="language-switcher-container">
-        <button 
+        <button
           className="language-switcher"
           onClick={handleMobileToggle}
         >
@@ -79,7 +79,7 @@ export default function LanguageSwitcher() {
 
   // 桌面端：显示图标+语言，hover显示下拉菜单
   return (
-    <div 
+    <div
       className="language-switcher-container"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -88,7 +88,7 @@ export default function LanguageSwitcher() {
         <PiGlobeLight />
         {currentLanguage.display}
       </button>
-      
+
       {isHovered && (
         <div className="language-dropdown">
           {languages.map((language) => (
@@ -101,7 +101,7 @@ export default function LanguageSwitcher() {
             </button>
           ))}
         </div>
-       )} 
+      )}
     </div>
   );
 }

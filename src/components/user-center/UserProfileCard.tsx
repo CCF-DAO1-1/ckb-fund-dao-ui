@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { MdCheck, MdEdit } from "react-icons/md";
-import { FaDiscord,FaTelegramPlane   } from "react-icons/fa";
+import { FaDiscord, FaTelegramPlane } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import useUserInfoStore from "@/store/userInfo";
 import { useTranslation } from "@/utils/i18n";
-import Avatar from "@/components/Avatar";
+import Avatar from "@/components/common/Avatar";
 import { getUserDisplayNameFromStore } from "@/utils/userDisplayUtils";
 import storage from "@/lib/storage";
 import { useWallet } from "@/provider/WalletProvider";
@@ -19,22 +19,22 @@ export default function UserProfileCard({ className = '' }: UserProfileCardProps
   const { t, locale } = useTranslation();
   const { userInfo, userProfile, logout } = useUserInfoStore();
   const { isConnected, disconnect } = useWallet();
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [expandedConnection, setExpandedConnection] = useState<string | null>(null);
   const [showLogoutButton, setShowLogoutButton] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const dateAreaRef = useRef<HTMLParagraphElement>(null);
-  
+
   // 格式化加入日期
   const joinDate = useMemo(() => {
     const createdDate = userProfile?.created;
     if (!createdDate) return '';
-    
+
     try {
       const date = new Date(createdDate);
       if (isNaN(date.getTime())) return '';
-      
+
       if (locale === 'zh') {
         // 中文格式：2025年1月1日
         return date.toLocaleDateString('zh-CN', {
@@ -54,9 +54,9 @@ export default function UserProfileCard({ className = '' }: UserProfileCardProps
       return '';
     }
   }, [userProfile?.created, locale]);
-  
+
   const [userName, setUserName] = useState(getUserDisplayNameFromStore(userInfo, userProfile));
-  
+
   // 当 userProfile 或 userInfo 更新时，更新 userName
   useEffect(() => {
     if (!isEditing) {
@@ -67,38 +67,38 @@ export default function UserProfileCard({ className = '' }: UserProfileCardProps
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userInfo?.did, userInfo?.handle, userProfile?.displayName, isEditing]);
-  
+
   const nervosTalk = <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M5 8.64583V5L19 5.03646V8.64583H15.6283V15.3542L11.9634 19V5.14583L8.44503 8.64583H5Z" fill="white"/>
+    <path d="M5 8.64583V5L19 5.03646V8.64583H15.6283V15.3542L11.9634 19V5.14583L8.44503 8.64583H5Z" fill="white" />
   </svg>
-  ;
-  
+    ;
+
   const socialConnections = [
-    { 
+    {
       id: 'nervos-talk',
-      name: t('userProfile.connectWithNervosTalk'), 
-      icon: nervosTalk, 
+      name: t('userProfile.connectWithNervosTalk'),
+      icon: nervosTalk,
       connected: false,
       username: null
     },
-    { 
+    {
       id: 'x-twitter',
-      name: t('userProfile.connectWithX'), 
-      icon: <FaXTwitter />, 
+      name: t('userProfile.connectWithX'),
+      icon: <FaXTwitter />,
       connected: false,
       username: null
     },
-    { 
+    {
       id: 'discord',
-      name: t('userProfile.connectWithDiscord'), 
-      icon: <FaDiscord color='#5865F2' />, 
+      name: t('userProfile.connectWithDiscord'),
+      icon: <FaDiscord color='#5865F2' />,
       connected: true,
       username: null
     },
-    { 
+    {
       id: 'telegram',
-      name: t('userProfile.connectWithTelegram'), 
-      icon: <FaTelegramPlane color='#0088cc' />, 
+      name: t('userProfile.connectWithTelegram'),
+      icon: <FaTelegramPlane color='#0088cc' />,
       connected: false,
       username: null
     },
@@ -213,21 +213,21 @@ export default function UserProfileCard({ className = '' }: UserProfileCardProps
               {userName}
             </h2>
           )}
-          <div 
-            className="join-date-container" 
-            style={{ 
-              position: 'relative', 
+          <div
+            className="join-date-container"
+            style={{
+              position: 'relative',
               display: 'inline-block',
               pointerEvents: 'auto',
               zIndex: 101,
             }}
           >
-            <p 
+            <p
               ref={dateAreaRef}
-              className="join-date" 
+              className="join-date"
               onDoubleClick={handleDateAreaDoubleClick}
-              style={{ 
-                cursor: 'pointer', 
+              style={{
+                cursor: 'pointer',
                 userSelect: 'none',
                 pointerEvents: 'auto',
                 position: 'relative',
@@ -267,8 +267,8 @@ export default function UserProfileCard({ className = '' }: UserProfileCardProps
             )}
           </div>
         </div>
-        
-       
+
+
       </div>
 
       <div className="social-connections">
@@ -280,8 +280,8 @@ export default function UserProfileCard({ className = '' }: UserProfileCardProps
             >
               <div className="connection-info">
                 <span className="connection-name">
-                  {connection.connected && connection.username 
-                    ? connection.username 
+                  {connection.connected && connection.username
+                    ? connection.username
                     : connection.name
                   }
                 </span>

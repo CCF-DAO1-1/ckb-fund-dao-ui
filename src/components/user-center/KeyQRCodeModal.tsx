@@ -6,7 +6,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { MdRefresh } from 'react-icons/md';
 import { useTranslation } from '@/utils/i18n';
 import storage from '@/lib/storage';
-import '@/styles/KeyQRCodeModal.css';
+import './KeyQRCodeModal.css';
 
 interface KeyQRCodeModalProps {
   isOpen: boolean;

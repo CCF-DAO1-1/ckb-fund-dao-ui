@@ -1,30 +1,34 @@
-
 "use client";
 
 import React from "react";
-import "@/styles/Tag.css";
+import "./Tag.css";
 import { ProposalStatus, getStatusTagClass } from "@/utils/proposalUtils";
 import { useTranslation } from "@/utils/i18n";
 
 interface TagProps {
-  status: ProposalStatus;
+  variant?: "status" | "date" | "type" | "budget" | "default";
+  status?: ProposalStatus;
+  text?: string;
   size?: "sm" | "md" | "lg";
   className?: string;
   onClick?: () => void;
 }
 
-export default function Tag({ 
+export default function Tag({
+  variant = "status",
   status,
-  size = "md", 
-  className = "", 
-  onClick 
+  text,
+  size = "md",
+  className = "",
+  onClick
 }: TagProps) {
   const { t } = useTranslation();
-  const baseClasses = "tag tag-status";
+
+  // 基础类名
+  const baseClasses = "tag";
   const sizeClasses = `tag-${size}`;
-  const statusClasses = getStatusTagClass(status);
   const clickableClasses = onClick ? "tag-clickable" : "";
-  
+
   // 获取状态文本的多语言支持
   const getStatusText = (status: ProposalStatus): string => {
     switch (status) {
@@ -46,15 +50,30 @@ export default function Tag({
         return t("proposalStatus.unknown");
     }
   };
-  
-  const statusText = getStatusText(status);
-  
+
+  // 根据 variant 确定显示内容和样式
+  let displayText = text || "";
+  let variantClasses = "";
+
+  if (variant === "status" && status !== undefined) {
+    displayText = getStatusText(status);
+    variantClasses = `tag-status ${getStatusTagClass(status)}`;
+  } else if (variant === "date") {
+    variantClasses = "tag-variant-date";
+  } else if (variant === "type") {
+    variantClasses = "tag-variant-type";
+  } else if (variant === "budget") {
+    variantClasses = "tag-variant-budget";
+  } else {
+    variantClasses = "tag-default";
+  }
+
   return (
-    <span 
-      className={`${baseClasses} ${statusClasses} ${sizeClasses} ${clickableClasses} ${className}`}
+    <span
+      className={`${baseClasses} ${variantClasses} ${sizeClasses} ${clickableClasses} ${className}`}
       onClick={onClick}
     >
-      {statusText}
+      {displayText}
     </span>
   );
 }

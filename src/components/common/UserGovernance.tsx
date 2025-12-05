@@ -4,7 +4,7 @@ import { useI18n } from "@/contexts/I18nContext";
 import { useTranslation } from "@/utils/i18n";
 import { useVoteWeight } from "@/hooks/useVoteWeight";
 import { AiOutlineExport } from "react-icons/ai";
-import "@/styles/UserCenter.css";
+import "./UserCenter.css";
 
 export default function UserGovernance() {
   const { userInfo } = useUserInfoStore();
@@ -27,17 +27,17 @@ export default function UserGovernance() {
           {isLoadingVoteWeight ? t("wallet.loading") : formatVoteWeight(voteWeight)} CKB
         </h5>
       </div>
-      <a 
-          href="https://www.nervdao.com/" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="action-button stake-button"
-        >
-        
-          {t("wallet.stakeCKB")}
-          <AiOutlineExport />
-           
-        </a>
+      <a
+        href="https://www.nervdao.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="action-button stake-button"
+      >
+
+        {t("wallet.stakeCKB")}
+        <AiOutlineExport />
+
+      </a>
       {/* <button className="stake_button">
         {t("wallet.stakeCKB")}
         &nbsp;&nbsp;<AiOutlineExport />

@@ -2,14 +2,14 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "react-tooltip/dist/react-tooltip.css";
 import { Toaster } from "react-hot-toast";
-import TooltipClient from "@/components/TooltipClient";
+import TooltipClient from "@/components/common/TooltipClient";
 
 import { I18nProvider } from "../contexts/I18nContext";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 
 import { LayoutProvider } from "./layoutProvider";
-import Banner from "@/components/Banner";
+import Banner from "@/components/layout/Banner";
 import WalletConnectionModal from "@/components/user-login/WalletConnectionModal";
 
 export const metadata: Metadata = {

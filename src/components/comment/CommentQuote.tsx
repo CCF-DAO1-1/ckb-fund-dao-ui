@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { CommentQuoteProps } from "@/types/comment";
-import "@/styles/comment.css";
-import "@/styles/quill-editor.css";
+import "./comment.css";
+import "./quill-editor.css";
 import "react-quill-new/dist/quill.snow.css";
-import Avatar from "@/components/Avatar";
+import Avatar from "@/components/common/Avatar";
 import useUserInfoStore from "@/store/userInfo";
 import { useI18n } from "@/contexts/I18nContext";
 
@@ -59,8 +59,8 @@ export default function CommentQuote({
         // 如果已有内容，在前面插入引用；如果没有内容，直接设置引用
         return prevContent.trim() ? quotedContent + prevContent : quotedContent;
       });
-      
-     
+
+
     }
   }, [quotedText, isClient]);
 

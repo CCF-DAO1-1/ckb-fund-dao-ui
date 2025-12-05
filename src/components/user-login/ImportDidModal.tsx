@@ -10,7 +10,7 @@ import { MdCloudUpload, MdError } from "react-icons/md";
 import { decryptData } from "@/lib/encrypt";
 import { Html5Qrcode } from "html5-qrcode";
 import { ccc } from "@ckb-ccc/connector-react";
-import "@/styles/ImportDidModal.css";
+import "./ImportDidModal.css";
 
 enum ImportStep {
   UPLOAD = "upload",
@@ -109,13 +109,13 @@ export default function ImportDidModal({
 
           const html5QrCode = new Html5Qrcode(tempContainerId);
           const decodedText = await html5QrCode.scanFile(file, false);
-          
+
           // 清理临时容器
           html5QrCode.clear();
           if (tempContainer && tempContainer.parentNode) {
             tempContainer.parentNode.removeChild(tempContainer);
           }
-          
+
           // 设置扫描到的二维码数据
           setFileContent(decodedText.trim());
           setCurrentStep(ImportStep.ENTER_PASSWORD);
@@ -164,7 +164,7 @@ export default function ImportDidModal({
       // 这里需要根据实际的数据格式来解析
       // 假设fileContent是加密的字符串，需要根据密码解密
       const decryptedData = await decryptDidData(fileContent, password);
-      
+
       // 验证数据格式
       if (!decryptedData.did || !decryptedData.signKey || !decryptedData.walletAddress) {
         throw new Error(t("importDid.invalidDataFormat"));
@@ -181,7 +181,7 @@ export default function ImportDidModal({
       };
 
       await importUserDid(tokenData);
-      
+
       // 进入连接钱包步骤
       setCurrentStep(ImportStep.CONNECT_WALLET);
     } catch (err: unknown) {
@@ -277,7 +277,7 @@ export default function ImportDidModal({
         try {
           const addresses = await signerInfo.signer.getAddresses();
           const connectedAddress = addresses[0];
-          
+
           // 比较地址（不区分大小写）
           if (connectedAddress.toLowerCase() !== importedWalletAddress.toLowerCase()) {
             // 地址不一致，显示错误弹窗并断开连接
@@ -344,131 +344,131 @@ export default function ImportDidModal({
         showCloseButton={true}
         className="import-did-modal"
       >
-      <div className="import-did-content">
-        {/* 步骤1: 上传文件 */}
-        {currentStep === ImportStep.UPLOAD && (
-          <div className="import-did-step">
-            <p className="import-did-select-label">
-              {t("importDid.selectKeyInfo")}
-            </p>
-            <div 
-              className="import-did-upload-area"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,.txt"
-                onChange={handleFileSelect}
-                style={{ display: "none" }}
-              />
-              <div className="import-did-icon-large">
-                <Image src="/icon/upload.svg" alt="upload" width={60} height={60} />
-              </div>
-              <p className="import-did-instruction">
-                {t("importDid.clickToSelect")}
+        <div className="import-did-content">
+          {/* 步骤1: 上传文件 */}
+          {currentStep === ImportStep.UPLOAD && (
+            <div className="import-did-step">
+              <p className="import-did-select-label">
+                {t("importDid.selectKeyInfo")}
               </p>
-              <p className="import-did-hint">
-                {t("importDid.supportedFormats")}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* 步骤2: 输入密码 */}
-        {currentStep === ImportStep.ENTER_PASSWORD && (
-          <div className="import-did-step">
-            <div className="import-did-password-section">
-              <p className="import-did-instruction">
-                {t("importDid.enterPassword")}
-              </p>
-              <div className="import-did-password-input-container">
+              <div
+                className="import-did-upload-area"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 <input
-                  type="password"
-                  className={`import-did-password-input ${error ? 'import-did-password-input-error' : ''}`}
-                  placeholder={t("importDid.passwordPlaceholder")}
-                  value={password}
-                  onChange={handlePasswordChange}
-                  maxLength={8}
-                  disabled={isVerifying}
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,.txt"
+                  onChange={handleFileSelect}
+                  style={{ display: "none" }}
                 />
-              </div>
-              {error && <div className="import-did-error">{error}</div>}
-              <div className="import-did-buttons">
-                <button
-                  className="import-did-button import-did-button-primary"
-                  onClick={handleVerify}
-                  disabled={password.length !== 8 || isVerifying}
-                >
-                  {t("importDid.confirm")}
-                </button>
-                <button
-                  className="import-did-button import-did-button-secondary"
-                  onClick={() => {
-                    resetState();
-                    setCurrentStep(ImportStep.UPLOAD);
-                  }}
-                  disabled={isVerifying}
-                >
-                  {t("importDid.cancel")}
-                </button>
+                <div className="import-did-icon-large">
+                  <Image src="/icon/upload.svg" alt="upload" width={60} height={60} />
+                </div>
+                <p className="import-did-instruction">
+                  {t("importDid.clickToSelect")}
+                </p>
+                <p className="import-did-hint">
+                  {t("importDid.supportedFormats")}
+                </p>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* 步骤3: 验证中 */}
-        {currentStep === ImportStep.VERIFYING && (
-          <div className="import-did-step">
-            <div className="import-did-verifying">
-              <div className="import-did-icon-large">
-                <Image src="/icon/import.svg" alt="import" width={100} height={100} />
-              </div>
-              <p className="import-did-verifying-text">
-                {t("importDid.verifying")}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* 步骤4: 连接钱包 */}
-        {currentStep === ImportStep.CONNECT_WALLET && (
-          <div className="import-did-step">
-            <div className="import-did-password-section">
-              <p className="import-did-instruction">
-                {t("importDid.connectWallet")}
-              </p>
-              <p className="import-did-hint" style={{ marginTop: '8px', fontSize: '14px', color: '#666' }}>
-                {t("importDid.connectWalletHint")}
-              </p>
-              {error && <div className="import-did-error">{error}</div>}
-              <div className="import-did-buttons">
-                {!isConnected ? (
+          {/* 步骤2: 输入密码 */}
+          {currentStep === ImportStep.ENTER_PASSWORD && (
+            <div className="import-did-step">
+              <div className="import-did-password-section">
+                <p className="import-did-instruction">
+                  {t("importDid.enterPassword")}
+                </p>
+                <div className="import-did-password-input-container">
+                  <input
+                    type="password"
+                    className={`import-did-password-input ${error ? 'import-did-password-input-error' : ''}`}
+                    placeholder={t("importDid.passwordPlaceholder")}
+                    value={password}
+                    onChange={handlePasswordChange}
+                    maxLength={8}
+                    disabled={isVerifying}
+                  />
+                </div>
+                {error && <div className="import-did-error">{error}</div>}
+                <div className="import-did-buttons">
                   <button
                     className="import-did-button import-did-button-primary"
-                    onClick={handleConnectWallet}
-                    disabled={isConnecting}
+                    onClick={handleVerify}
+                    disabled={password.length !== 8 || isVerifying}
                   >
-                    {isConnecting ? t("importDid.connecting") : t("importDid.connectWalletButton")}
+                    {t("importDid.confirm")}
                   </button>
-                ) : (
-                  <div className="import-did-verifying">
-                    <div className="import-did-icon-large">
-                      <MdCloudUpload />
-                    </div>
-                    <p className="import-did-verifying-text">
-                      {t("importDid.verifyingWallet")}
-                    </p>
-                  </div>
-                )}
+                  <button
+                    className="import-did-button import-did-button-secondary"
+                    onClick={() => {
+                      resetState();
+                      setCurrentStep(ImportStep.UPLOAD);
+                    }}
+                    disabled={isVerifying}
+                  >
+                    {t("importDid.cancel")}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-      </div>
+          {/* 步骤3: 验证中 */}
+          {currentStep === ImportStep.VERIFYING && (
+            <div className="import-did-step">
+              <div className="import-did-verifying">
+                <div className="import-did-icon-large">
+                  <Image src="/icon/import.svg" alt="import" width={100} height={100} />
+                </div>
+                <p className="import-did-verifying-text">
+                  {t("importDid.verifying")}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* 步骤4: 连接钱包 */}
+          {currentStep === ImportStep.CONNECT_WALLET && (
+            <div className="import-did-step">
+              <div className="import-did-password-section">
+                <p className="import-did-instruction">
+                  {t("importDid.connectWallet")}
+                </p>
+                <p className="import-did-hint" style={{ marginTop: '8px', fontSize: '14px', color: '#666' }}>
+                  {t("importDid.connectWalletHint")}
+                </p>
+                {error && <div className="import-did-error">{error}</div>}
+                <div className="import-did-buttons">
+                  {!isConnected ? (
+                    <button
+                      className="import-did-button import-did-button-primary"
+                      onClick={handleConnectWallet}
+                      disabled={isConnecting}
+                    >
+                      {isConnecting ? t("importDid.connecting") : t("importDid.connectWalletButton")}
+                    </button>
+                  ) : (
+                    <div className="import-did-verifying">
+                      <div className="import-did-icon-large">
+                        <MdCloudUpload />
+                      </div>
+                      <p className="import-did-verifying-text">
+                        {t("importDid.verifyingWallet")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
       </Modal>
-      
+
       {/* 成功提示弹窗 */}
       <Modal
         isOpen={showSuccessModal}

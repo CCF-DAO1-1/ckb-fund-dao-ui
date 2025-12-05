@@ -1,0 +1,22 @@
+/* CopyButton 默认无样式按钮，仅展示图标 */
+.copy-button-reset{
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  line-height: inherit;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.copy-button-reset:focus{
+  outline: none;
+}
+
+.copy-button-reset:disabled{
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+

@@ -7,7 +7,7 @@ import { useTranslation } from '@/utils/i18n';
 import storage from '@/lib/storage';
 import { encryptData } from '@/lib/encrypt';
 import { toast } from 'react-hot-toast';
-import '@/styles/ExportDIDInfoModal.css';
+import './ExportDIDInfoModal.css';
 import useUserInfoStore from '@/store/userInfo';
 
 const regex = /^[A-Za-z0-9]{8}$/;
@@ -60,7 +60,7 @@ export default function ExportDIDInfoModal({ isOpen, onClose }: ExportDIDInfoMod
     try {
       // 加密存储信息
       const content = await encryptData(JSON.stringify(tokenData), passwordRef.current);
-      
+
       if (!content) {
         setExporting(false);
         toast.error(t('web5.exportDIDInfo.encryptFailed') || '加密失败');

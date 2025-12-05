@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import '@/styles/copy.css';
+import './CopyButton.css';
 import { FaCopy } from 'react-icons/fa';
 import { handleCopy } from '@/utils/common';
 import { useTranslation } from '@/utils/i18n';
@@ -28,7 +28,7 @@ export default function CopyButton({
   style,
 }: CopyButtonProps) {
   const { t } = useTranslation();
-  
+
   const onClick = () => {
     handleCopy(text, t("copy.success"));
     if (onCopied) onCopied();

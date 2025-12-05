@@ -1,12 +1,12 @@
 "use client";
 
 import "react-tooltip/dist/react-tooltip.css";
-import ProposalItem from "../../components/ProposalItem";
+import ProposalItem from "../../components/proposal/ProposalItem";
 import { useProposalList } from "../../hooks/useProposalList";
 import useUserInfoStore from "@/store/userInfo";
 import { useEffect, useRef, useState } from "react";
 import { ProposalStatus } from "@/utils/proposalUtils";
-import UserGovernance from "@/components/UserGovernance";
+import UserGovernance from "@/components/common/UserGovernance";
 import { useI18n } from "@/contexts/I18nContext";
 import isMobile from "is-mobile";
 
@@ -55,11 +55,11 @@ export default function Treasury() {
   // 根据选中的状态过滤 proposals
   const filteredProposals = selectedStatus
     ? proposals.filter((proposal) => {
-        // 使用顶层的 state 字段
-        const proposalState = proposal.state;
-        const statusValue = parseInt(selectedStatus, 10);
-        return proposalState === statusValue;
-      })
+      // 使用顶层的 state 字段
+      const proposalState = proposal.state;
+      const statusValue = parseInt(selectedStatus, 10);
+      return proposalState === statusValue;
+    })
     : proposals;
 
   useEffect(() => {
@@ -111,7 +111,7 @@ export default function Treasury() {
               <UserGovernance />
             </div>
           )}
-          
+
           <section className="proposal_list">
             <nav>
               <h3>{messages.homepage.proposalList}</h3>
@@ -191,7 +191,7 @@ export default function Treasury() {
               </div>
             )}
           </section>
-          
+
           {/* 桌面端：my_info 在后 */}
           {!isMobileDevice && (
             <div className="my_info">

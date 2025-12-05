@@ -10,10 +10,10 @@ import { RingLoader } from "react-spinners";
 import { useI18n } from "@/contexts/I18nContext";
 // import dynamic from "next/dynamic";
 
-import "@/styles/comment.css";
+import "./comment.css";
 import { CommentItemProps } from "@/types/comment";
 import CommentReply from "./CommentReply";
-import Avatar from "@/components/Avatar";
+import Avatar from "@/components/common/Avatar";
 import { getUserDisplayNameFromInfo } from "@/utils/userDisplayUtils";
 
 // 移除了内联回复框，不再需要 ReactQuill
@@ -54,7 +54,7 @@ export default function CommentItem({
   const _unusedDelete = onDelete;
   // 点赞 loading 状态
   const [isLiking, setIsLiking] = useState(false);
-  
+
   // 判断是否为回复评论
   const isReplyToComment = comment.to && comment.to.did;
   const replyToName = isReplyToComment
@@ -96,7 +96,7 @@ export default function CommentItem({
     if (comment.isLiked || isLiking) {
       return;
     }
-    
+
     setIsLiking(true);
     try {
       await onLike(comment.id);
@@ -142,9 +142,9 @@ export default function CommentItem({
   return (
     <div className="comment-item">
       <div className="comment-item-avatar">
-        <Avatar 
-          did={comment.author.did} 
-          size={40} 
+        <Avatar
+          did={comment.author.did}
+          size={40}
         />
       </div>
       <div className="comment-item-container">
@@ -187,9 +187,8 @@ export default function CommentItem({
           </button>
           <button
             onClick={handleLike}
-            className={`comment-footer-button ${
-              comment.isLiked ? "liked" : ""
-            } ${isLiking ? "loading" : ""}`}
+            className={`comment-footer-button ${comment.isLiked ? "liked" : ""
+              } ${isLiking ? "loading" : ""}`}
             disabled={isLiking || comment.isLiked}
           >
             {isLiking ? (

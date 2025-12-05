@@ -1,0 +1,107 @@
+.export-did-info-modal .modal-content {
+  padding: 24px;
+}
+
+.export-did-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.export-did-title {
+  font-size: 14px;
+  color: #FFFFFF;
+  margin: 0;
+  text-align: center;
+}
+
+.export-did-note {
+  font-size: 12px;
+  color: #8A949E;
+  margin: 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.export-did-input-wrapper {
+  width: 100%;
+  position: relative;
+}
+
+.export-did-password-input {
+  width: 300px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid #4C525C;
+  border-radius: 5px;
+  color: #FFFFFF;
+  padding: 0 12px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.export-did-password-input:focus {
+  border-color: #00D4AA;
+  box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2);
+}
+
+.export-did-password-input.error {
+  border-color: #FF4444;
+}
+
+.export-did-error {
+  font-size: 12px;
+  color: #FF4444;
+  margin: 8px 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.export-step {
+  gap: 24px;
+}
+
+.export-did-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.export-did-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.export-did-icon {
+  font-size: 64px;
+  color: #00D4AA;
+}
+
+.export-did-text-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+
+.export-did-explanation {
+  font-size: 14px;
+  color: #FFFFFF;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.export-did-warning {
+  font-size: 14px;
+  color: #FF4444;
+  margin: 0;
+  line-height: 1.6;
+  font-weight: 500;
+}
+

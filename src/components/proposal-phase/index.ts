@@ -9,7 +9,7 @@ export { default as ProposalSidebar } from './ProposalSidebar';
 export { default as ProposalVotingConditions } from './ProposalVotingConditions';
 
 // 样式文件导入（common.css 会通过 @import 自动加载）
-import '@/styles/voting.css';
-import '@/styles/timeline.css';
-import '@/styles/milestone.css';
-import '@/styles/milestoneVoting.css';
+import './voting.css';
+import './timeline.css';
+import './milestone.css';
+import './milestoneVoting.css';

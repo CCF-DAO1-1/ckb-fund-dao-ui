@@ -6,13 +6,13 @@ import { MilestoneVoteOption } from '../../types/milestoneVoting';
 import { useI18n } from '@/contexts/I18nContext';
 import useUserInfoStore from '@/store/userInfo';
 import { prepareVote } from '@/server/proposal';
-import '@/styles/milestone.css';
+import './milestone.css';
 
-export default function MilestoneTracking({ 
-  milestones, 
+export default function MilestoneTracking({
+  milestones,
   currentMilestone, // eslint-disable-line @typescript-eslint/no-unused-vars
   totalMilestones, // eslint-disable-line @typescript-eslint/no-unused-vars
-  className = '' 
+  className = ''
 }: MilestoneTrackingProps) {
   const { messages } = useI18n();
   const { userInfo } = useUserInfoStore();
@@ -24,16 +24,16 @@ export default function MilestoneTracking({
       console.error(errorMsg);
       return;
     }
-    
+
     try {
       // 暂时使用 vote_meta_id = 2
       const voteMetaId = 1;
-      
+
       const response = await prepareVote({
         did: userInfo.did,
         vote_meta_id: voteMetaId,
       });
-      
+
       const approveText = messages.voting?.options?.approve || '赞成';
       const rejectText = messages.voting?.options?.reject || '反对';
       const optionText = option === MilestoneVoteOption.APPROVE ? approveText : rejectText;
@@ -44,7 +44,7 @@ export default function MilestoneTracking({
       console.error(errorLogMsg + ':', error);
     }
   };
-  
+
   // 获取里程碑状态样式
   const getMilestoneStatusClass = (status: MilestoneStatus) => {
     switch (status) {
@@ -92,8 +92,8 @@ export default function MilestoneTracking({
       <h3 className="milestone-title">{messages.proposalPhase.milestoneTracking.title}</h3>
       <div className="milestone-list">
         {milestones.map((milestone) => (
-          <div 
-            key={milestone.id} 
+          <div
+            key={milestone.id}
             className={`milestone-item ${getMilestoneStatusClass(milestone.status)}`}
           >
             <div className="milestone-icon">
@@ -106,7 +106,7 @@ export default function MilestoneTracking({
                   {getMilestoneStatusText(milestone.status)}
                 </span>
               </div>
-              
+
               {/* 进度条 - 仅在进行中状态显示 */}
               {/* {milestone.status === MilestoneStatus.IN_PROGRESS && (
                 <div className="milestone-progress">
@@ -119,8 +119,8 @@ export default function MilestoneTracking({
                   <span className="progress-text">{milestone.progress}%</span>
                 </div>
               )} */}
-              
- 
+
+
             </div>
           </div>
         ))}

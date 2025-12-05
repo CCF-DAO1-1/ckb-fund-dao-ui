@@ -19,9 +19,11 @@ body {
   color: var(--foreground);
   font-family: "Nunito Sans", Arial, Helvetica, sans-serif;
 }
+
 a {
   color: #fff;
 }
+
 .main-content {
   min-height: 100vh;
 }
@@ -104,26 +106,6 @@ a {
   white-space: nowrap;
 }
 
-/* ============================================
-   按钮尺寸
-   ============================================ */
-.btn-large {
-  height: 40px;
-  padding: 0 32px;
-  font-size: 16px;
-}
-
-.btn-medium {
-  height: 32px;
-  padding: 0 24px;
-  font-size: 14px;
-}
-
-.btn-small {
-  height: 24px;
-  padding: 0 16px;
-  font-size: 12px;
-}
 
 /* ============================================
    按钮类型和状态
@@ -244,76 +226,6 @@ a {
   opacity: 1;
 }
 
-/* 6. 编辑按钮（Edit）- 表单内操作按钮，椭圆形 */
-.btn-edit {
-  background-color: transparent;
-  color: #00cc9b;
-  border: 1px solid #00cc9b;
-  border-radius: 20px;
-  padding: 6px 16px;
-}
-
-.btn-edit:hover:not(:disabled),
-.btn-edit:active:not(:disabled) {
-  background-color: transparent;
-  color: #00e6b3;
-  border-color: #00e6b3;
-}
-
-.btn-edit:disabled {
-  background-color: transparent;
-  color: #006b5a;
-  border-color: #006b5a;
-  cursor: not-allowed;
-  opacity: 1;
-}
-
-/* 7. 删除按钮（Delete）- 表单内操作按钮，椭圆形 */
-.btn-delete {
-  background-color: transparent;
-  color: #ff4d4f;
-  border: 1px solid #ff4d4f;
-  border-radius: 20px;
-  padding: 6px 16px;
-}
-
-.btn-delete:hover:not(:disabled),
-.btn-delete:active:not(:disabled) {
-  background-color: transparent;
-  color: #ff7875;
-  border-color: #ff7875;
-}
-
-.btn-delete:disabled {
-  background-color: transparent;
-  color: #a8071a;
-  border-color: #a8071a;
-  cursor: not-allowed;
-  opacity: 1;
-}
-
-/* 8. 轮廓按钮（Outline）- 兼容旧代码 */
-.btn-outline {
-  background-color: transparent;
-  color: #00cc9b;
-  border: 1px solid #00cc9b;
-  padding: 8px 24px;
-  border-radius: 6px;
-}
-
-.btn-outline:hover:not(:disabled) {
-  background-color: transparent;
-  color: #00e6b3;
-  border-color: #00e6b3;
-}
-
-.btn-outline:disabled {
-  background-color: transparent;
-  color: #006b5a;
-  border-color: #006b5a;
-  cursor: not-allowed;
-  opacity: 1;
-}
 
 /* ============================================
    兼容旧按钮样式（逐步迁移到新设计系统）
@@ -392,6 +304,7 @@ a {
   cursor: not-allowed;
   opacity: 1;
 }
+
 .header-container {
   display: flex;
   justify-content: space-between;
@@ -416,6 +329,7 @@ a {
 .header-container .logo span {
   font-size: 16px;
 }
+
 .header-container span.version {
   font-size: 14px;
   font-weight: 400;
@@ -432,18 +346,22 @@ a {
   padding: 0 20px;
   display: flex;
 }
+
 .login-name {
   min-width: 120px;
   padding: 0;
 }
+
 .header-actions {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 .header-actions a {
   text-decoration: none;
 }
+
 /* 语言切换器样式 */
 .language-switcher-container {
   position: relative;
@@ -520,6 +438,7 @@ a {
     opacity: 0;
     transform: translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -574,6 +493,7 @@ a {
   padding: 0 20px;
   position: relative;
 }
+
 .navs li a {
   color: #fff;
   font-size: 14px;
@@ -583,6 +503,7 @@ a {
   display: block;
   padding: 8px 0;
   position: relative;
+
   &.active,
   &:hover {
     color: #00b287;
@@ -871,6 +792,7 @@ a {
     color: #00b287;
   }
 }
+
 .banner {
   width: 100%;
   background: url("/banner-bg.png") repeat-x center center;
@@ -892,6 +814,7 @@ a {
 }
 
 @media (min-width: 1280px) {
+
   .banner-desktop img,
   .banner-desktop svg {
     width: 80%;
@@ -909,75 +832,18 @@ a {
   height: auto;
   max-width: 640px;
 }
+
 .container {
   max-width: 1440px;
   margin: 0 auto;
   color: #fff;
 }
-.dao_info {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-top: -40px;
-}
-.dao_info li {
-  background: #262a33;
-  box-shadow: 0px 5px 15px 5px #0000001a;
-  border-radius: 15px;
-  padding: 20px;
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  flex-direction: column;
-  text-align: left;
-  h3 {
-    font-size: 14px;
-    font-weight: 500;
-    color: #8f8f8f;
-  }
-  p {
-    font-size: 24px;
-    font-weight: 700;
-    color: #fff;
-  }
-}
+
 /* 响应式设计 */
 /* 容器样式 */
 .container {
   margin: 0 auto;
   padding: 20px;
-}
-
-/* DAO信息统计 */
-.dao_info {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-bottom: 40px;
-  list-style: none;
-  padding: 0;
-}
-
-.dao_info li {
-  background: #1c2027;
-  border: 1px solid #2a2e35;
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
-}
-
-.dao_info li h3 {
-  color: #6a727b;
-  font-size: 14px;
-  font-weight: 500;
-  margin: 0 0 10px 0;
-}
-
-.dao_info li p {
-  color: #fff;
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
 }
 
 /* 提案列表区域 */
@@ -986,10 +852,12 @@ a {
   flex: 1;
   width: 995px;
 }
+
 .proposal_list_container {
   display: flex;
   gap: 24px;
 }
+
 .proposal_list nav {
   display: flex;
   justify-content: space-between;
@@ -1125,26 +993,32 @@ a {
   color: #fff;
   background: #4c525c;
 }
+
 .status-tag.vote {
   /* 投票中 */
   background: #f59e0b;
 }
+
 .status-tag.review {
   /* 社区审议中 */
   background: #3b82f6;
 }
+
 .status-tag.milestone {
   /* 里程碑交付中 */
   background: #00b287;
 }
+
 .status-tag.ended {
   /* 结束 */
   background: #6b7280;
 }
+
 .status-tag.approved {
   /* 已通过 */
   background: #10b981;
 }
+
 .status-tag.rejected {
   /* 已拒绝 */
   background: #ef4444;
@@ -1297,8 +1171,10 @@ a {
   position: sticky;
   top: 16px;
   z-index: 10;
-  align-self: flex-start; /* 防止被父级 flex 拉伸，高度以内容为准 */
-  height: fit-content; /* 使粘性定位的盒子高度不占满容器 */
+  align-self: flex-start;
+  /* 防止被父级 flex 拉伸，高度以内容为准 */
+  height: fit-content;
+  /* 使粘性定位的盒子高度不占满容器 */
 }
 
 /* 我的治理部分 */
@@ -1474,23 +1350,27 @@ a {
   cursor: not-allowed;
   opacity: 1;
 }
+
 .block_container {
   padding: 40px 100px;
   background: #252a33;
   border-radius: 10px;
   margin-bottom: 40px;
 }
+
 /* 总资产统计 图表容器 */
 .assets_chart {
   width: 100%;
   height: 320px;
 }
+
 /* ECharts tooltip 深色主题微调 */
 .chart-tooltip-dark {
   background: #1f242c !important;
   border: 1px solid #2f3540 !important;
   color: #e5e7eb !important;
 }
+
 .block_container h3 {
   color: #00cc9b;
   font-size: 24px;
@@ -1498,20 +1378,24 @@ a {
   line-height: 40px;
   margin: 20px 0;
 }
+
 .block_container p {
   color: #fff;
   font-size: 16px;
   line-height: 30px;
 }
+
 .block_container .team_list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
+
 .block_container .team_list a {
   color: #8a949e;
   text-decoration: none;
 }
+
 .block_container .team_item {
   background: #262a33;
   border-radius: 10px;
@@ -1520,15 +1404,18 @@ a {
   gap: 16px;
   margin: 40px 0;
 }
+
 .block_container .team_item img {
   width: 100px;
   height: 100px;
   border-radius: 50%;
 }
+
 .block_container .team_item .name {
   flex: 1;
   font-size: 12px;
 }
+
 .block_container .team_item .name h3 {
   font-size: 16px;
   margin: 0;
@@ -1536,6 +1423,7 @@ a {
   line-height: 20px;
   color: #fff;
 }
+
 .block_container .team_item .name h4 {
   font-size: 12px;
   margin: 0;
@@ -1543,6 +1431,7 @@ a {
   line-height: 20px;
   color: #00cc9bbf;
 }
+
 .block_container .team_item .name p {
   color: #8a949e;
   font-size: 12px;
@@ -1550,25 +1439,30 @@ a {
   padding: 0;
   line-height: 20px;
 }
+
 .block_container ul {
   list-style: disc;
-  padding-inline-start:20px;
+  padding-inline-start: 20px;
 }
+
 .block_container ul li {
   margin: 20px 10px;
 }
+
 .block_container .dash_line {
   width: 100%;
   height: 1px;
   border-top: 1px dotted #4c525c;
   margin: 20px 0;
 }
+
 .block_container dl {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-top: 20px;
 }
+
 .block_container dl dt {
   color: #00cc9b;
   font-size: 16px;
@@ -1579,6 +1473,7 @@ a {
   list-style-position: outside;
   margin-left: 20px;
 }
+
 .block_container dl dd {
   color: #fff;
   font-size: 16px;
@@ -1596,10 +1491,12 @@ a {
   list-style-position: outside;
   font-weight: 400;
 }
+
 .block_container strong {
   color: #00cc9b;
   font-weight: 700;
 }
+
 .block_container h4 {
   color: #00cc9b;
   font-size: 14px;
@@ -1622,6 +1519,7 @@ a {
   width: 1000px;
   align-items: center;
 }
+
 .treasury_wallet_address label {
   font-size: 14px;
   background: #00cc9b;
@@ -1629,6 +1527,7 @@ a {
   width: 165px;
   text-align: center;
 }
+
 .treasury_wallet_address p {
   flex: 1;
   padding: 0 20px;
@@ -1636,9 +1535,11 @@ a {
   color: #fff;
   word-break: break-all;
 }
+
 .treasury_list {
   list-style: none;
 }
+
 .treasury_list li {
   display: flex;
   align-items: center;
@@ -1652,11 +1553,13 @@ a {
   width: 160px;
   color: #fff;
 }
+
 .treasury_assets {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
+
 .treasury_assets .small_block {
   background: #1e2229;
   border-radius: 5px;
@@ -1664,9 +1567,11 @@ a {
 
   border: 1px solid #1e2229;
 }
+
 .treasury_assets .small_block:hover {
   border-color: #00cc9b;
 }
+
 .treasury_assets .small_block p {
   color: #fff;
   font-size: 24px;
@@ -1675,6 +1580,7 @@ a {
   margin: 0;
   padding: 0;
 }
+
 .treasury_assets .small_block h4 {
   color: #00cc9b;
   font-size: 14px;
@@ -1683,10 +1589,12 @@ a {
   margin: 0;
   padding: 0;
 }
+
 /* 项目执行钱包 表格 */
 .wallets_table_container {
   display: block;
 }
+
 .wallets_table_container h4 {
   color: #00cc9b;
   font-size: 24px;
@@ -1696,11 +1604,13 @@ a {
   display: flex;
   align-items: center;
 }
+
 .wallets_table_toolbar {
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
 }
+
 .wallets_table_toolbar input[type="search"] {
   background: #11151b;
   border: 1px solid #2a2f38;
@@ -1711,9 +1621,11 @@ a {
   padding: 0 10px;
   width: 220px;
 }
+
 .wallets_table {
   width: 100%;
 }
+
 .wallets_table_head,
 .wallets_row {
   display: grid;
@@ -1721,23 +1633,27 @@ a {
   gap: 12px;
   align-items: center;
 }
+
 .wallets_table_head {
   color: #9aa3af;
   font-size: 12px;
   padding: 10px 8px;
   border-bottom: 1px solid #2a2f38;
 }
+
 .wallets_table_body .wallets_row {
   color: #e5e7eb;
   font-size: 14px;
   padding: 14px 8px;
   border-bottom: 1px dashed #2a2f38;
 }
+
 .wallets_row .cell.address {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 /* 图标按钮 */
 .icon_button {
   display: inline-flex;
@@ -1762,6 +1678,7 @@ a {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
 .wallets_table_pagination {
   display: flex;
   align-items: center;
@@ -1769,6 +1686,7 @@ a {
   gap: 10px;
   padding-top: 12px;
 }
+
 /* 分页按钮 */
 .pager_button {
   width: 28px;
@@ -1793,6 +1711,7 @@ a {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
 .page_info {
   color: #9aa3af;
   font-size: 12px;
@@ -1804,17 +1723,20 @@ a {
   grid-template-columns: 240px 1fr;
   gap: 24px;
 }
+
 .rule_sidebar {
   position: sticky;
   top: 80px;
   height: calc(100vh - 100px);
   overflow: auto;
 }
+
 .rule_sidebar nav ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
+
 .rule_nav_item {
   width: 100%;
   text-align: left;
@@ -1825,20 +1747,24 @@ a {
   border-radius: 8px;
   cursor: pointer;
 }
+
 .rule_nav_item.active,
 .rule_nav_item:hover {
   color: #00cc9b;
   background: #1c2027;
 }
+
 .rule_subnav {
   list-style: none;
   margin: 4px 0 8px 0;
   padding: 0 0 0 12px;
   border-left: 1px dashed #2a2f38;
 }
+
 .rule_subnav li {
   margin: 2px 0;
 }
+
 .rule_sub_item {
   width: 100%;
   text-align: left;
@@ -1849,66 +1775,79 @@ a {
   border-radius: 6px;
   cursor: pointer;
 }
+
 .rule_sub_item.active,
 .rule_sub_item:hover {
   color: #00cc9b;
   background: #161a20;
 }
+
 .rule_content {
   background: #1c2027;
   border: 1px solid #2a2f38;
   border-radius: 10px;
   padding: 24px;
 }
-.rule_block + .rule_block {
+
+.rule_block+.rule_block {
   border-top: 1px dashed #2a2f38;
   margin-top: 24px;
   padding-top: 24px;
 }
+
 .rule_block h2 {
   color: #fff;
   font-size: 22px;
   margin: 0 0 10px 0;
 }
+
 .rule_block h3 {
   color: #00cc9b;
   font-size: 18px;
   margin: 6px 0 10px 0;
 }
+
 .rule_block p,
 .rule_block li {
   color: #e5e7eb;
   line-height: 28px;
 }
+
 .rule_figure {
   display: flex;
   justify-content: center;
   padding: 10px 0;
 }
+
 .rule_next {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 16px;
 }
+
 .rule_next a {
   color: #00cc9b;
 }
+
 .user_info {
   display: flex;
   align-items: center;
   padding: 10px 0;
 }
+
 .user_info img {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   margin-right: 20px;
 }
+
 .user_info .name {
   flex: 1;
   font-size: 12px;
 }
+
 .user_info .name h3 {
   font-size: 16px;
   margin: 0;
@@ -1916,6 +1855,7 @@ a {
   line-height: 20px;
   color: #fff;
 }
+
 .user_info .name h4 {
   font-size: 12px;
   margin: 0;
@@ -1923,6 +1863,7 @@ a {
   line-height: 20px;
   color: #00cc9bbf;
 }
+
 .user_info .name p {
   color: #8a949e;
   font-size: 12px;
@@ -1932,6 +1873,7 @@ a {
   display: flex;
   align-items: center;
 }
+
 .user_info .name p button,
 .user_info .name p a {
   margin: 0 5px;
@@ -1942,15 +1884,18 @@ a {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 256px; /* 相当于 h-64 */
+  height: 256px;
+  /* 相当于 h-64 */
 }
 
 .error-message {
-  color: #ef4444; /* 相当于 text-red-500 */
+  color: #ef4444;
+  /* 相当于 text-red-500 */
 }
 
 .not-found-message {
-  color: #ffffff; /* 相当于 text-white */
+  color: #ffffff;
+  /* 相当于 text-white */
 }
 
 /* ============================================
@@ -1962,11 +1907,13 @@ a {
   body {
     margin: 0;
   }
+
   .container {
     padding: 10px 8px !important;
   }
+
   .my_info {
-    width: 100% !important ;
+    width: 100% !important;
     position: relative;
     margin-bottom: 0;
   }
@@ -1974,27 +1921,32 @@ a {
   .language-switcher-container {
     width: 30px;
   }
+
   .language-switcher {
     min-width: 30px;
     width: 30px;
   }
+
   .header-container {
     padding: 0 12px;
     overflow-x: hidden;
     max-width: 100%;
     box-sizing: border-box;
   }
+
   .button-normal.user-button {
     padding: 0 6px;
     min-width: auto;
     width: auto;
   }
+
   .header-container .logo {
     min-width: auto;
     flex-shrink: 1;
     max-width: 100%;
     overflow: hidden;
   }
+
   .header-container .logo img {
     max-width: 100%;
     height: auto;
@@ -2119,7 +2071,7 @@ a {
     line-height: 1.2;
   }
 
-  .proposal_person > p:last-child {
+  .proposal_person>p:last-child {
     font-size: 12px;
     color: #8a949e;
     flex-shrink: 0;
@@ -2193,6 +2145,7 @@ a {
 
 /* 移动端 (max-width: 768px) */
 @media (max-width: 768px) {
+
   /* Header 移动端样式 - 防止溢出 */
   .header-container {
     padding: 0 8px;
@@ -2200,30 +2153,30 @@ a {
     max-width: 100vw;
     box-sizing: border-box;
   }
-  
+
   .header-container .logo {
     flex-shrink: 1;
     min-width: 0;
     max-width: calc(100vw - 120px);
   }
-  
+
   .header-container .logo img {
     max-width: 100%;
     height: auto;
     object-fit: contain;
   }
-  
+
   .header-actions {
     flex-shrink: 0;
     gap: 4px;
   }
-  
+
   .user-button {
     padding: 8px 8px;
     min-width: auto;
     font-size: 12px;
   }
-  
+
   /* Footer 移动端样式 */
   .footer-content {
     flex-direction: column;
@@ -2242,32 +2195,32 @@ a {
     gap: 24px;
   }
 
-  /* DAO信息统计 */
-  .dao_info {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   /* 移动端团队列表 */
   .block_container .team_list {
     grid-template-columns: 1fr;
   }
-  .block_container{
+
+  .block_container {
     padding: 10px;
   }
-  .treasury_wallet{
+
+  .treasury_wallet {
     display: flex;
     align-items: center;
     padding-bottom: 20px;
   }
+
   /* 移动端金库页面样式 - 保持原有横向布局 */
   .treasury_wallet_address {
     width: 100%;
     max-width: 100%;
- 
+
   }
-  .treasury_wallet_address label{
+
+  .treasury_wallet_address label {
     width: 80px;
   }
+
   .treasury_wallet_address p {
     font-size: 12px;
   }
@@ -2455,8 +2408,8 @@ a {
     padding: 16px 0;
   }
 }
+
 .management-page dd {
   color: #fff;
   font-weight: normal;
 }
-

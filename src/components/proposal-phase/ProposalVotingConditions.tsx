@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { VotingInfo } from "../../types/voting";
 import { formatNumber } from "../../utils/proposalUtils";
 import { useI18n } from "@/contexts/I18nContext";
-import "@/styles/voting.css";
+import "./voting.css";
 import { IoCheckmarkCircleOutline } from "react-icons/io5";
 
 interface ProposalVotingConditionsProps {
@@ -81,9 +81,8 @@ export default function ProposalVotingConditions({
         </span>
 
         <div
-          className={`condition-status ${
-            approvalRateMet ? "met" : "not-met"
-          }`}
+          className={`condition-status ${approvalRateMet ? "met" : "not-met"
+            }`}
         >
           {approvalRateMet ? (
             <IoCheckmarkCircleOutline size={16} />
@@ -93,7 +92,7 @@ export default function ProposalVotingConditions({
         </div>
       </div>
 
-    
+
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import ManagementCenter from "@/components/ManagementCenter";
+import ManagementCenter from "@/components/treasury/ManagementCenter";
 import "@/styles/management.css";
 import "@/styles/task-modal.css";
 import "@/styles/quill-editor.css";

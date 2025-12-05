@@ -1,0 +1,165 @@
+/* 里程碑投票组件样式 */
+@import './common.css';
+
+.milestone-voting-card {
+  /* 基础样式继承自 .proposal-phase-card */
+  background: #262A33;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.milestone-voting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.milestone-voting-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.milestone-voting-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6A727B;
+}
+
+.milestone-voting-stats {
+  margin-bottom: 20px;
+}
+
+.voting-stat {
+  color: #8A949E;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.milestone-voting-progress {
+  margin-bottom: 12px;
+}
+
+/* 进度条样式继承自 common.css */
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.progress-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.progress-label.approve .label-text {
+  color: #10B981;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.progress-label.reject .label-text {
+  color: #EF4444;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.milestone-voting-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* 投票按钮样式继承自 common.css */
+.vote-button {
+  position: relative; /* milestoneVoting 特有 */
+}
+
+/* 投票计数样式继承自 common.css */
+
+.milestone-voting-power {
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.power-label {
+  color: #fff;
+  font-size: 14px;
+}
+
+.power-value {
+  color: #00B287;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.milestone-voting-requirements {
+  margin-bottom: 0;
+}
+
+.requirements-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0 0 16px 0;
+}
+
+.requirement-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.requirement-item:last-child {
+  margin-bottom: 0;
+}
+
+.requirement-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #fff;
+  font-size: 12px;
+  width: 120px;
+}
+
+.requirement-label {
+  color: #fff;
+  font-size: 12px;
+}
+
+.requirement-value {
+  color: #6A727B;
+  font-size: 12px;
+}
+
+/* 状态指示器样式继承自 common.css */
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .milestone-voting-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .milestone-voting-actions {
+    flex-direction: column;
+  }
+  
+  .vote-button {
+    width: 100%;
+  }
+}

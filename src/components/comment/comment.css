@@ -1,0 +1,711 @@
+.comment-section {
+  border-radius: 12px;
+  padding: 24px 0;
+  margin-top: 20px;
+  border-top: 1px dashed #4C525C;;
+  border-radius: 0;
+}
+
+.comment-header {
+  margin-bottom: 20px;
+}
+
+.comment-title {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+.comment-item-container{
+    width: 100%;
+}
+.comment-content {
+  margin-bottom: 20px;
+}
+
+.comment-quote {
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  margin-top: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+}
+
+.comment-quote-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+}
+
+.comment-quote-avatar img {
+  border-radius: 50%;
+  height: 40px;
+}
+
+.comment-quote-main {
+  flex: 1;
+ 
+  width: 100%;
+}
+
+.comment-quote-title {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.comment-quote-actions {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1001;
+}
+
+.comment-quote-submit {
+  background: #00CC9B33;
+  color: #00CC9B;
+  padding: 0 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: none;
+  height: 30px;
+  line-height: 30px;
+  min-width: 60px;
+}
+
+.comment-quote-submit:hover:not(:disabled) {
+  background: #00B894;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.comment-quote-submit:disabled {
+  background: #4C525C;
+  color: #9CA3AF;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.comment-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+.comment-reply {
+  margin-left: 20px;
+  background: transparent;
+}
+
+.comment-item-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  padding-top: 5px;
+}
+
+.comment-item-content {
+  flex: 1;
+  background: #20232B;
+  padding: 10px 16px;
+  line-height: 1.6;
+  color: #fefefe;
+  position: relative;
+  border-radius: 10px;
+}
+.comment-reply{
+    background: #1A1D23;
+    border-left: 3px solid #00CC9B;
+    padding-left: 8px;
+}
+.comment-reply .comment-item-content {
+    background: #1A1D23;
+}
+.comment-reply .comment-item-footer,.comment-reply .comment-actions,.comment-reply .comment-item-header span{
+    display: none;
+}
+.comment-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.comment-item-header h3 {
+  color: #8A949E;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-item-header h3 span {
+  color: #8A949E;
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.comment-action-btn {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.comment-action-btn:hover {
+  background: #4C525C;
+  color: #ffffff;
+}
+
+.comment-item-text {
+  margin-bottom: 12px;
+}
+
+.comment-item-text p {
+  color: #e5e7eb;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* HTML 内容样式 */
+.comment-content-html {
+  color: #e5e7eb;
+  line-height: 1.6;
+}
+
+.comment-content-html p {
+  margin: 0 0 8px 0;
+  color: #e5e7eb;
+}
+
+.comment-content-html p:last-child {
+  margin-bottom: 0;
+}
+
+.comment-content-html h1,
+.comment-content-html h2,
+.comment-content-html h3 {
+  color: #ffffff;
+  font-weight: 600;
+  margin: 12px 0 8px 0;
+}
+
+.comment-content-html h1:first-child,
+.comment-content-html h2:first-child,
+.comment-content-html h3:first-child {
+  margin-top: 0;
+}
+
+.comment-content-html strong {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.comment-content-html em {
+  font-style: italic;
+}
+
+.comment-content-html u {
+  text-decoration: underline;
+}
+
+.comment-content-html code {
+  background: #1A1D23;
+  color: #00CC9B;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.comment-content-html pre {
+  background: #1A1D23;
+  color: #ffffff;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 8px 0;
+  overflow-x: auto;
+}
+
+.comment-content-html pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+}
+
+.comment-content-html img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 8px 0;
+}
+
+.comment-content-html ul,
+.comment-content-html ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.comment-content-html li {
+  margin: 4px 0;
+  color: #e5e7eb;
+}
+
+.comment-content-html blockquote {
+  border-left: 4px solid #00CC9B;
+  margin: 12px 0;
+  padding: 8px 16px;
+  background: rgba(0, 204, 155, 0.1);
+  border-radius: 0 6px 6px 0;
+}
+
+.comment-content-html a {
+  color: #00CC9B;
+  text-decoration: none;
+}
+
+.comment-content-html a:hover {
+  text-decoration: underline;
+}
+
+.comment-item-footer {
+  display: flex;
+  gap: 20px;
+  margin-top: 12px;
+}
+
+.comment-footer-button {
+  background: transparent;
+  border: none;
+  color: #8A949E;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  transition: all 0.2s ease;
+}
+
+.comment-footer-button:hover {
+  background: #20232B;
+  color: #00CC9B;
+}
+
+.comment-footer-button.liked svg{
+  color: #FF4D4F;
+}
+
+.comment-footer-button.liked:hover svg{
+  color: #FF4D4F;
+}
+
+.comment-reply-form {
+  margin-top: 12px;
+  padding: 12px;
+  background: #1A1D23;
+  border-radius: 6px;
+}
+
+.comment-reply-editor {
+  margin-bottom: 12px;
+}
+
+.comment-reply-textarea {
+  width: 100%;
+  min-height: 80px;
+  background: #262A33;
+  border: 1px solid #4C525C;
+  border-radius: 6px;
+  padding: 12px;
+  color: #ffffff;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.comment-reply-textarea:focus {
+  outline: none;
+  border-color: #00CC9B;
+}
+
+.comment-reply-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.comment-reply-submit {
+  background: #00CC9B;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.comment-reply-cancel {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #4C525C;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.comment-replies {
+  margin: 16px 0;
+border-left: 3px solid #00CC9B;
+background: #262A33;
+padding: 12px;
+
+}
+
+/* CommentReply 组件专用样式 */
+.comment-reply-item {
+  display: flex;
+  gap: 12px;
+  background: #262A33;
+  border-left: 3px solid #00CC9B;
+  padding-left: 8px;
+  padding: 12px;
+}
+.comment-reply-item  blockquote{
+  border-left:transparent;
+  background-color: transparent;
+  margin: 0;
+  padding: 0;
+}
+.comment-reply-avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  padding-top: 5px;
+}
+
+
+
+.comment-reply-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.comment-reply-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #E5E7EB;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-reply-header h4 span {
+  font-size: 12px;
+  font-weight: 400;
+  color: #9CA3AF;
+}
+
+/* 回复提示样式 */
+.comment-reply-header h4 .reply-to-indicator {
+  font-size: 13px;
+  font-weight: 400;
+  color: #9CA3AF;
+  display: inline-flex;
+  align-items: center;
+}
+
+.comment-reply-header h4 .reply-to-indicator .reply-to-avatar {
+  display: inline-block;
+  margin-left: 4px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.comment-reply-header h4 .reply-to-name {
+  color: #00CC9B;
+  font-weight: 500;
+}
+
+.comment-reply-header h4 .comment-time {
+  font-size: 12px;
+  font-weight: 400;
+  color: #6B7280;
+  margin-left: 8px;
+}
+
+.comment-reply-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.comment-reply-action-btn {
+  background: none;
+  border: none;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.comment-reply-action-btn:hover {
+  background: rgba(76, 82, 92, 0.3);
+  color: #E5E7EB;
+}
+
+.comment-reply-text {
+  margin-bottom: 12px;
+}
+
+.comment-reply-text p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #D1D5DB;
+}
+
+/* 引用块样式 */
+.comment-quoted-content {
+  background: rgba(0, 204, 155, 0.08);
+  border-left: 4px solid #00CC9B;
+  padding: 12px 16px;
+  margin: 12px 0;
+  border-radius: 0 6px 6px 0;
+  color: #9CA3AF;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.comment-quoted-content .comment-content-html p {
+  color: #9CA3AF;
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+.comment-quoted-content .comment-content-html {
+  color: #9CA3AF;
+}
+
+.comment-reply-footer {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.comment-reply-footer-button {
+  background: none;
+  border: none;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.comment-reply-footer-button:hover {
+  background: rgba(76, 82, 92, 0.3);
+  color: #E5E7EB;
+}
+
+.comment-reply-footer-button.liked {
+  color: #00CC9B;
+}
+
+.comment-reply-footer-button.liked:hover {
+  color: #00B894;
+}
+
+/* 引用按钮样式 */
+.quote-button-container {
+  position: absolute;
+  z-index: 1000;
+}
+
+.quote-button {
+  background: #00CC9B;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 12px rgba(0, 204, 155, 0.3);
+  transition: all 0.2s ease;
+  animation: quote-button-appear 0.2s ease-out;
+}
+
+.quote-button:hover {
+  background: #00B894;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 204, 155, 0.4);
+}
+
+.quote-button:active {
+  transform: translateY(0);
+}
+
+@keyframes quote-button-appear {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* 引用文本样式 */
+.quoted-text-container {
+  margin-bottom: 12px;
+  border: 1px solid #4C525C;
+  border-radius: 8px;
+  background: #1A1D23;
+  overflow: hidden;
+}
+
+.quoted-text-label {
+  padding: 8px 12px;
+  background: #262A33;
+  color: #9CA3AF;
+  font-size: 12px;
+  font-weight: 500;
+  border-bottom: 1px solid #4C525C;
+}
+
+.quoted-text-content {
+  padding: 12px;
+  color: #D1D5DB;
+  font-size: 14px;
+  line-height: 1.5;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.quoted-text-content p {
+  margin: 0 0 8px 0;
+}
+
+.quoted-text-content p:last-child {
+  margin-bottom: 0;
+}
+
+.quoted-text-content h1,
+.quoted-text-content h2,
+.quoted-text-content h3 {
+  color: #ffffff;
+  font-weight: 600;
+  margin: 12px 0 6px 0;
+}
+
+.quoted-text-content h1:first-child,
+.quoted-text-content h2:first-child,
+.quoted-text-content h3:first-child {
+  margin-top: 0;
+}
+
+.quoted-text-content strong {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.quoted-text-content em {
+  font-style: italic;
+}
+
+.quoted-text-content u {
+  text-decoration: underline;
+}
+
+.quoted-text-content code {
+  background: #262A33;
+  color: #00CC9B;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.quoted-text-content pre {
+  background: #262A33;
+  color: #D1D5DB;
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.quoted-text-content pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+.quoted-text-content ul,
+.quoted-text-content ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.quoted-text-content li {
+  margin: 4px 0;
+}
+
+.quoted-text-content blockquote {
+  border-left: 3px solid #4C525C;
+  padding-left: 12px;
+  margin: 8px 0;
+  color: #9CA3AF;
+  font-style: italic;
+}
+
+.quoted-text-content a {
+  color: #00CC9B;
+  text-decoration: none;
+}
+
+.quoted-text-content a:hover {
+  text-decoration: underline;
+}

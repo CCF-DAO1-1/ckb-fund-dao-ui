@@ -3,18 +3,18 @@
 import React from "react";
 // import { MdOutlineDelete } from "react-icons/md";
 
-import "@/styles/comment.css";
+import "./comment.css";
 import { CommentReplyProps } from "@/types/comment";
-import Avatar from "@/components/Avatar";
+import Avatar from "@/components/common/Avatar";
 import { getUserDisplayNameFromInfo } from "@/utils/userDisplayUtils";
 
-export default function CommentReply({ 
-  comment, 
+export default function CommentReply({
+  comment,
   onDelete // 暂时屏蔽
 }: CommentReplyProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _unusedDelete = onDelete;
-  
+
   // 暂时屏蔽删除功能
   /* const handleDelete = () => {
     if (window.confirm("确定要删除这条评论吗？")) {
@@ -37,7 +37,7 @@ export default function CommentReply({
 
   // 判断是否为回复评论
   const isReplyToComment = comment.to && comment.to.did;
-  const replyToName = isReplyToComment 
+  const replyToName = isReplyToComment
     ? getUserDisplayNameFromInfo(comment.to)
     : null;
 
@@ -49,13 +49,13 @@ export default function CommentReply({
 
     // 使用正则表达式提取 blockquote 标签内容
     const blockquoteMatch = comment.content.match(/<blockquote>([\s\S]*?)<\/blockquote>/);
-    
+
     if (blockquoteMatch) {
       const quotedContent = blockquoteMatch[1]; // blockquote 内的内容
       const replyContent = comment.content.replace(/<blockquote>[\s\S]*?<\/blockquote>/, '').trim(); // 移除 blockquote 后的内容
       return { quotedContent, replyContent };
     }
-    
+
     return { quotedContent: null, replyContent: comment.content };
   };
 
@@ -63,55 +63,55 @@ export default function CommentReply({
 
   return (
     <>
-    <div className="comment-reply-item">
-      <div className="comment-reply-content">
-        <div className="comment-reply-header">
-          <h4>
-          
-            {isReplyToComment && replyToName && (
-              <span className="reply-to-indicator">
-                <Avatar 
-                  did={comment.to?.did} 
-                  size={20}
-                  className="reply-to-avatar"
-                />
-                <span className="reply-to-name">{replyToName}</span>
-              </span>
-            )}
-            {/* <span className="comment-time">{formatTimeAgo(comment.createdAt)}</span> */}
-          </h4>
-          {/* 暂时屏蔽删除功能 */}
-          {/* {comment.isAuthor && (
+      <div className="comment-reply-item">
+        <div className="comment-reply-content">
+          <div className="comment-reply-header">
+            <h4>
+
+              {isReplyToComment && replyToName && (
+                <span className="reply-to-indicator">
+                  <Avatar
+                    did={comment.to?.did}
+                    size={20}
+                    className="reply-to-avatar"
+                  />
+                  <span className="reply-to-name">{replyToName}</span>
+                </span>
+              )}
+              {/* <span className="comment-time">{formatTimeAgo(comment.createdAt)}</span> */}
+            </h4>
+            {/* 暂时屏蔽删除功能 */}
+            {/* {comment.isAuthor && (
             <div className="comment-reply-actions">
               <button onClick={handleDelete} className="comment-reply-action-btn">
                 <MdOutlineDelete />
               </button>
             </div>
           )} */}
+          </div>
+
+          {/* 显示被引用的评论内容 */}
+          {quotedContent && (
+            <blockquote className="comment-quoted-content">
+              <div
+                dangerouslySetInnerHTML={{ __html: quotedContent }}
+                className="comment-content-html"
+              />
+            </blockquote>
+          )}
+
+
         </div>
-        
-        {/* 显示被引用的评论内容 */}
-        {quotedContent && (
-          <blockquote className="comment-quoted-content">
-            <div 
-              dangerouslySetInnerHTML={{ __html: quotedContent }}
-              className="comment-content-html"
-            />
-          </blockquote>
-        )}
-        
-       
       </div>
-    </div>
-     {/* 显示回复的内容 */}
-     {replyContent && (
-      <div className="comment-reply-text" style={{marginTop: "12px"}}>
-        <div 
-          dangerouslySetInnerHTML={{ __html: replyContent }}
-          className="comment-content-html"
-        />
-      </div>
-    )}
+      {/* 显示回复的内容 */}
+      {replyContent && (
+        <div className="comment-reply-text" style={{ marginTop: "12px" }}>
+          <div
+            dangerouslySetInnerHTML={{ __html: replyContent }}
+            className="comment-content-html"
+          />
+        </div>
+      )}
     </>
   );
 }

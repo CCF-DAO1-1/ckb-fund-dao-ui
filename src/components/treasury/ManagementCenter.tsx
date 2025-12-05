@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { ProposalStatus } from "@/utils/proposalUtils";
-import TaskProcessingModal, { TaskType } from "./TaskProcessingModal";
-import Tag from "./ui/tag/Tag";
+import TaskProcessingModal, { TaskType } from "@/components/proposal/TaskProcessingModal";
+import Tag from "@/components/ui/tag/Tag";
 import { useProposalList } from "@/hooks/useProposalList";
 import { ProposalListItem } from "@/server/proposal";
 import useUserInfoStore from "@/store/userInfo";
@@ -48,38 +48,38 @@ const getDeadlineByStatus = (status: ProposalStatus, createdAt: string, t: (key:
   const createdDate = new Date(createdAt);
   // 将 locale 映射到日期格式化语言代码
   const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
-  
+
   switch (status) {
     case ProposalStatus.REVIEW:
       // 审议期7天
       const reviewDeadline = new Date(createdDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-      return reviewDeadline.toLocaleString(dateLocale, { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit', 
-        hour: '2-digit', 
+      return reviewDeadline.toLocaleString(dateLocale, {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
         minute: '2-digit',
         timeZone: 'Asia/Shanghai'
       }) + ' (UTC+8)';
     case ProposalStatus.VOTE:
       // 投票期3天
       const voteDeadline = new Date(createdDate.getTime() + 10 * 24 * 60 * 60 * 1000);
-      return voteDeadline.toLocaleString(dateLocale, { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit', 
-        hour: '2-digit', 
+      return voteDeadline.toLocaleString(dateLocale, {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
         minute: '2-digit',
         timeZone: 'Asia/Shanghai'
       }) + ' (UTC+8)';
     case ProposalStatus.MILESTONE:
       // 里程碑交付期30天
       const milestoneDeadline = new Date(createdDate.getTime() + 30 * 24 * 60 * 60 * 1000);
-      return milestoneDeadline.toLocaleString(dateLocale, { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit', 
-        hour: '2-digit', 
+      return milestoneDeadline.toLocaleString(dateLocale, {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
         minute: '2-digit',
         timeZone: 'Asia/Shanghai'
       }) + ' (UTC+8)';
@@ -92,7 +92,7 @@ const getDeadlineByStatus = (status: ProposalStatus, createdAt: string, t: (key:
 const adaptProposalData = (proposal: ProposalListItem, t: (key: string) => string, locale: 'en' | 'zh' = 'en'): ProposalItem => {
   const status = proposal.state as ProposalStatus;
   const proposalType = proposal.record.data.proposalType;
-  
+
   return {
     id: proposal.cid,
     name: proposal.record.data.title,
@@ -145,7 +145,7 @@ export default function ManagementCenter() {
   //     allocation: proposals.filter(p => p.taskType === t("taskTypes.milestoneAllocation")).length,
   //     completion: proposals.filter(p => p.taskType === t("taskTypes.publishReport")).length,
   //   };
-    
+
   //   return getFilterOptions(t).map(option => ({
   //     ...option,
   //     count: counts[option.key as keyof typeof counts] || 0
@@ -160,9 +160,9 @@ export default function ManagementCenter() {
     if (activeTab === "new") {
       filtered = filtered.filter(p => p.isNew);
     } else if (activeTab === "pending") {
-      filtered = filtered.filter(p => 
-        p.status === ProposalStatus.REVIEW || 
-        p.status === ProposalStatus.VOTE || 
+      filtered = filtered.filter(p =>
+        p.status === ProposalStatus.REVIEW ||
+        p.status === ProposalStatus.VOTE ||
         p.status === ProposalStatus.MILESTONE
       );
     }
@@ -188,7 +188,7 @@ export default function ManagementCenter() {
     // 根据搜索查询过滤
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter(p =>
         p.name.toLowerCase().includes(query) ||
         p.type.toLowerCase().includes(query) ||
         p.taskType.toLowerCase().includes(query)
@@ -202,7 +202,7 @@ export default function ManagementCenter() {
   useEffect(() => {
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    
+
     proposals.forEach(proposal => {
       const createdDate = new Date(rawProposals.find(p => p.cid === proposal.id)?.record.created || '');
       proposal.isNew = createdDate > oneDayAgo;
@@ -222,13 +222,13 @@ export default function ManagementCenter() {
 
   const handleTaskComplete = (data: unknown) => {
     console.log("任务完成数据:", data);
-    
+
     // 如果是投票创建任务，刷新提案列表
     if (selectedProposal?.taskType === t("taskTypes.createVote")) {
       console.log("投票创建成功，刷新提案列表");
       refetch();
     }
-    
+
     setShowTaskModal(false);
     setSelectedProposal(undefined);
   };

@@ -1,0 +1,187 @@
+.scan-qr-code-modal .modal-content {
+  padding: 24px;
+}
+
+.scan-qr-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.scan-qr-mode-switch {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid #4C525C;
+  padding-bottom: 16px;
+}
+
+.scan-qr-mode-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid #4C525C;
+  border-radius: 8px;
+  color: #CCCCCC;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.scan-qr-mode-button:hover:not(:disabled) {
+  border-color: #00D4AA;
+  color: #00D4AA;
+}
+
+.scan-qr-mode-button.active {
+  background: #1E2229;
+  border-color: #00D4AA;
+  color: #00D4AA;
+}
+
+.scan-qr-mode-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.scan-qr-area {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-reader-container {
+  width: 100%;
+  max-width: 400px;
+}
+
+.scan-qr-start-button,
+.scan-qr-stop-button {
+  margin-top: 16px;
+  padding: 12px 24px;
+  background: #00D4AA;
+  color: #000000;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.scan-qr-start-button:hover {
+  background: #00B894;
+}
+
+.scan-qr-stop-button {
+  background: #FF4444;
+  color: #FFFFFF;
+}
+
+.scan-qr-stop-button:hover {
+  background: #CC0000;
+}
+
+.scan-qr-file-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.scan-qr-file-input {
+  display: none;
+}
+
+.scan-qr-file-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 200px;
+  border: 2px dashed #4C525C;
+  border-radius: 8px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #CCCCCC;
+}
+
+.scan-qr-file-label:hover {
+  border-color: #00D4AA;
+  color: #00D4AA;
+}
+
+.scan-qr-file-label .file-icon {
+  font-size: 48px;
+}
+
+.scan-qr-instruction {
+  font-size: 14px;
+  color: #FFFFFF;
+  margin: 0;
+  text-align: center;
+}
+
+.scan-qr-pin-input {
+  width: 100%;
+  height: 40px;
+  background: transparent;
+  border: 1px solid #4C525C;
+  border-radius: 5px;
+  color: #FFFFFF;
+  padding: 0 12px;
+  font-size: 16px;
+  text-align: center;
+  letter-spacing: 8px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.scan-qr-pin-input:focus {
+  border-color: #00D4AA;
+  box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2);
+}
+
+.scan-qr-error {
+  font-size: 12px;
+  color: #FF4444;
+  margin: 0;
+  text-align: center;
+  padding: 8px;
+  background: rgba(255, 68, 68, 0.1);
+  border-radius: 4px;
+}
+
+.scan-qr-success-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+.scan-qr-success-icon {
+  font-size: 64px;
+  color: #00D4AA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scan-qr-success-message {
+  font-size: 16px;
+  color: #FFFFFF;
+  margin: 0;
+  text-align: center;
+  font-weight: 500;
+}
+

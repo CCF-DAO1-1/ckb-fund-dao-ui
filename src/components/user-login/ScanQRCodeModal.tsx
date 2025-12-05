@@ -8,7 +8,7 @@ import useUserInfoStore from '@/store/userInfo';
 import { TokenStorageType } from '@/lib/storage';
 import { decryptData } from '@/lib/encrypt';
 import { MdClose, MdPhotoCamera, MdImage, MdCheckCircle } from 'react-icons/md';
-import '@/styles/ScanQRCodeModal.css';
+import './ScanQRCodeModal.css';
 
 interface ScanQRCodeModalProps {
   isOpen: boolean;
@@ -39,7 +39,7 @@ export default function ScanQRCodeModal({ isOpen, onClose, onSuccess }: ScanQRCo
 
       // 尝试解析JSON
       let parsedData: TokenStorageType | null = null;
-      
+
       try {
         const jsonData = JSON.parse(dataToParse);
         if (jsonData.did && jsonData.signKey && jsonData.walletAddress) {
@@ -190,13 +190,13 @@ export default function ScanQRCodeModal({ isOpen, onClose, onSuccess }: ScanQRCo
 
       const html5QrCode = new Html5Qrcode(tempContainerId);
       const decodedText = await html5QrCode.scanFile(file, false);
-      
+
       // 清理临时容器
       html5QrCode.clear();
       if (tempContainer && tempContainer.parentNode) {
         tempContainer.parentNode.removeChild(tempContainer);
       }
-      
+
       setIsScanning(false);
       parseAndImportQRData(decodedText);
     } catch (err: unknown) {
@@ -382,7 +382,7 @@ export default function ScanQRCodeModal({ isOpen, onClose, onSuccess }: ScanQRCo
       >
         {renderContent()}
       </Modal>
-      
+
       {/* 成功提示弹窗 */}
       <Modal
         isOpen={showSuccessModal}

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { MdClose } from 'react-icons/md';
-import '@/styles/Modal.css';
+import './Modal.css';
 
 export interface ModalButton {
   text: string;
@@ -80,7 +80,7 @@ export default function Modal({
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div 
+      <div
         ref={modalRef}
         className={`modal ${getSizeClass()} ${className}`}
         onClick={(e) => e.stopPropagation()}

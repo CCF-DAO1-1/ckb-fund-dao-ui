@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { MilestoneVotingProps, MilestoneVoteOption, MilestoneVotingStatus } from '../../types/milestoneVoting';
 import { useI18n } from '@/contexts/I18nContext';
-import '@/styles/milestoneVoting.css';
+import './milestoneVoting.css';
 
-export default function MilestoneVoting({ 
-  votingInfo, 
-  onVote, 
-  className = '' 
+export default function MilestoneVoting({
+  votingInfo,
+  onVote,
+  className = ''
 }: MilestoneVotingProps) {
   const { messages, locale } = useI18n();
   const [timeLeft, setTimeLeft] = useState('');
@@ -43,10 +43,10 @@ export default function MilestoneVoting({
 
   // 处理投票
   const handleVote = (option: MilestoneVoteOption) => {
-    if (votingInfo.status === MilestoneVotingStatus.ENDED || 
-        votingInfo.status === MilestoneVotingStatus.APPROVED || 
-        votingInfo.status === MilestoneVotingStatus.REJECTED) return;
-    
+    if (votingInfo.status === MilestoneVotingStatus.ENDED ||
+      votingInfo.status === MilestoneVotingStatus.APPROVED ||
+      votingInfo.status === MilestoneVotingStatus.REJECTED) return;
+
     setUserVote(option);
     onVote(votingInfo.milestoneId, option);
   };
@@ -80,15 +80,15 @@ export default function MilestoneVoting({
         <div className="voting-stat">
           <span>{messages.proposalPhase.milestoneVoting.totalVotes} {formatNumber(votingInfo.totalVotes / 100000000)} CKB</span>
         </div>
-        
+
         <div className="milestone-voting-progress">
           <div className="progress-bar">
-            <div 
-              className="progress-approve" 
+            <div
+              className="progress-approve"
               style={{ width: `${votingInfo.approveRate}%` }}
             ></div>
-            <div 
-              className="progress-reject" 
+            <div
+              className="progress-reject"
               style={{ width: `${votingInfo.rejectRate}%` }}
             ></div>
           </div>
