@@ -17,6 +17,11 @@ interface Messages {
     learn: string;
     examples: string;
     goToNextjs: string;
+    backToHome: string;
+  };
+  errors: {
+    noPermission: string;
+    noPermissionMessage: string;
   };
   navigation: {
     home: string;
@@ -844,12 +849,12 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
 
   useEffect(() => {
     if (!isClient) return;
-    
+
     if (initialLocale) {
       setLocale(initialLocale);
       return;
     }
-    
+
     // 从URL路径中获取语言代码
     const pathLocale = pathname.split('/')[1] as Locale;
     if (pathLocale && ['en', 'zh'].includes(pathLocale)) {

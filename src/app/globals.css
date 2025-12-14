@@ -2409,7 +2409,55 @@ a {
   }
 }
 
+
 .management-page dd {
   color: #fff;
   font-weight: normal;
+}
+
+/* ============================================
+   Error Page Styles
+   ============================================ */
+.error-page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 0 16px;
+  width: 1400px;
+  margin: 20px auto;
+  background: #262A33;
+  border-radius: 15px;
+}
+
+.error-icon-wrapper {
+  position: relative;
+  width: 64px;
+  /* 24 * 4px = 96px */
+  height: 64px;
+  margin-bottom: 24px;
+}
+
+.error-title {
+  font-size: 16px;
+  color: #fff;
+  margin-bottom: 32px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.error-back-btn {
+  padding: 6px 24px;
+  background-color: #141619;
+  border: 1px solid #3e3e3e;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.error-back-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }

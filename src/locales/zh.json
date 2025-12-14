@@ -6,7 +6,12 @@
     "readDocs": "阅读文档",
     "learn": "学习",
     "examples": "示例",
-    "goToNextjs": "前往 nextjs.org →"
+    "goToNextjs": "前往 nextjs.org →",
+    "backToHome": "返回主页"
+  },
+  "errors": {
+    "noPermission": "无权限查看当前页面!",
+    "noPermissionMessage": "抱歉，您没有权限访问此页面。"
   },
   "navigation": {
     "home": "首页",

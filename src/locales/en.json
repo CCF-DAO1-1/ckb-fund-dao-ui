@@ -6,7 +6,12 @@
     "readDocs": "Read our docs",
     "learn": "Learn",
     "examples": "Examples",
-    "goToNextjs": "Go to nextjs.org →"
+    "goToNextjs": "Go to nextjs.org →",
+    "backToHome": "Back to Home"
+  },
+  "errors": {
+    "noPermission": "No permission to view this page!",
+    "noPermissionMessage": "Sorry, you don't have permission to access this page."
   },
   "navigation": {
     "home": "Home",

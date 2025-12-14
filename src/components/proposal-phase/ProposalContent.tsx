@@ -15,6 +15,8 @@ import useUserInfoStore from "@/store/userInfo";
 import { ProposalDetailResponse } from "@/server/proposal";
 import { getUserDisplayNameFromInfo } from "@/utils/userDisplayUtils";
 import MilestoneList from "./MilestoneList";
+import { useRouter } from "next/navigation";
+import { postUriToHref } from "@/lib/postUriHref";
 
 interface ProposalContentProps {
   proposal: ProposalDetailResponse;
@@ -29,6 +31,8 @@ export default function ProposalContent({
 }: ProposalContentProps) {
   const { messages, locale } = useI18n();
   const { userInfo } = useUserInfoStore();
+
+  const router = useRouter();
 
   // 点赞相关状态
   const [isLiked, setIsLiked] = useState(false);
@@ -106,7 +110,27 @@ export default function ProposalContent({
       {/* 提案头部信息 */}
       <div className="proposal-header-card">
         <div className="proposal-title-section">
-          <h1 className="proposal-main-title">{proposal.record.data.title}</h1>
+          <h1 className="proposal-main-title">
+            {proposal.record.data.title}
+            {userInfo?.did === proposal.author.did && (
+              <img
+                src="/icon/edit.svg"
+                alt="edit"
+                style={{
+                  display: "inline-block",
+                  width: "20px",
+                  height: "20px",
+                  marginLeft: "12px",
+                  cursor: "pointer",
+                  verticalAlign: "middle",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/${locale}/proposal/edit/${postUriToHref(proposal.uri)}`);
+                }}
+              />
+            )}
+          </h1>
 
           <div className="proposal-author-info">
             <div className="author-avatar">
