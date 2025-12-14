@@ -28,7 +28,7 @@
     "is-mobile": "^5.0.0",
     "katex": "^0.16.22",
     "multiformats": "^13.4.1",
-    "next": "15.5.2",
+    "next": "15.5.7",
     "notion-client": "^7.4.3",
     "notion-types": "^7.4.3",
     "notion-utils": "^7.4.3",
