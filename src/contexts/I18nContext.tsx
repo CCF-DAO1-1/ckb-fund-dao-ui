@@ -201,6 +201,9 @@ interface Messages {
   };
   editor: {
     loading: string;
+    uploading: string;
+    uploadSuccess: string;
+    uploadFailed: string;
   };
   alerts: {
     selectVoteTime: string;

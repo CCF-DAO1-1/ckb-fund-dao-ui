@@ -349,6 +349,7 @@ export default function ProposalSidebar({ proposal }: ProposalSidebarProps) {
             id: voteMetaId,
             tx_hash: txResult.txHash,
             candidates_index: candidatesIndex,
+            timestamp: Math.floor(Date.now() / 1000), // UTC 时间戳（秒），防止签名被重复使用
           };
           
           const unsignedCommit = cbor.encode(updateParams);

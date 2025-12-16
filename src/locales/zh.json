@@ -228,7 +228,10 @@
     "finalReport": "结项报告"
   },
   "editor": {
-    "loading": "编辑器加载中..."
+    "loading": "编辑器加载中...",
+    "uploading": "上传中...",
+    "uploadSuccess": "图片上传成功",
+    "uploadFailed": "图片上传失败"
   },
   "alerts": {
     "selectVoteTime": "请选择投票开始和结束时间",

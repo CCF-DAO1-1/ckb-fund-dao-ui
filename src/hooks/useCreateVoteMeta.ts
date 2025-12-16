@@ -23,6 +23,7 @@ export function useCreateVoteMeta() {
   // 为 initiation_vote 生成 signed_bytes
   const generateInitiationVoteSignedBytes = useCallback(async (params: {
     proposal_uri: string;
+    timestamp: number;
   }) => {
     try {
       // 1. 将params对象用cbor.encode编码
@@ -52,6 +53,7 @@ export function useCreateVoteMeta() {
   const generateUpdateMetaTxHashSignedBytes = useCallback(async (params: {
     id: number;
     tx_hash: string;
+    timestamp: number;
   }) => {
     try {
       // 1. 将params对象用cbor.encode编码
@@ -96,6 +98,7 @@ export function useCreateVoteMeta() {
       // 构建参数对象（只包含 proposal_uri）
       const voteParams = {
         proposal_uri: params.proposalUri,
+        timestamp: Math.floor(Date.now() / 1000), // UTC 时间戳（秒）
       };
 
       // 生成signed_bytes
@@ -256,6 +259,7 @@ export function useCreateVoteMeta() {
             const updateParams = {
               id: voteMeta.id,
               tx_hash: txHash,
+              timestamp: Math.floor(Date.now() / 1000), // UTC 时间戳（秒）
             };
             
             // 生成 signed_bytes
@@ -303,6 +307,7 @@ export function useCreateVoteMeta() {
             const updateParams = {
               id: voteMeta.id,
               tx_hash: txHash,
+              timestamp: Math.floor(Date.now() / 1000), // UTC 时间戳（秒）
             };
             
             // 生成 signed_bytes

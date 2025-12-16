@@ -192,7 +192,10 @@
     "finalReport": "Final Report"
   },
   "editor": {
-    "loading": "Editor loading..."
+    "loading": "Editor loading...",
+    "uploading": "Uploading...",
+    "uploadSuccess": "Image upload success",
+    "uploadFailed": "Image upload failed"
   },
   "alerts": {
     "selectVoteTime": "Please select vote start and end time",

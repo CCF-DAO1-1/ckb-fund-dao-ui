@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, useCallback, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "../../../../../utils/i18n";
 import "@/styles/proposal.css";
@@ -14,7 +14,7 @@ import ProjectGoals from "@/components/proposal-steps/ProjectGoals";
 import TeamIntroduction from "@/components/proposal-steps/TeamIntroduction";
 import ProjectBudget from "@/components/proposal-steps/ProjectBudget";
 import ProjectMilestones from "@/components/proposal-steps/ProjectMilestones";
-import { writesPDSOperation, updatesPDSOperation } from "@/app/posts/utils";
+import { writesPDSOperation, updatesPDSOperation, uploadImage } from "@/app/posts/utils";
 import useUserInfoStore from "@/store/userInfo";
 import { useI18n } from "@/contexts/I18nContext";
 import { postUriToHref, getPostUriHref } from "@/lib/postUriHref";
@@ -36,6 +36,8 @@ export default function EditProposal({ params }: EditProposalProps) {
     const { userInfo } = useUserInfoStore();
 
     const [isLoading, setIsLoading] = useState(true);
+
+
 
     const steps = [
         {
@@ -186,17 +188,56 @@ export default function EditProposal({ params }: EditProposalProps) {
         }));
     };
 
-    const quillModules = {
-        toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            ["bold", "italic", "underline", "strike"],
-            [{ list: "ordered" }, { list: "bullet" }],
-            ["blockquote", "code-block"],
-            ["link", "image"],
-            [{ color: [] }, { background: [] }],
-            ["clean"],
-        ],
-    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const imageHandler = useCallback(function (this: any) {
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        input.setAttribute("accept", "image/*");
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files?.[0];
+            if (file) {
+                const did = userInfo?.did;
+                if (!did) {
+                    toast.error(t("errors.userNotLoggedIn") || "Please login first");
+                    return;
+                }
+
+                const loadingToast = toast.loading(t("editor.uploading") || "Uploading...");
+
+                try {
+                    const url = await uploadImage(file, did);
+                    const quill = this.quill;
+                    const range = quill.getSelection(true);
+                    quill.insertEmbed(range.index, "image", url);
+                    toast.success(t("editor.uploadSuccess") || "Upload success");
+                } catch (e) {
+                    console.error(e);
+                    toast.error(t("editor.uploadFailed") || "Upload failed");
+                } finally {
+                    toast.dismiss(loadingToast);
+                }
+            }
+        };
+    }, [userInfo?.did, t]);
+
+    const quillModules = useMemo(() => ({
+        toolbar: {
+            container: [
+                [{ header: [1, 2, 3, false] }],
+                ["bold", "italic", "underline", "strike"],
+                [{ list: "ordered" }, { list: "bullet" }],
+                ["blockquote", "code-block"],
+                ["link", "image"],
+                [{ color: [] }, { background: [] }],
+                ["clean"],
+            ],
+            handlers: {
+                image: imageHandler,
+            },
+        },
+    }), [imageHandler]);
 
     const quillFormats = [
         "header",

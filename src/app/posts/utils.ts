@@ -1,3 +1,5 @@
+import { PDS_API_URL, DID_PREFIX } from "@/constant/Network";
+import sessionWrapApi from "@/lib/wrapApiAutoSession";
 import server from "@/server";
 import getPDSClient from "@/lib/pdsClient";
 import storage from "@/lib/storage";
@@ -9,35 +11,24 @@ import * as cbor from '@ipld/dag-cbor'
 import { TID } from '@atproto/common-web'
 import dayjs from "dayjs";
 
-export type PostFeedItemType = {
-  uri: string,
-  cid: string,
-  author: { displayName: string, [key: string]: string },
-  title: string,
-  text: string,
-  visited_count: number,
-  reply_count: number,
-  visited: string, // 时间
-  updated: string, // 时间
-  created: string, // 时间
-  section: string,       // 版区名称
-}
+export async function uploadImage(file: File, did: string) {
+  const pdsClient = getPDSClient();
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-export type SectionItem = {
-  post_count: string
-  reply_count: string
-  id: string;
-  name: string
-  owner?: { did: string; displayName?: string } // 版主
-  description?: string // 描述
-  administrators?: unknown[]  // 管理员列表
-}
+  if (!file) throw new Error("No file provided");
+  if (file.size > MAX_FILE_SIZE) throw new Error("File size exceeds 5MB");
 
-/* 获取版区列表 */
-export async function getSectionList(did?: string) {
-  return await server<SectionItem[]>('/section/list', 'GET', {
-    repo: did
-  })
+  const result = await sessionWrapApi(() => pdsClient.fans.web5.ckb.uploadBlob(file, { encoding: file.type }));
+  const blobRefStr = result.data.blob.ref.toString()
+  let server = result.data.blobServer
+  const didSlice = did.replace(DID_PREFIX, '')
+
+  if (!server?.endsWith('/')) {
+    server += '/'
+  }
+
+  // https://<pds>/blocks/<did>/<cid>
+  return `${server}blocks/${didSlice}/${blobRefStr}`;
 }
 
 type PostRecordType = {

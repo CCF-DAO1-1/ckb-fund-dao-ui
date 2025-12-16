@@ -183,6 +183,7 @@ export interface CreateVoteMetaParams {
     end_time: number; // 投票结束时间
     proposal_uri: string; // 提案URI
     start_time: number; // 投票开始时间
+    timestamp: number; // UTC 时间戳（秒），防止签名被重复使用
   };
   signed_bytes: string; // 签名字节
   signing_key_did: string; // 签名密钥DID
@@ -293,6 +294,7 @@ export interface InitiationVoteParams {
   did: string; // 用户DID
   params: {
     proposal_uri: string; // 提案URI
+    timestamp: number; // UTC 时间戳（秒），防止签名被重复使用
   };
   signed_bytes: string; // 签名字节
   signing_key_did: string; // 签名密钥DID
@@ -332,6 +334,7 @@ export interface UpdateMetaTxHashParams {
   params: {
     id: number; // 投票元数据ID
     tx_hash: string; // 交易哈希
+    timestamp: number; // UTC 时间戳（秒），防止签名被重复使用
   };
   signed_bytes: string; // 签名字节
   signing_key_did: string; // 签名密钥DID
@@ -367,6 +370,7 @@ export interface UpdateVoteTxHashParams {
     id: number; // 投票元数据ID
     tx_hash: string; // 交易哈希
     candidates_index: number; // 候选人索引（0: Abstain, 1: Agree, 2: Against）
+    timestamp: number; // UTC 时间戳（秒），防止签名被重复使用
   };
   signed_bytes: string; // 签名字节
   signing_key_did: string; // 签名密钥DID
