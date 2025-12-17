@@ -190,6 +190,11 @@ export default function EditProposal({ params }: EditProposalProps) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const imageHandler = useCallback(function (this: any) {
+        const quill = this.quill;
+        // 保存当前光标位置，如果获取不到则默认为文档末尾（或者0）
+        // getSelection(true) 会尝试聚焦编辑器
+        const range = quill.getSelection(true);
+
         const input = document.createElement("input");
         input.setAttribute("type", "file");
         input.setAttribute("accept", "image/*");
@@ -208,9 +213,15 @@ export default function EditProposal({ params }: EditProposalProps) {
 
                 try {
                     const url = await uploadImage(file, did);
-                    const quill = this.quill;
-                    const range = quill.getSelection(true);
-                    quill.insertEmbed(range.index, "image", url);
+                    
+                    // 使用之前保存的 range，如果为 null 则插入到文档末尾
+                    // 注意：quill.getLength() 返回的长度包含末尾的换行符
+                    const index = range ? range.index : (quill.getLength() || 0);
+                    
+                    quill.insertEmbed(index, "image", url);
+                    // 插入后将光标移动到图片之后
+                    quill.setSelection(index + 1);
+                    
                     toast.success(t("editor.uploadSuccess") || "Upload success");
                 } catch (e) {
                     console.error(e);
