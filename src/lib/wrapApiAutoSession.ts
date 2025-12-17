@@ -18,6 +18,24 @@ async function refreshToken() {
       active: data.active ?? true
     }
     
+    // 更新缓存中的 userInfo（包含新的 accessJwt 和 refreshJwt）
+    storage.setUserInfoCache(data)
+    
+    // 如果 Zustand store 已经初始化，也需要更新 store 中的 userInfo
+    // 使用动态导入避免循环依赖，并且只在客户端执行
+    if (typeof window !== 'undefined') {
+      try {
+        const { default: useUserInfoStore } = await import('../store/userInfo');
+        const updateUserInfoFromSession = useUserInfoStore.getState().updateUserInfoFromSession;
+        if (updateUserInfoFromSession) {
+          updateUserInfoFromSession();
+        }
+      } catch (importError) {
+        // 如果导入失败（比如 SSR），忽略错误
+        console.warn('无法更新 Zustand store 中的 userInfo:', importError);
+      }
+    }
+    
     return data.accessJwt
   } catch (error) {
     console.error('Failed to refresh token:', error)

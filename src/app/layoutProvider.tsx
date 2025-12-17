@@ -17,12 +17,15 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
       : new ccc.ClientPublicTestnet();
   }, []);
 
-  // 初始化用户信息store
+  // 初始化用户信息store（使用 useRef 避免依赖 initialize 函数引用变化）
+  const initRef = React.useRef(false);
+  
   useEffect(() => {
-    if (!initialized) {
+    if (!initialized && !initRef.current) {
+      initRef.current = true;
       initialize();
     }
-  }, [initialize, initialized]);
+  }, [initialized]); // 只依赖 initialized，不依赖 initialize 函数
 
   return (
     <ccc.Provider

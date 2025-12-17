@@ -10,7 +10,7 @@ import CopyButton from "@/components/ui/copy/CopyButton";
 import Tag from "@/components/ui/tag/Tag";
 import QuoteButton from "@/components/comment/QuoteButton";
 import Avatar from "@/components/common/Avatar";
-import { writesPDSOperation } from "@/app/posts/utils";
+import { createPDSRecord } from "@/server/pds";
 import useUserInfoStore from "@/store/userInfo";
 import { ProposalDetailResponse } from "@/server/proposal";
 import { getUserDisplayNameFromInfo } from "@/utils/userDisplayUtils";
@@ -59,7 +59,7 @@ export default function ProposalContent({
     setIsLiking(true);
 
     try {
-      const result = await writesPDSOperation({
+      const result = await createPDSRecord({
         record: {
           $type: 'app.dao.like',
           to: proposal.uri,

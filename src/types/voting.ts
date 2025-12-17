@@ -39,13 +39,12 @@ export interface UserVoteInfo {
   voteState?: number;      // 投票状态（0: 上链中, 其他: 已确认）
 }
 
+import { ProposalDetailResponse } from '@/server/proposal';
+
 // 投票组件 Props
 export interface ProposalVotingProps {
-  votingInfo: VotingInfo;
-  userVoteInfo?: UserVoteInfo;
-  onVote: (option: VoteOption) => void;
+  proposal: ProposalDetailResponse | null;
+  voteMetaId: number | null;
+  voteWeight: number; // CKB 单位
   className?: string;
-  isVoting?: boolean; // 投票进行中状态，用于锁定操作区域
-  proposalType?: string; // 提案类型，如 "funding" 或 "governance"
-  budget?: string | number; // 预算金额（CKB），资金申请类提案需要
 }

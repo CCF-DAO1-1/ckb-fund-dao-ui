@@ -51,7 +51,7 @@ export function useCommentList(
   const viewer = userInfo?.did || null;
 
   // 获取评论列表
-  const fetchComments = useCallback(async (reset: boolean = false) => {
+  const fetchComments = useCallback(async (reset: boolean = false, currentCursor: string | null = null, currentHasMore: boolean = true) => {
     if (!proposalUri) {
       console.warn('提案URI为空，无法获取评论');
       setError('提案URI不能为空');
@@ -59,7 +59,7 @@ export function useCommentList(
     }
 
     // 如果没有更多数据且不是重置操作，直接返回
-    if (!hasMore && !reset) {
+    if (!currentHasMore && !reset) {
       console.log('没有更多评论数据');
       return;
     }
@@ -70,7 +70,7 @@ export function useCommentList(
       
       const params = { 
         proposal: proposalUri,
-        cursor: reset ? null : cursor,
+        cursor: reset ? null : currentCursor,
         limit,
         viewer,
       };
@@ -102,8 +102,10 @@ export function useCommentList(
           }
         });
         
-        setCursor(data.cursor);
-        setHasMore(!!data.cursor); // 如果有 cursor，说明还有更多数据
+        const newCursor = data.cursor;
+        const newHasMore = !!newCursor;
+        setCursor(newCursor);
+        setHasMore(newHasMore);
       } else {
         setError('获取评论列表失败');
       }
@@ -132,29 +134,35 @@ export function useCommentList(
     } finally {
       setLoading(false);
     }
-  }, [proposalUri, cursor, hasMore, limit, viewer]);
+  }, [proposalUri, limit, viewer]);
 
   // 重新获取（重置）
   const refetch = useCallback(async () => {
     setCursor(null);
     setHasMore(true);
-    await fetchComments(true);
+    await fetchComments(true, null, true);
   }, [fetchComments]);
 
   // 加载更多
   const loadMore = useCallback(async () => {
     if (!loading && hasMore) {
-      await fetchComments(false);
+      await fetchComments(false, cursor, hasMore);
     }
-  }, [loading, hasMore, fetchComments]);
+  }, [loading, hasMore, cursor, fetchComments]);
 
-  // 初始加载
+  // 初始加载（仅在 proposalUri 或 viewer 变化时请求）
   useEffect(() => {
-    if (proposalUri) {
-      refetch();
+    if (!proposalUri) {
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [proposalUri, viewer]); // 当 proposalUri 或 viewer 变化时重新获取
+    
+    // 重置状态
+    setCursor(null);
+    setHasMore(true);
+    
+    // 调用请求逻辑
+    fetchComments(true, null, true);
+  }, [proposalUri, viewer, limit, fetchComments]);
 
   return {
     comments,

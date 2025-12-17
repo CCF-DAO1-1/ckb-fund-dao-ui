@@ -1,17 +1,65 @@
-import { PDS_API_URL, DID_PREFIX } from "@/constant/Network";
+/**
+ * PDS (Personal Data Server) 相关操作接口
+ * 包括图片上传、记录创建和更新等操作
+ */
+import { DID_PREFIX } from "@/constant/Network";
 import sessionWrapApi from "@/lib/wrapApiAutoSession";
 import server from "@/server";
 import getPDSClient from "@/lib/pdsClient";
 import storage from "@/lib/storage";
 import * as crypto from '@atproto/crypto'
-import { signCommit, UnsignedCommit } from '@atproto/repo'
+import { UnsignedCommit } from '@atproto/repo'
 import { uint8ArrayToHex } from "@/lib/dag-cbor";
 import { CID } from 'multiformats/cid'
 import * as cbor from '@ipld/dag-cbor'
 import { TID } from '@atproto/common-web'
 import dayjs from "dayjs";
 
-export async function uploadImage(file: File, did: string) {
+// PDS 记录类型
+export type PDSRecordType = 
+  | {
+      $type: 'app.dao.reply'
+      proposal: string    // 提案的uri
+      to?: string   // 对方did（可选，有就是回复某人）
+      text: string  // 评论内容
+      parent?: string  // 父评论的uri（可选，用于回复评论）
+    }
+  | {
+      $type: 'app.actor.profile'
+      displayName: string;
+      handle: string;
+      [key: string]: unknown;
+    }
+  | {
+      $type: 'app.dao.proposal'
+      [key: string]: unknown;
+    }
+  | {
+      $type: 'app.dao.like'
+      to: string; // 点赞的帖子uri或者评论\回复的uri
+      viewer: string;//点赞的人的did
+    };
+
+// 创建记录响应类型
+export interface CreatePDSRecordResponse {
+  commit: {
+    cid: string
+    rev: string
+  },
+  results: {
+    $type: "fans.web5.ckb.directWrites#createResult"
+    cid: string
+    uri: string
+  }[]
+}
+
+/**
+ * 上传图片到 PDS
+ * @param file 图片文件
+ * @param did 用户 DID
+ * @returns 图片 URL
+ */
+export async function uploadImage(file: File, did: string): Promise<string> {
   const pdsClient = getPDSClient();
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -31,41 +79,13 @@ export async function uploadImage(file: File, did: string) {
   return `${server}blocks/${didSlice}/${blobRefStr}`;
 }
 
-type PostRecordType = {
-  $type: 'app.dao.reply'
-  proposal: string    // 提案的uri
-  to?: string   // 对方did（可选，有就是回复某人）
-  text: string  // 评论内容
-  parent?: string  // 父评论的uri（可选，用于回复评论）
-} | {
-  $type: 'app.actor.profile'
-  displayName: string;
-  handle: string;
-  [key: string]: unknown;
-} | {
-  $type: 'app.dao.proposal'
-  [key: string]: unknown;
-} | {
-  $type: 'app.dao.like'
-  to: string; // 点赞的帖子uri或者评论\回复的uri
-  viewer: string;//点赞的人的did
-}
-
-type CreatePostResponse = {
-  commit: {
-    cid: string
-    rev: string
-  },
-  results: {
-    $type: "fans.web5.ckb.directWrites#createResult"
-    cid: string
-    uri: string
-  }[]
-}
-
-/* 发帖、跟帖回复 */
-export async function writesPDSOperation(params: {
-  record: PostRecordType
+/**
+ * 创建 PDS 记录（提案、评论、点赞等）
+ * @param params 创建参数
+ * @returns 创建的记录 URI 和 CID
+ */
+export async function createPDSRecord(params: {
+  record: PDSRecordType
   did: string
   rkey?: string
 }) {
@@ -123,7 +143,7 @@ export async function writesPDSOperation(params: {
 
   const localStorage = storage.getToken()
 
-  const res = await server<CreatePostResponse>('/record/create', 'POST', {
+  const res = await server<CreatePDSRecordResponse>('/record/create', 'POST', {
     repo: params.did,
     rkey,
     value: newRecord,
@@ -145,8 +165,13 @@ export async function writesPDSOperation(params: {
   }
 }
 
-export async function updatesPDSOperation(params: {
-  record: PostRecordType;
+/**
+ * 更新 PDS 记录（提案编辑等）
+ * @param params 更新参数
+ * @returns 更新的记录 URI 和 CID
+ */
+export async function updatePDSRecord(params: {
+  record: PDSRecordType;
   did: string;
   rkey: string;
 }) {
@@ -208,7 +233,7 @@ export async function updatesPDSOperation(params: {
 
   const localStorage = storage.getToken();
 
-  const res = await server<CreatePostResponse>("/record/update", "POST", {
+  const res = await server<CreatePDSRecordResponse>("/record/update", "POST", {
     repo: params.did,
     rkey,
     value: newRecord,
@@ -229,3 +254,8 @@ export async function updatesPDSOperation(params: {
     cid: res.results[0].cid,
   };
 }
+
+// 为了向后兼容，保留旧的函数名作为别名
+export const writesPDSOperation = createPDSRecord;
+export const updatesPDSOperation = updatePDSRecord;
+

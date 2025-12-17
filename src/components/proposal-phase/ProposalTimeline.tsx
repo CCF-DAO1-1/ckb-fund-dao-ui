@@ -1,109 +1,136 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { TimelineEventStatus, ProposalTimelineProps, TimelineEvent, TimelineEventType } from '../../types/timeline';
 import { formatDate } from '../../utils/proposalUtils';
 import { useI18n } from '@/contexts/I18nContext';
+import { getTimeline, TimelineEventRaw } from '@/server/timeline';
 import './timeline.css';
-import { useMemo } from 'react';
 
-// 事件类型配置
-const eventTypeConfig: Record<TimelineEventType, { title: string; description: string; isImportant?: boolean }> = {
-  [TimelineEventType.REVIEW_START]: { title: '审议开始', description: '提案进入审议阶段' },
-  [TimelineEventType.REVIEW_END]: { title: '审议结束', description: '审议阶段已完成' },
-  [TimelineEventType.COMMUNITY_INQUIRY_1]: { title: '第一次社区质询会', description: '第一次社区质询会已举行' },
-  [TimelineEventType.COMMUNITY_INQUIRY_2]: { title: '第二次社区质询会', description: '第二次社区质询会已举行' },
-  [TimelineEventType.COMMUNITY_DISCUSSION]: { title: '社区讨论', description: '社区成员积极参与讨论' },
-  [TimelineEventType.PROPOSAL_PUBLISHED]: { title: '提案发布', description: '提案已成功发布到社区', isImportant: true },
-  [TimelineEventType.VOTE_START]: { title: '提案投票开始', description: '投票阶段正式开始', isImportant: true },
-  [TimelineEventType.VOTE_END]: { title: '提案投票结束', description: '投票阶段已结束', isImportant: true },
-  [TimelineEventType.VOTE_REMINDER]: { title: '投票提醒', description: '提醒社区成员参与投票' },
-  [TimelineEventType.PROPOSAL_APPROVED]: { title: '提案通过', description: '提案已通过投票', isImportant: true },
-  [TimelineEventType.PROPOSAL_REJECTED]: { title: '提案拒绝', description: '提案未通过投票' },
-  [TimelineEventType.MILESTONE_TRACKING]: { title: '里程碑追踪', description: '正在追踪项目里程碑进度', isImportant: true },
-  [TimelineEventType.PROJECT_REVIEW]: { title: '项目复核', description: '项目复核阶段' },
-  [TimelineEventType.PROJECT_COMPLETED]: { title: '项目完成', description: '项目已成功完成', isImportant: true },
-  [TimelineEventType.PROJECT_CANCELLED]: { title: '项目取消', description: '项目已被取消' },
+// 将 timeline_type 映射到 TimelineEventType
+const mapTimelineTypeToEventType = (timelineType: number, message: string): TimelineEventType => {
+  // 根据 timeline_type 和 message 映射到对应的事件类型
+  // 这里需要根据实际的 timeline_type 值来映射
+  switch (timelineType) {
+    case 1: // 提案创建
+      return TimelineEventType.PROPOSAL_PUBLISHED;
+    case 2: // 审议开始
+      return TimelineEventType.REVIEW_START;
+    case 3: // 投票开始
+      return TimelineEventType.VOTE_START;
+    case 4: // 投票结束
+      return TimelineEventType.VOTE_END;
+    case 5: // 提案通过
+      return TimelineEventType.PROPOSAL_APPROVED;
+    case 6: // 提案拒绝
+      return TimelineEventType.PROPOSAL_REJECTED;
+    case 7: // 里程碑追踪
+      return TimelineEventType.MILESTONE_TRACKING;
+    case 8: // 项目完成
+      return TimelineEventType.PROJECT_COMPLETED;
+    default:
+      // 根据 message 推断类型
+      if (message.includes('created') || message.includes('发布')) {
+        return TimelineEventType.PROPOSAL_PUBLISHED;
+      }
+      if (message.includes('vote') || message.includes('投票')) {
+        return TimelineEventType.VOTE_START;
+      }
+      if (message.includes('approved') || message.includes('通过')) {
+        return TimelineEventType.PROPOSAL_APPROVED;
+      }
+      if (message.includes('rejected') || message.includes('拒绝')) {
+        return TimelineEventType.PROPOSAL_REJECTED;
+      }
+      return TimelineEventType.PROPOSAL_PUBLISHED;
+  }
 };
 
-// 生成随机 mock 数据
-const generateRandomMockEvents = (): TimelineEvent[] => {
-  const now = Date.now();
-  const events: TimelineEvent[] = [];
-
-  // 所有事件类型
-  const allEventTypes = Object.values(TimelineEventType);
-
-  // 随机选择 8-15 个事件
-  const eventCount = Math.floor(Math.random() * 8) + 8;
-  const selectedTypes = [...allEventTypes]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, eventCount);
-
-  // 按时间顺序生成事件（从过去到未来）
-  const timePoints: number[] = [];
-
-  // 过去的事件（30-1天前）
-  const pastEventCount = Math.floor(selectedTypes.length * 0.4);
-  for (let i = 0; i < pastEventCount; i++) {
-    const daysAgo = Math.floor(Math.random() * 30) + 1;
-    timePoints.push(now - daysAgo * 24 * 60 * 60 * 1000);
+// 根据事件类型和消息生成标题
+const generateEventTitle = (eventType: TimelineEventType, message: string): string => {
+  switch (eventType) {
+    case TimelineEventType.PROPOSAL_PUBLISHED:
+      return '提案发布';
+    case TimelineEventType.REVIEW_START:
+      return '审议开始';
+    case TimelineEventType.VOTE_START:
+      return '投票开始';
+    case TimelineEventType.VOTE_END:
+      return '投票结束';
+    case TimelineEventType.PROPOSAL_APPROVED:
+      return '提案通过';
+    case TimelineEventType.PROPOSAL_REJECTED:
+      return '提案拒绝';
+    case TimelineEventType.MILESTONE_TRACKING:
+      return '里程碑追踪';
+    case TimelineEventType.PROJECT_COMPLETED:
+      return '项目完成';
+    default:
+      return message || '时间线事件';
   }
+};
 
-  // 现在的事件（今天）
-  if (Math.random() > 0.3) {
-    timePoints.push(now);
-  }
+// 转换 API 返回的数据格式为组件期望的格式
+const convertTimelineEvents = (rawEvents: TimelineEventRaw[]): TimelineEvent[] => {
+  return rawEvents.map((raw) => {
+    const eventType = mapTimelineTypeToEventType(raw.timeline_type, raw.message);
+    const title = generateEventTitle(eventType, raw.message);
+    
+    // 根据时间戳判断状态（简化处理，实际可能需要更复杂的逻辑）
+    const now = new Date();
+    const eventDate = new Date(raw.timestamp);
+    const isPast = eventDate < now;
+    const status = isPast ? TimelineEventStatus.COMPLETED : TimelineEventStatus.IN_PROGRESS;
+    
+    return {
+      id: String(raw.id),
+      type: eventType,
+      status,
+      title,
+      description: raw.operator?.displayName ? `操作者: ${raw.operator.displayName}` : undefined,
+      date: raw.timestamp,
+      isImportant: eventType === TimelineEventType.PROPOSAL_PUBLISHED || 
+                   eventType === TimelineEventType.VOTE_START ||
+                   eventType === TimelineEventType.PROPOSAL_APPROVED ||
+                   eventType === TimelineEventType.PROJECT_COMPLETED,
+    };
+  });
+};
 
-  // 未来的事件（1-90天后）
-  const futureEventCount = selectedTypes.length - pastEventCount - (timePoints.includes(now) ? 1 : 0);
-  for (let i = 0; i < futureEventCount; i++) {
-    const daysLater = Math.floor(Math.random() * 90) + 1;
-    timePoints.push(now + daysLater * 24 * 60 * 60 * 1000);
-  }
+export default function ProposalTimeline({ proposalUri, className = '' }: ProposalTimelineProps) {
+  const { messages, locale } = useI18n();
+  const [events, setEvents] = useState<TimelineEvent[]>([]);
 
-  // 排序时间点
-  timePoints.sort((a, b) => a - b);
-
-  // 生成事件
-  timePoints.forEach((time, index) => {
-    const type = selectedTypes[index] || selectedTypes[Math.floor(Math.random() * selectedTypes.length)];
-    const config = eventTypeConfig[type];
-    const isPast = time < now;
-    const isFuture = time > now;
-
-    // 根据时间确定状态
-    let status: TimelineEventStatus;
-    if (isPast) {
-      // 过去的事件：随机已完成或已取消
-      status = Math.random() > 0.1 ? TimelineEventStatus.COMPLETED : TimelineEventStatus.CANCELLED;
-    } else if (isFuture) {
-      // 未来的事件：随机待处理或进行中
-      status = Math.random() > 0.5 ? TimelineEventStatus.PENDING : TimelineEventStatus.IN_PROGRESS;
-    } else {
-      // 现在的事件：进行中
-      status = TimelineEventStatus.IN_PROGRESS;
+  // 获取时间线数据
+  useEffect(() => {
+    if (!proposalUri) {
+      setEvents([]);
+      return;
     }
 
-    events.push({
-      id: `mock-${index + 1}-${Date.now()}`,
-      type,
-      status,
-      title: config.title,
-      description: config.description,
-      date: new Date(time).toISOString(),
-      isImportant: config.isImportant || Math.random() > 0.7,
-    });
-  });
+    const fetchTimeline = async () => {
+      try {
+        const response = await getTimeline({ uri: proposalUri });
+        
+        if (response && Array.isArray(response)) {
+          // 转换 API 返回的数据格式
+          const convertedEvents = convertTimelineEvents(response);
+          setEvents(convertedEvents);
+        } else {
+          setEvents([]);
+        }
+      } catch (error) {
+        console.error('获取时间线失败:', error);
+        // 如果获取失败，设置为空数组，不显示时间线
+        setEvents([]);
+      }
+    };
 
-  return events;
-};
+    fetchTimeline();
+  }, [proposalUri]);
 
-export default function ProposalTimeline({ events, className = '' }: ProposalTimelineProps) {
-  const { messages, locale } = useI18n();
-
-  // 如果没有传入 events 或 events 为空，使用随机生成的 mock 数据
-  const mockEvents = useMemo(() => generateRandomMockEvents(), []);
-  const displayEvents = events && events.length > 0 ? events : mockEvents;
+  // 使用获取的时间线数据
+  const displayEvents = events || [];
 
   // 获取事件状态样式
   const getEventStatusClass = (status: TimelineEventStatus) => {

@@ -44,6 +44,6 @@ export interface TimelineEvent {
 
 // 时间线组件 Props
 export interface ProposalTimelineProps {
-  events: TimelineEvent[];
+  proposalUri: string | null;
   className?: string;
 }

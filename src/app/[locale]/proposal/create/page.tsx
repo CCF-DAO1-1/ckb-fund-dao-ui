@@ -14,7 +14,7 @@ import ProjectGoals from "@/components/proposal-steps/ProjectGoals";
 import TeamIntroduction from "@/components/proposal-steps/TeamIntroduction";
 import ProjectBudget from "@/components/proposal-steps/ProjectBudget";
 import ProjectMilestones from "@/components/proposal-steps/ProjectMilestones";
-import { writesPDSOperation, uploadImage } from "@/app/posts/utils";
+import { createPDSRecord, uploadImage } from "@/server/pds";
 import useUserInfoStore from "@/store/userInfo";
 import { useI18n } from "@/contexts/I18nContext";
 import { postUriToHref } from "@/lib/postUriHref";
@@ -476,8 +476,8 @@ export default function CreateProposal() {
     try {
       console.log("提交提案:", formData);
 
-      // 调用 writesPDSOperation 发布提案到 PDS
-      const result = await writesPDSOperation({
+      // 调用 createPDSRecord 发布提案到 PDS
+      const result = await createPDSRecord({
         record: {
           $type: "app.dao.proposal",
           data: {

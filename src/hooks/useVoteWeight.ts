@@ -16,17 +16,30 @@ export function useVoteWeight() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const lastFetchedAddress = useRef<string>("");
+  const isFetchingRef = useRef<boolean>(false);
 
   // 当钱包地址变化时自动获取投票权重
   useEffect(() => {
-    if (!walletAddress || !isConnected || walletAddress === lastFetchedAddress.current) {
+    if (!walletAddress || !isConnected) {
       return;
     }
-
+    
+    // 如果地址没有变化，跳过请求
+    if (walletAddress === lastFetchedAddress.current) {
+      return;
+    }
+    
+    // 防止并发请求
+    if (isFetchingRef.current) {
+      return;
+    }
+    
+    // 更新 ref（在确认可以请求后再更新）
     lastFetchedAddress.current = walletAddress;
 
     const fetchVoteWeight = async () => {
       try {
+        isFetchingRef.current = true;
         setIsLoading(true);
         setError(null);
 
@@ -44,6 +57,7 @@ export function useVoteWeight() {
         setVoteWeight(0);
       } finally {
         setIsLoading(false);
+        isFetchingRef.current = false;
       }
     };
 

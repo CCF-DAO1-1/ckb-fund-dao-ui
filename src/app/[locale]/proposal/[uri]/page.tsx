@@ -15,7 +15,6 @@ export default function ProposalDetail() {
   useTranslation();
   const { messages } = useI18n();
   const params = useParams();
-  // 使用 useMemo 稳定 uri 值，避免不必要的重新渲染导致重复调用
   const uri = useMemo(() => params?.uri as string, [params?.uri]);
   
   // 获取提案详情（用于面包屑和标题）
@@ -32,45 +31,45 @@ export default function ProposalDetail() {
   // 引用文本状态（用于从 ProposalContent 传递到 ProposalComments）
   const [quotedText, setQuotedText] = useState("");
 
-  useEffect(() => {
-    // 处理锚点高亮
-    const handleHashChange = () => {
-      const hash = window.location.hash;
-      const buttons = document.querySelectorAll('.proposal-actions a');
+  // useEffect(() => {
+  //   // 处理锚点高亮
+  //   const handleHashChange = () => {
+  //     const hash = window.location.hash;
+  //     const buttons = document.querySelectorAll('.proposal-actions a');
       
-      buttons.forEach(button => {
-        button.classList.remove('primary-btn');
-        button.classList.add('secondary-btn');
-      });
+  //     buttons.forEach(button => {
+  //       button.classList.remove('primary-btn');
+  //       button.classList.add('secondary-btn');
+  //     });
       
-      if (hash === '#proposal-detail') {
-        const detailButton = document.querySelector('a[href="#proposal-detail"]');
-        if (detailButton) {
-          detailButton.classList.remove('secondary-btn');
-          detailButton.classList.add('primary-btn');
-        }
-      } else if (hash === '#comment-section') {
-        const commentButton = document.querySelector('a[href="#comment-section"]');
-        if (commentButton) {
-          commentButton.classList.remove('secondary-btn');
-          commentButton.classList.add('primary-btn');
-        }
-      }
-    };
+  //     if (hash === '#proposal-detail') {
+  //       const detailButton = document.querySelector('a[href="#proposal-detail"]');
+  //       if (detailButton) {
+  //         detailButton.classList.remove('secondary-btn');
+  //         detailButton.classList.add('primary-btn');
+  //       }
+  //     } else if (hash === '#comment-section') {
+  //       const commentButton = document.querySelector('a[href="#comment-section"]');
+  //       if (commentButton) {
+  //         commentButton.classList.remove('secondary-btn');
+  //         commentButton.classList.add('primary-btn');
+  //       }
+  //     }
+  //   };
 
-    // 初始设置
-    if (!window.location.hash) {
-      window.location.hash = '#proposal-detail';
-    }
-    handleHashChange();
+  //   // 初始设置
+  //   if (!window.location.hash) {
+  //     window.location.hash = '#proposal-detail';
+  //   }
+  //   handleHashChange();
     
-    // 监听hash变化
-    window.addEventListener('hashchange', handleHashChange);
+  //   // 监听hash变化
+  //   window.addEventListener('hashchange', handleHashChange);
     
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('hashchange', handleHashChange);
+  //   };
+  // }, []);
 
   const handleQuote = (selectedText: string) => {
     // 设置引用文本并跳转到评论区域

@@ -14,7 +14,7 @@ import ProjectGoals from "@/components/proposal-steps/ProjectGoals";
 import TeamIntroduction from "@/components/proposal-steps/TeamIntroduction";
 import ProjectBudget from "@/components/proposal-steps/ProjectBudget";
 import ProjectMilestones from "@/components/proposal-steps/ProjectMilestones";
-import { writesPDSOperation, updatesPDSOperation, uploadImage } from "@/app/posts/utils";
+import { updatePDSRecord, uploadImage } from "@/server/pds";
 import useUserInfoStore from "@/store/userInfo";
 import { useI18n } from "@/contexts/I18nContext";
 import { postUriToHref, getPostUriHref } from "@/lib/postUriHref";
@@ -423,7 +423,7 @@ export default function EditProposal({ params }: EditProposalProps) {
             const rkey = fullUri.split('/').pop();
             if (!rkey) throw new Error("Invalid Proposal URI");
 
-            await updatesPDSOperation({
+            await updatePDSRecord({
                 record: {
                     $type: "app.dao.proposal",
                     data: {

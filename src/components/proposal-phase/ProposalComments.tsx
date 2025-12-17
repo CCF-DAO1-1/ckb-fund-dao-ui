@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import CommentSection from "@/components/comment/CommentSection";
 import { Comment } from "@/types/comment";
 import { CommentItem } from "@/server/comment";
-import { writesPDSOperation } from "@/app/posts/utils";
+import { createPDSRecord } from "@/server/pds";
 import useUserInfoStore from "@/store/userInfo";
 import { getAvatarByDid } from "@/utils/avatarUtils";
 import { ProposalDetailResponse } from "@/server/proposal";
@@ -201,7 +201,7 @@ export default function ProposalComments({
         }
       }
 
-      const result = await writesPDSOperation({
+      const result = await createPDSRecord({
         record,
         did: userInfo.did,
       });
@@ -269,7 +269,7 @@ export default function ProposalComments({
         return comment;
       }));
 
-      await writesPDSOperation({
+      await createPDSRecord({
         record: {
           $type: 'app.dao.like',
           to: targetComment.uri,
