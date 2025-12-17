@@ -624,13 +624,7 @@
     "share": "分享",
     "proposalTypes": {
       "funding": "资金申请",
-      "governance": "治理提案",
-      "technical": "技术提案",
-      "community": "社区提案",
-      "development": "开发项目",
-      "ecosystem": "生态建设",
-      "research": "研究项目",
-      "infrastructure": "基础设施",
+      "governance": "元规则修改",
       "unknown": "未知类型"
     },
     "stepDescriptions": {
@@ -763,9 +757,7 @@
       "datePlaceholder": "请选择发布日期",
       "types": {
         "funding": "资金申请",
-        "governance": "治理提案",
-        "technical": "技术提案",
-        "community": "社区提案"
+        "governance": "元规则修改"
       }
     },
     "teamIntroduction": {
@@ -1004,7 +996,8 @@
       "milestonesRequired": "请至少添加一个里程碑",
       "milestoneTitleRequired": "请填写里程碑标题",
       "milestoneDateRequired": "请选择里程碑预计完成日期",
-      "milestoneDescriptionRequired": "请填写里程碑详细描述"
+      "milestoneDescriptionRequired": "请填写里程碑详细描述",
+      "milestonesRequiredWhenBudgetProvided": "如果填写了预算，必须填写里程碑"
     }
   }
 }

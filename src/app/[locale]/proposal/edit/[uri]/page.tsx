@@ -329,7 +329,78 @@ export default function EditProposal({ params }: EditProposalProps) {
             toast.error(t("proposalCreate.errors.releaseDateRequired"));
             return;
         }
-        // Simple validation for now
+
+        // 验证必填字段
+        if (!hasTextContent(formData.background)) {
+            toast.error(t("proposalCreate.errors.backgroundRequired"));
+            return;
+        }
+        if (!hasTextContent(formData.goals)) {
+            toast.error(t("proposalCreate.errors.goalsRequired"));
+            return;
+        }
+        if (!hasTextContent(formData.team)) {
+            toast.error(t("proposalCreate.errors.teamRequired"));
+            return;
+        }
+
+        // 资金申请类提案需要验证预算和里程碑
+        if (formData.proposalType === "funding") {
+            if (!formData.budget || formData.budget.trim() === "") {
+                toast.error(t("proposalCreate.errors.budgetRequired"));
+                return;
+            }
+
+            if (!formData.milestones || formData.milestones.length === 0) {
+                toast.error(t("proposalCreate.errors.milestonesRequired"));
+                return;
+            }
+
+            // 验证每个里程碑的必填字段
+            for (let i = 0; i < formData.milestones.length; i++) {
+                const milestone = formData.milestones[i];
+                if (!milestone.title || milestone.title.trim() === "") {
+                    toast.error(t("proposalCreate.errors.milestoneTitleRequired"));
+                    return;
+                }
+                if (!milestone.date || milestone.date.trim() === "") {
+                    toast.error(t("proposalCreate.errors.milestoneDateRequired"));
+                    return;
+                }
+                if (!hasTextContent(milestone.description)) {
+                    toast.error(t("proposalCreate.errors.milestoneDescriptionRequired"));
+                    return;
+                }
+            }
+        } else if (formData.proposalType === "governance") {
+            // 元规则修改类提案：预算和里程碑是选填项，但如果填写了预算，就一定要有里程碑
+            const hasBudget = formData.budget && formData.budget.trim() !== "";
+            const hasMilestones = formData.milestones && formData.milestones.length > 0;
+
+            if (hasBudget && !hasMilestones) {
+                toast.error(t("proposalCreate.errors.milestonesRequiredWhenBudgetProvided") || "如果填写了预算，必须填写里程碑");
+                return;
+            }
+
+            // 如果填写了里程碑，验证每个里程碑的必填字段
+            if (hasMilestones) {
+                for (let i = 0; i < formData.milestones.length; i++) {
+                    const milestone = formData.milestones[i];
+                    if (!milestone.title || milestone.title.trim() === "") {
+                        toast.error(t("proposalCreate.errors.milestoneTitleRequired"));
+                        return;
+                    }
+                    if (!milestone.date || milestone.date.trim() === "") {
+                        toast.error(t("proposalCreate.errors.milestoneDateRequired"));
+                        return;
+                    }
+                    if (!hasTextContent(milestone.description)) {
+                        toast.error(t("proposalCreate.errors.milestoneDescriptionRequired"));
+                        return;
+                    }
+                }
+            }
+        }
 
         setSubmitting(true);
         setError("");

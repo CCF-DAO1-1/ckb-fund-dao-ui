@@ -585,13 +585,7 @@
     "share": "Share",
     "proposalTypes": {
       "funding": "Funding Request",
-      "governance": "Governance Proposal",
-      "technical": "Technical Proposal",
-      "community": "Community Proposal",
-      "development": "Development Project",
-      "ecosystem": "Ecosystem Building",
-      "research": "Research Project",
-      "infrastructure": "Infrastructure",
+      "governance": "Meta Rule Modification",
       "unknown": "Unknown Type"
     },
     "stepDescriptions": {
@@ -724,9 +718,7 @@
       "datePlaceholder": "Please select release date",
       "types": {
         "funding": "Funding Request",
-        "governance": "Governance Proposal",
-        "technical": "Technical Proposal",
-        "community": "Community Proposal"
+        "governance": "Meta Rule Modification"
       }
     },
     "teamIntroduction": {
@@ -965,7 +957,8 @@
       "milestonesRequired": "Please add at least one milestone",
       "milestoneTitleRequired": "Please fill in milestone title",
       "milestoneDateRequired": "Please select milestone expected completion date",
-      "milestoneDescriptionRequired": "Please fill in milestone detailed description"
+      "milestoneDescriptionRequired": "Please fill in milestone detailed description",
+      "milestonesRequiredWhenBudgetProvided": "If budget is provided, milestones are required"
     }
   }
 }

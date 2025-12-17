@@ -34,8 +34,6 @@ const ProposalSettings: React.FC<ProposalSettingsProps> = ({ formData, onInputCh
             <option value="">{messages.proposalSteps.proposalSettings.selectType}</option>
             <option value="funding">{messages.proposalSteps.proposalSettings.types.funding}</option>
             <option value="governance">{messages.proposalSteps.proposalSettings.types.governance}</option>
-            <option value="technical">{messages.proposalSteps.proposalSettings.types.technical}</option>
-            <option value="community">{messages.proposalSteps.proposalSettings.types.community}</option>
           </select>
           <div className="select-arrow">
             <IoIosArrowDown size={16} />
