@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import { ProposalStatus } from "@/utils/proposalUtils";
 import TaskProcessingModal, { TaskType } from "@/components/proposal/TaskProcessingModal";
 import Tag from "@/components/ui/tag/Tag";
-import { useProposalList } from "@/hooks/useProposalList";
-import { ProposalListItem } from "@/server/proposal";
+import { useTaskList } from "@/hooks/useTaskList";
+import { TaskItem } from "@/server/task";
 import useUserInfoStore from "@/store/userInfo";
 import { useTranslation } from "@/utils/i18n";
 import { useI18n } from "@/contexts/I18nContext";
@@ -23,86 +23,77 @@ interface ProposalItem {
   budget?: number; // 添加预算字段
 }
 
-// 根据提案状态和类型确定任务类型
-const getTaskTypeByStatus = (status: ProposalStatus, proposalType: string, t: (key: string) => string): TaskType => {
-  switch (status) {
-    case ProposalStatus.REVIEW:
-      if (proposalType === "项目预算申请") {
-        return t("taskTypes.organizeAMA") as TaskType;
-      }
-      return t("taskTypes.organizeMeeting") as TaskType;
-    case ProposalStatus.VOTE:
-      return t("taskTypes.publishMinutes") as TaskType;
-    case ProposalStatus.MILESTONE:
-      // 根据里程碑状态确定具体任务
-      return t("taskTypes.milestoneVerification") as TaskType;
-    case ProposalStatus.APPROVED:
-      return t("taskTypes.milestoneAllocation") as TaskType;
-    default:
-      return t("taskTypes.organizeMeeting") as TaskType;
+// 任务类型枚举映射（根据后端枚举值）
+// 任务类型：1=CreateAMA, 3=InitiationVote等（根据实际后端枚举值调整）
+const TASK_TYPE_MAP: Record<number, string> = {
+  1: 'organizeAMA', // CreateAMA
+  2: 'publishMinutes', // SubmitAMAReport (假设，需要根据实际枚举确认)
+  3: 'createVote', // InitiationVote
+  4: 'milestoneAllocation', // UpdateReceiverAddr (假设，需要根据实际枚举确认)
+  5: 'milestoneAllocation', // SendInitialFund
+  6: 'publishReport', // SubmitReport (假设，需要根据实际枚举确认)
+  7: 'milestoneVerification', // SubmitAcceptanceReport (假设，需要根据实际枚举确认)
+  8: 'organizeMeeting', // CreateReexamineMeeting
+  9: 'createVote', // ReexamineVote
+  10: 'createVote', // RectificationVote
+  11: 'publishReport', // SubmitRectificationReport (假设，需要根据实际枚举确认)
+};
+
+// 将任务类型数字映射到翻译键
+const getTaskTypeByNumber = (taskType: number, t: (key: string) => string): TaskType => {
+  const taskTypeKey = TASK_TYPE_MAP[taskType];
+  if (taskTypeKey) {
+    return t(`taskTypes.${taskTypeKey}`) as TaskType;
+  }
+  // 如果找不到映射，返回默认值
+  return t('taskTypes.organizeMeeting') as TaskType;
+};
+
+// 格式化截止日期
+const formatDeadline = (deadline: string, locale: 'en' | 'zh' = 'en'): string => {
+  try {
+    const deadlineDate = new Date(deadline);
+    const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+    return deadlineDate.toLocaleString(dateLocale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Shanghai'
+    }) + ' (UTC+8)';
+  } catch (error) {
+    console.error('格式化截止日期失败:', error);
+    return deadline;
   }
 };
 
-// 根据提案状态确定截止日期
-const getDeadlineByStatus = (status: ProposalStatus, createdAt: string, t: (key: string) => string, locale: 'en' | 'zh' = 'en'): string => {
-  const createdDate = new Date(createdAt);
-  // 将 locale 映射到日期格式化语言代码
-  const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
-
-  switch (status) {
-    case ProposalStatus.REVIEW:
-      // 审议期7天
-      const reviewDeadline = new Date(createdDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-      return reviewDeadline.toLocaleString(dateLocale, {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Asia/Shanghai'
-      }) + ' (UTC+8)';
-    case ProposalStatus.VOTE:
-      // 投票期3天
-      const voteDeadline = new Date(createdDate.getTime() + 10 * 24 * 60 * 60 * 1000);
-      return voteDeadline.toLocaleString(dateLocale, {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Asia/Shanghai'
-      }) + ' (UTC+8)';
-    case ProposalStatus.MILESTONE:
-      // 里程碑交付期30天
-      const milestoneDeadline = new Date(createdDate.getTime() + 30 * 24 * 60 * 60 * 1000);
-      return milestoneDeadline.toLocaleString(dateLocale, {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Asia/Shanghai'
-      }) + ' (UTC+8)';
-    default:
-      return t("proposalInfo.pending");
-  }
-};
-
-// 将API数据转换为ManagementCenter需要的格式
-const adaptProposalData = (proposal: ProposalListItem, t: (key: string) => string, locale: 'en' | 'zh' = 'en'): ProposalItem => {
+// 将任务数据转换为ManagementCenter需要的格式
+const adaptTaskData = (task: TaskItem, t: (key: string) => string, locale: 'en' | 'zh' = 'en'): ProposalItem => {
+  // 从任务数据的 target 字段中提取提案信息
+  const proposal = task.target;
+  const proposalType = proposal.record.data.proposalType || '';
   const status = proposal.state as ProposalStatus;
-  const proposalType = proposal.record.data.proposalType;
+  const title = proposal.record.data.title || '';
+  const uri = proposal.uri || '';
+  const budget = proposal.record.data.budget ? parseFloat(proposal.record.data.budget) : 0;
+
+  // 根据 task_type 数字值获取任务类型翻译
+  const taskType = getTaskTypeByNumber(task.task_type, t);
+  
+  // 格式化截止日期
+  const deadline = formatDeadline(task.deadline, locale);
 
   return {
-    id: proposal.cid,
-    name: proposal.record.data.title,
+    id: task.id.toString(),
+    name: title,
     type: proposalType,
     status: status,
-    taskType: getTaskTypeByStatus(status, proposalType, t),
-    deadline: getDeadlineByStatus(status, proposal.record.created, t, locale),
-    isNew: false, // 可以根据创建时间判断是否为新提案
-    uri: proposal.uri,
-    budget: parseFloat(proposal.record.data.budget) || 0, // 添加预算字段
+    taskType: taskType,
+    deadline: deadline,
+    isNew: false, // 可以根据创建时间判断是否为新任务
+    uri: uri,
+    budget: budget,
   };
 };
 
@@ -124,17 +115,16 @@ export default function ManagementCenter() {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedProposal, setSelectedProposal] = useState<ProposalItem | undefined>(undefined);
 
-  // 使用真实的提案数据
-  const { proposals: rawProposals, loading, error, refetch } = useProposalList({
-    cursor: null,
-    limit: 50,
-    viewer: userInfo?.did || null,
+  // 使用任务列表数据
+  const { tasks: rawTasks, loading, error, refetch } = useTaskList({
+    page: 1,
+    per_page: 10,
   });
 
   // 转换数据格式
   const proposals = useMemo(() => {
-    return rawProposals.map(proposal => adaptProposalData(proposal, t, locale));
-  }, [rawProposals, t, locale]);
+    return rawTasks.map(task => adaptTaskData(task, t, locale));
+  }, [rawTasks, t, locale]);
 
   // 计算筛选选项的计数
   // const filterCounts = useMemo(() => {
@@ -198,16 +188,19 @@ export default function ManagementCenter() {
     return filtered;
   }, [proposals, activeTab, activeFilter, searchQuery, t]);
 
-  // 标记新提案（创建时间在24小时内的）
+  // 标记新任务（创建时间在24小时内的）
   useEffect(() => {
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     proposals.forEach(proposal => {
-      const createdDate = new Date(rawProposals.find(p => p.cid === proposal.id)?.record.created || '');
-      proposal.isNew = createdDate > oneDayAgo;
+      const task = rawTasks.find(t => t.id.toString() === proposal.id);
+      if (task) {
+        const createdDate = new Date(task.created);
+        proposal.isNew = createdDate > oneDayAgo;
+      }
     });
-  }, [proposals, rawProposals]);
+  }, [proposals, rawTasks]);
 
 
   // const handleTaskProcess = (proposal: ProposalItem) => {
@@ -223,9 +216,9 @@ export default function ManagementCenter() {
   const handleTaskComplete = (data: unknown) => {
     console.log("任务完成数据:", data);
 
-    // 如果是投票创建任务，刷新提案列表
+    // 如果是投票创建任务，刷新任务列表
     if (selectedProposal?.taskType === t("taskTypes.createVote")) {
-      console.log("投票创建成功，刷新提案列表");
+      console.log("投票创建成功，刷新任务列表");
       refetch();
     }
 

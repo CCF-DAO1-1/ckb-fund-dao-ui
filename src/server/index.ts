@@ -18,3 +18,4 @@ export * from './proposal';
 export * from './comment';
 export * from './pds';
 export * from './timeline';
+export * from './task';
