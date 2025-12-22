@@ -9,6 +9,7 @@ interface UseTaskListResult {
   tasks: TaskItem[];
   loading: boolean;
   error: string;
+  errorCode?: number; // HTTP 状态码（如 403）
   page: number;
   perPage: number;
   total?: number;
@@ -48,6 +49,7 @@ export function useTaskList(
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+  const [errorCode, setErrorCode] = useState<number | undefined>(undefined);
   const [page, setPage] = useState<number>(initialParams.page || 0);
   const [perPage, setPerPage] = useState<number>(initialParams.per_page || 20);
   const [total, setTotal] = useState<number | undefined>(undefined);
@@ -63,7 +65,9 @@ export function useTaskList(
     try {
       setLoading(true);
       setError('');
+      setErrorCode(undefined);
 
+      // 使用传入的参数，如果没有则使用当前的 page 和 perPage 状态
       const finalParams: TaskListParams = {
         did: userInfo.did,
         page: params?.page !== undefined ? params.page : page,
@@ -78,14 +82,6 @@ export function useTaskList(
         setTasks(response.tasks);
         setTotal(response.total);
         setTotalPages(response.total_pages);
-        
-        // 更新分页状态
-        if (params?.page !== undefined) {
-          setPage(params.page);
-        }
-        if (params?.per_page !== undefined) {
-          setPerPage(params.per_page);
-        }
       } else if (Array.isArray(response)) {
         // 如果后端直接返回数组
         setTasks(response);
@@ -97,13 +93,17 @@ export function useTaskList(
     } catch (err) {
       console.error('获取任务列表失败:', err);
       const error = err as { response?: { status?: number }; message?: string };
+      const statusCode = error.response?.status;
+      
+      // 保存错误状态码
+      setErrorCode(statusCode);
       
       // 根据不同的错误类型设置错误信息
-      if (error.response?.status === 401) {
+      if (statusCode === 401) {
         setError('需要登录才能查看任务列表');
-      } else if (error.response?.status === 403) {
+      } else if (statusCode === 403) {
         setError('没有权限查看任务列表');
-      } else if (error.response?.status === 500) {
+      } else if (statusCode === 500) {
         setError('服务器错误，请稍后重试');
       } else {
         setError(error.message || '获取任务列表失败，请稍后重试');
@@ -115,25 +115,37 @@ export function useTaskList(
     } finally {
       setLoading(false);
     }
-  }, [userInfo?.did, page, perPage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userInfo?.did]);
 
+  // 当 userInfo.did、page 或 perPage 变化时获取数据
   useEffect(() => {
     if (userInfo?.did) {
-      fetchTasks();
+      fetchTasks({ page, per_page: perPage });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userInfo?.did]);
+  }, [userInfo?.did, page, perPage, fetchTasks]);
   
+  // 包装 setPage，确保页码变化时触发数据获取
+  const handleSetPage = useCallback((newPage: number) => {
+    setPage(newPage);
+  }, []);
+
+  // 包装 setPerPage，确保每页数量变化时触发数据获取
+  const handleSetPerPage = useCallback((newPerPage: number) => {
+    setPerPage(newPerPage);
+  }, []);
+
   return {
     tasks,
     loading,
     error,
+    errorCode,
     page,
     perPage,
     total,
     totalPages,
     refetch: fetchTasks,
-    setPage,
-    setPerPage,
+    setPage: handleSetPage,
+    setPerPage: handleSetPerPage,
   };
 }

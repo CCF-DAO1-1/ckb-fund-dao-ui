@@ -6,9 +6,9 @@ import TaskProcessingModal, { TaskType } from "@/components/proposal/TaskProcess
 import Tag from "@/components/ui/tag/Tag";
 import { useTaskList } from "@/hooks/useTaskList";
 import { TaskItem } from "@/server/task";
-import useUserInfoStore from "@/store/userInfo";
 import { useTranslation } from "@/utils/i18n";
 import { useI18n } from "@/contexts/I18nContext";
+import { useRouter } from "next/navigation";
 
 interface ProposalItem {
   id: string;
@@ -97,18 +97,12 @@ const adaptTaskData = (task: TaskItem, t: (key: string) => string, locale: 'en' 
   };
 };
 
-const getFilterOptions = (t: (key: string) => string) => [
-  { key: "all", label: t("managementCenter.all"), count: 0 },
-  { key: "ama", label: t("managementCenter.organizeAMA"), count: 0 },
-  { key: "milestone", label: t("managementCenter.milestoneReview"), count: 0 },
-  { key: "allocation", label: t("managementCenter.pendingAllocation"), count: 0 },
-  { key: "completion", label: t("managementCenter.pendingCompletion"), count: 0 },
-];
+
 
 export default function ManagementCenter() {
-  const { userInfo } = useUserInfoStore();
   const { t } = useTranslation();
   const { locale } = useI18n();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("pending");
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -116,10 +110,26 @@ export default function ManagementCenter() {
   const [selectedProposal, setSelectedProposal] = useState<ProposalItem | undefined>(undefined);
 
   // 使用任务列表数据
-  const { tasks: rawTasks, loading, error, refetch } = useTaskList({
+  const { 
+    tasks: rawTasks, 
+    loading, 
+    error, 
+    errorCode,
+    refetch,
+    page,
+    totalPages,
+    setPage,
+  } = useTaskList({
     page: 1,
     per_page: 10,
   });
+
+  // 处理 403 权限错误，跳转到无权限页面
+  useEffect(() => {
+    if (errorCode === 403) {
+      router.push(`/${locale}/error/403`);
+    }
+  }, [errorCode, locale, router]);
 
   // 转换数据格式
   const proposals = useMemo(() => {
@@ -350,6 +360,31 @@ export default function ManagementCenter() {
               )}
             </tbody>
           </table>
+        )}
+
+        {/* 分页组件 */}
+        {!loading && !error && totalPages && totalPages > 1 && (
+          <div className="task-pagination">
+            <button
+              className="pagination-button"
+              disabled={page <= 1}
+              onClick={() => setPage(page - 1)}
+              aria-label="上一页"
+            >
+              ‹
+            </button>
+            <span className="pagination-info">
+              {page} / {totalPages}
+            </span>
+            <button
+              className="pagination-button"
+              disabled={page >= totalPages}
+              onClick={() => setPage(page + 1)}
+              aria-label="下一页"
+            >
+              ›
+            </button>
+          </div>
         )}
       </div>
 
