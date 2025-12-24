@@ -145,7 +145,7 @@ export default function Treasury() {
                   <input
                     type="text"
                     className="search-input"
-                    placeholder="搜索提案"
+                    placeholder={messages.homepage.searchPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={handleKeyPress}
@@ -154,7 +154,7 @@ export default function Treasury() {
                     className="search-icon-button"
                     onClick={handleSearch}
                     disabled={proposalsLoading}
-                    aria-label="搜索"
+                    aria-label={messages.homepage.searchPlaceholder}
                   >
                     <FiSearch />
                   </button>
