@@ -434,6 +434,7 @@ interface Messages {
     loading: string;
     noProposals: string;
     loadMore: string;
+    searchPlaceholder: string;
   };
   userGovernance: {
     title: string;

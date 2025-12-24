@@ -565,7 +565,8 @@
     "loadFailed": "加载失败:",
     "loading": "加载中...",
     "noProposals": "暂无提案",
-    "loadMore": "加载更多"
+    "loadMore": "加载更多",
+    "searchPlaceholder": "搜索提案"
   },
   "userGovernance": {
     "title": "我的治理",

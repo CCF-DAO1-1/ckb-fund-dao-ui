@@ -526,7 +526,8 @@
     "loadFailed": "Load Failed:",
     "loading": "Loading...",
     "noProposals": "No Proposals",
-    "loadMore": "Load More"
+    "loadMore": "Load More",
+    "searchPlaceholder": "Search Proposals"
   },
   "userGovernance": {
     "title": "My Governance",

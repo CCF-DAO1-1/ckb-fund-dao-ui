@@ -9,6 +9,7 @@ import { ProposalStatus } from "@/utils/proposalUtils";
 import UserGovernance from "@/components/common/UserGovernance";
 import { useI18n } from "@/contexts/I18nContext";
 import isMobile from "is-mobile";
+import { FiSearch } from "react-icons/fi";
 
 export default function Treasury() {
   const { userInfo } = useUserInfoStore();
@@ -36,6 +37,10 @@ export default function Treasury() {
       window.removeEventListener("resize", checkMobile);
     };
   }, []);
+  // 搜索关键词状态
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [currentSearchQuery, setCurrentSearchQuery] = useState<string>("");
+
   // 使用hooks获取提案列表
   const {
     proposals,
@@ -43,14 +48,34 @@ export default function Treasury() {
     error: proposalsError,
     loadMore,
     hasMore,
+    refetch,
   } = useProposalList({
     cursor: null,
-    limit: 2,
+    limit: 20,
     viewer: userInfo?.did || null,
+    q: currentSearchQuery || null,
   });
 
   const [selectedStatus, setSelectedStatus] = useState<string>("");
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  // 处理搜索
+  const handleSearch = () => {
+    setCurrentSearchQuery(searchQuery.trim());
+    refetch({
+      cursor: null,
+      limit: 2,
+      viewer: userInfo?.did || null,
+      q: searchQuery.trim() || null,
+    });
+  };
+
+  // 处理回车键搜索
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   // 根据选中的状态过滤 proposals
   const filteredProposals = selectedStatus
@@ -115,8 +140,26 @@ export default function Treasury() {
           <section className="proposal_list">
             <nav>
               <h3>{messages.homepage.proposalList}</h3>
-              {/* <div className="nav-controls">
-                <select
+              <div className="nav-controls">
+                <div className="search-container">
+                  <input
+                    type="text"
+                    className="search-input"
+                    placeholder="搜索提案"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                  />
+                  <button
+                    className="search-icon-button"
+                    onClick={handleSearch}
+                    disabled={proposalsLoading}
+                    aria-label="搜索"
+                  >
+                    <FiSearch />
+                  </button>
+                </div>
+                {/* <select
                   name="proposal-status-filter"
                   id="proposal-status-filter"
                   value={selectedStatus}
@@ -142,8 +185,8 @@ export default function Treasury() {
                     {messages.homepage.rejected}
                   </option>
                   <option value={String(ProposalStatus.ENDED)}>{messages.homepage.ended}</option>
-                </select>
-              </div> */}
+                </select> */}
+              </div>
             </nav>
 
             <ul className="proposal_list_content">
@@ -180,7 +223,7 @@ export default function Treasury() {
               )}
             </ul>
             <div ref={loadMoreRef} style={{ height: 1 }} />
-            {!proposalsLoading && hasMore && (
+            {!proposalsLoading && hasMore && !currentSearchQuery && (
               <div style={{ textAlign: "center", padding: "12px" }}>
                 <button
                   className="view_treasury_button"
