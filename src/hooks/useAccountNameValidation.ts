@@ -40,10 +40,13 @@ export function useAccountNameValidation() {
       const keyPair = await Secp256k1Keypair.create();
       const signingKey = keyPair.did();
 
+      // 验证账户名是否可用
+      // 注意：这里使用一个临时 DID 来检查账户名是否已被占用
+      // 因为此时账户还未创建，所以使用一个占位符 DID
       const res = await getPDSClient().fans.web5.ckb.preCreateAccount({
         handle: name + `.${USER_DOMAIN}`,
         signingKey,
-        did: 'did:ckb:n5d3aggygtfxs56gbjkcajxw',
+        did: 'did:ckb:n5d3aggygtfxs56gbjkcajxw', // 临时 DID，仅用于验证账户名可用性
       });
       console.log(res, 'res');
       return { valid: true, error: null };

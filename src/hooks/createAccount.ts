@@ -58,7 +58,6 @@ export async function fetchUserProfile(did: string): Promise<UserProfileType> {
 export async function userLogin(localStorage: TokenStorageType): Promise<FansWeb5CkbIndexAction.CreateSessionResult | undefined> {
   const pdsClient = getPDSClient()
   const { did, signKey, walletAddress } = localStorage
-  debugger
   const preLoginIndex = {
     $type: 'fans.web5.ckb.preIndexAction#createSession',
   }
@@ -98,7 +97,6 @@ export async function userLogin(localStorage: TokenStorageType): Promise<FansWeb
   }
 
   const signingKey = keyPair.did()
-debugger
   try {
     const loginInfo = await pdsClient.fans.web5.ckb.indexAction({
       did,
@@ -196,6 +194,9 @@ export default function useCreateAccount({ createSuccess }: {
   const validateIsEnough = async (userHandle: string) => {
     if (!signer) return false
     
+    // 将 userHandle 转换为全小写
+    const normalizedHandle = userHandle.toLowerCase()
+    
     try {
       const fromAddress = await signer.getAddresses()
 
@@ -224,7 +225,7 @@ export default function useCreateAccount({ createSuccess }: {
         verificationMethods: {
           atproto: signingKey,
         },
-        alsoKnownAs: [`at://${userHandle}`],
+        alsoKnownAs: [`at://${normalizedHandle}`],
         services: {
           atproto_pds: {
             type: 'AtprotoPersonalDataServer',
@@ -264,7 +265,7 @@ export default function useCreateAccount({ createSuccess }: {
       }
       
       if (!cell) {
-        startPolling(userHandle)
+        startPolling(normalizedHandle)
         return false
       }
 
@@ -292,7 +293,7 @@ export default function useCreateAccount({ createSuccess }: {
       } catch {
         const expectedCapacity = fixedPointToString(tx.getOutputsCapacity() + numFrom(0))
         setExtraIsEnough({ capacity: expectedCapacity, isEnough: false })
-        startPolling(userHandle)
+        startPolling(normalizedHandle)
         return false
       }
 
@@ -332,6 +333,9 @@ export default function useCreateAccount({ createSuccess }: {
   const prepareAccount = async (userHandle: string, address: string) => {
     setCreateLoading(true)
 
+    // 将 userHandle 转换为全小写
+    const normalizedHandle = userHandle.toLowerCase()
+
     const signKey = createUserParamsRef.current.createdSignKeyPriv
 
     // 检查私钥是否存在且格式正确
@@ -351,7 +355,7 @@ export default function useCreateAccount({ createSuccess }: {
     const signingKey = keyPair.did()
 
     const res = await getPDSClient().fans.web5.ckb.preCreateAccount({
-      handle: userHandle,
+      handle: normalizedHandle,
       signingKey,
       did: createUserParamsRef.current.did || '',
     })
@@ -375,7 +379,7 @@ export default function useCreateAccount({ createSuccess }: {
     }
 
     await createUser({
-      handle: userHandle!,
+      handle: normalizedHandle!,
       password: signKey,
       signingKey,
       ckbAddr: address,
@@ -409,13 +413,12 @@ export default function useCreateAccount({ createSuccess }: {
 
     setCreateLoading(false)
     
-    // 🎯 注册成功断点 - 交易确认后
-    debugger;
+    // 注册成功 - 交易已确认上链
     console.log('🎉 注册成功！交易已确认上链');
     console.log('📊 交易详情:', {
       txHash,
       txRes,
-      userHandle,
+      userHandle: normalizedHandle,
       address,
       did: preCreateResult.did
     });
