@@ -532,7 +532,7 @@
     "title": "导入Web5 DID信息",
     "selectKeyInfo": "选择您的Web5 DID密钥信息:",
     "clickToSelect": "点击选择Web5 DID信息文件或登录二维码",
-    "supportedFormats": "支持图片文件(密钥二维码)和.txt文件(加密字符串)",
+    "supportedFormats": "支持图片文件(密钥二维码)和.txt或.key文件(加密字符串)",
     "selectFile": "选择文件",
     "enterPassword": "请输入8位数解锁密码,验证密钥文件:",
     "passwordPlaceholder": "请输入",
