@@ -2,11 +2,11 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { IoMdInformationCircleOutline } from "react-icons/io";
-import { MdOutlineAccountBalanceWallet } from "react-icons/md";
+import { MdOutlineAccountBalanceWallet, MdClose } from "react-icons/md";
 import { AiOutlineExport } from "react-icons/ai";
 import toast from "react-hot-toast";
 
-import { SignatureModal, SuccessModal } from "../ui/modal";
+import { SignatureModal, SuccessModal, ConfirmModal } from "../ui/modal";
 import { useWalletAddress } from "../../hooks/useWalletAddress";
 import { useWalletBalance } from "../../hooks/useWalletBalance";
 import { BindInfo, BindInfoWithSig } from "../../utils/molecules";
@@ -46,9 +46,14 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
 
   const [showNeuronDropdown, setShowNeuronDropdown] = useState(false);
   const [neuronWallets, setNeuronWallets] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoadingBindList, setIsLoadingBindList] = useState(false);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [showUnbindConfirmModal, setShowUnbindConfirmModal] = useState(false);
+  const [walletToUnbind, setWalletToUnbind] = useState<string | null>(null);
+  const [isUnbinding, setIsUnbinding] = useState(false);
 
   const generateBindInfo = useCallback(async () => {
     console.log(11111111111111)
@@ -68,6 +73,27 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
 
     return { bindInfo, bindInfoHex };
   }, [walletAddress]);
+
+  // 生成解绑信息
+  // 把要解绑的 from 地址的 lockscript 放到 bindinfo 的 to 字段
+  const generateUnbindInfo = useCallback(async (fromAddress: string) => {
+    const timestamp = Date.now();
+    const cccClient = new ccc.ClientPublicTestnet();
+    const fromAddr = await ccc.Address.fromString(fromAddress, cccClient);
+    
+    // unbind: 把要解绑的 from 地址的 lockscript 放到 bindinfo 的 to 字段
+    const unbindInfoLike = {
+      to: fromAddr.script,
+      timestamp: BigInt(timestamp),
+    };
+    const unbindInfo = BindInfo.from(unbindInfoLike);
+
+    const unbindInfoBytes = unbindInfo.toBytes();
+    const unbindInfoHex = ccc.hexFrom(unbindInfoBytes);
+    console.log("unbind info: ", unbindInfoHex);
+
+    return { unbindInfo, unbindInfoHex };
+  }, []);
 
   const [signatureMessage, setSignatureMessage] = useState<string>("");
   const [bindInfo, setBindInfo] = useState<BindInfo | null>(null);
@@ -174,7 +200,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
         }
         
         setNeuronWallets(walletAddresses);
-      } catch (error) {
+      } catch {
         setNeuronWallets([]);
       } finally {
         setIsLoadingBindList(false);
@@ -271,14 +297,97 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
     const txHash = await signer.sendTransaction(tx);
     console.log("The transaction hash is", txHash);
     setShowSignatureModal(false);
+    setSuccessMessage(t("wallet.bindSuccessMessage"));
     setShowSuccessModal(true);
   };
 
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
-    // 这里可以添加新钱包地址到列表
-    // const newWallet: string = `ckb1new...${Math.random().toString(36).substr(2, 4)}`;
-    // setNeuronWallets((prev: string[]) => [...prev, newWallet]);
+    // 刷新绑定列表
+    if (userInfo?.did) {
+      const fetchBindList = async () => {
+        try {
+          setIsLoadingBindList(true);
+          const response = await getBindList({ did: userInfo.did });
+          let walletAddresses: string[] = [];
+          if (Array.isArray(response)) {
+            walletAddresses = response
+              .map((item) => item?.from || item?.to || item?.address || '')
+              .filter((addr: string) => typeof addr === 'string' && addr.length > 0);
+          }
+          setNeuronWallets(walletAddresses);
+        } catch (error) {
+          console.error("Failed to refresh bind list:", error);
+        } finally {
+          setIsLoadingBindList(false);
+        }
+      };
+      fetchBindList();
+    }
+  };
+
+  // 处理解绑操作
+  const handleUnbindClick = (wallet: string) => {
+    setWalletToUnbind(wallet);
+    setShowUnbindConfirmModal(true);
+  };
+
+  // 确认解绑
+  const handleConfirmUnbind = async () => {
+    if (!walletToUnbind || !signer) {
+      toast.error(t("wallet.signerNotConnected"));
+      return;
+    }
+
+    try {
+      setIsUnbinding(true);
+      
+      // 生成解绑信息
+      const { unbindInfo } = await generateUnbindInfo(walletToUnbind);
+
+      // 创建交易
+      const tx = ccc.Transaction.default();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await tx.completeInputsAtLeastOne(signer as any);
+
+      // unbind: sig 留空（"0x"）
+      const unbindInfoWithSig = BindInfoWithSig.from({
+        bind_info: unbindInfo,
+        sig: "0x"
+      });
+
+      const unbindInfoWithSigBytes = unbindInfoWithSig.toBytes();
+
+      // 设置 witness
+      const witnessArgs = ccc.WitnessArgs.from({
+        inputType: unbindInfoWithSigBytes,
+      });
+      tx.setWitnessArgsAt(0, witnessArgs);
+
+      // 重新计算费用
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await tx.completeFeeBy(signer as any);
+
+      // 签名并发送交易
+      await signer.signTransaction(tx);
+      const txHash = await signer.sendTransaction(tx);
+      console.log("Unbind transaction hash:", txHash);
+
+      // 关闭确认弹窗
+      setShowUnbindConfirmModal(false);
+      setWalletToUnbind(null);
+      
+      // 显示成功提示
+      toast.success(t("wallet.unbindSuccessMessage"));
+      setSuccessMessage(t("wallet.unbindSuccessMessage"));
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Unbind failed:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      toast.error(errorMessage || t("wallet.unbindInfoNotGenerated"));
+    } finally {
+      setIsUnbinding(false);
+    }
   };
 
   // const handleRemoveWallet = (walletToRemove: string) => {
@@ -392,12 +501,14 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
               {neuronWallets.map((wallet, index) => (
                 <div key={index} className="neuron-wallet-item">
                   <span className="wallet-address">{formatNeuronWalletAddress(wallet)}</span>
-                  {/* <button
-                    className="remove-wallet-button"
-                    onClick={() => handleRemoveWallet(wallet)}
+                  <div
+                    className={`unbind-wallet-button ${isUnbinding ? 'disabled' : ''}`}
+                    onClick={() => !isUnbinding && handleUnbindClick(wallet)}
+                    title={t("wallet.unbindWallet")}
+                    aria-label={t("wallet.unbindWallet")}
                   >
-                    <MdClose />
-                  </button> */}
+                    <MdClose size={18} />
+                  </div>
                 </div>
               ))}
             </div>
@@ -413,11 +524,25 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
         message={signatureMessage}
       />
 
-      {/* 绑定成功弹窗 */}
+      {/* 绑定/解绑成功弹窗 */}
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        message={t("wallet.bindSuccessMessage")}
+        message={successMessage || t("wallet.bindSuccessMessage")}
+      />
+
+      {/* 解绑确认弹窗 */}
+      <ConfirmModal
+        isOpen={showUnbindConfirmModal}
+        onClose={() => {
+          setShowUnbindConfirmModal(false);
+          setWalletToUnbind(null);
+        }}
+        message={t("wallet.unbindConfirmMessage")}
+        onConfirm={handleConfirmUnbind}
+        confirmText={t("wallet.confirmUnbind")}
+        variant="warning"
+        title={t("wallet.unbindWallet")}
       />
     </div>
   );

@@ -645,6 +645,40 @@
 .neuron-wallet-item .wallet-address {
   font-family: monospace;
   color: #FFFFFF;
+  flex: 1;
+}
+
+.unbind-wallet-button {
+  background: transparent;
+  border: none;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-left: 12px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.unbind-wallet-button:hover {
+  color: #00CC9B;
+  background-color: rgba(0, 204, 155, 0.1);
+}
+
+.unbind-wallet-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.unbind-wallet-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .remove-wallet-button {
