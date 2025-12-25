@@ -4,6 +4,18 @@ import toast from "react-hot-toast";
 import { useTranslation } from "@/utils/i18n";
 
 /**
+ * Quill Toolbar Handler 上下文类型
+ */
+interface QuillToolbarContext {
+  quill: {
+    getSelection: (focus?: boolean) => { index: number; length: number } | null;
+    getLength: () => number;
+    insertEmbed: (index: number, type: string, value: string) => void;
+    setSelection: (index: number) => void;
+  };
+}
+
+/**
  * Quill 编辑器图片上传 Hook
  * @param did 用户 DID
  * @returns Quill 图片上传 handler 函数
@@ -12,7 +24,7 @@ export function useImageUpload(did?: string) {
   const { t } = useTranslation();
 
   const imageHandler = useCallback(
-    function (this: any) {
+    function (this: QuillToolbarContext) {
       const quill = this.quill;
       // 保存当前光标位置，如果获取不到则默认为文档末尾
       const range = quill.getSelection(true);
