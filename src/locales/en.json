@@ -11,7 +11,9 @@
   },
   "errors": {
     "noPermission": "No permission to view this page!",
-    "noPermissionMessage": "Sorry, you don't have permission to access this page."
+    "noPermissionMessage": "Sorry, you don't have permission to access this page.",
+    "notFound": "Page Not Found",
+    "notFoundMessage": "Sorry, the page you are looking for does not exist or has been deleted."
   },
   "navigation": {
     "home": "Home",

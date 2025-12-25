@@ -191,14 +191,29 @@ export async function requestAPI(url: string, config: RequestConfig) {
     }
   }
 
-  if (response?.data?.code === 401 && !pdsClient.session?.refreshJwt) {
+  // 检查响应数据中的错误码（在数据提取之前）
+  const responseData = response?.data;
+  
+  if (responseData?.code === 401 && !pdsClient.session?.refreshJwt) {
     // 如果是 401 且没有 refreshJwt，可能需要重新登录
     // throttleLogout();
   }
 
+  // 处理 404 错误，跳转到 404 页面
+  if (responseData?.code === 404 || 
+      (responseData?.error === 'NotFound' && responseData?.message === 'NOT_FOUND')) {
+    if (!isServer && typeof window !== 'undefined') {
+      // 获取当前语言环境
+      const locale = window.location.pathname.split('/')[1] || 'zh';
+      window.location.href = `/${locale}/error/404`;
+      // 返回一个永远不会resolve的Promise，阻止后续处理
+      return new Promise(() => {});
+    }
+  }
+
   const bizDataOnly = config.getWholeBizData !== true
-  if (bizDataOnly)
-    response.data = response.data.data
+  if (bizDataOnly && responseData?.data !== undefined)
+    response.data = responseData.data
   const getResponse = config.getWholeResponse === true
   return getResponse ? response : response.data
 }
