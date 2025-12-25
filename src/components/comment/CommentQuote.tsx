@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { CommentQuoteProps } from "@/types/comment";
 import "./comment.css";
@@ -9,6 +9,7 @@ import "react-quill-new/dist/quill.snow.css";
 import Avatar from "@/components/common/Avatar";
 import useUserInfoStore from "@/store/userInfo";
 import { useI18n } from "@/contexts/I18nContext";
+import { useImageUpload } from "@/hooks/useImageUpload";
 
 // 动态导入ReactQuill，禁用SSR
 const ReactQuill = dynamic(() => import("react-quill-new"), {
@@ -73,14 +74,22 @@ export default function CommentQuote({
     }
   };
 
-  const quillModules = {
-    toolbar: [
-      [{ header: [1, 2, false] }],
-      ["bold", "italic", "underline"],
-      ["blockquote", "code-block"],
-      ["image"],
-    ],
-  };
+  // 图片上传 handler
+  const imageHandler = useImageUpload(userInfo?.did);
+
+  const quillModules = useMemo(() => ({
+    toolbar: {
+      container: [
+        [{ header: [1, 2, false] }],
+        ["bold", "italic", "underline"],
+        ["blockquote", "code-block"],
+        ["image"],
+      ],
+      handlers: {
+        image: imageHandler,
+      },
+    },
+  }), [imageHandler]);
 
   const quillFormats = [
     "header",

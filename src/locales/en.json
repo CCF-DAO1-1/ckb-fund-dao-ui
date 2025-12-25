@@ -195,7 +195,11 @@
     "loading": "Editor loading...",
     "uploading": "Uploading...",
     "uploadSuccess": "Image upload success",
-    "uploadFailed": "Image upload failed"
+    "uploadFailed": "Image upload failed",
+    "fileTooLarge": "File size cannot exceed 5MB",
+    "invalidFileType": "Only image files are supported",
+    "noFileSelected": "No file selected",
+    "uploadError": "Upload failed, please try again"
   },
   "alerts": {
     "selectVoteTime": "Please select vote start and end time",

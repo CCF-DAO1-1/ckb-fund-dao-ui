@@ -58,25 +58,51 @@ export interface CreatePDSRecordResponse {
  * @param file 图片文件
  * @param did 用户 DID
  * @returns 图片 URL
+ * @throws {Error} 当文件验证失败或上传失败时抛出错误
  */
 export async function uploadImage(file: File, did: string): Promise<string> {
   const pdsClient = getPDSClient();
-  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-  if (!file) throw new Error("No file provided");
-  if (file.size > MAX_FILE_SIZE) throw new Error("File size exceeds 5MB");
-
-  const result = await sessionWrapApi(() => pdsClient.fans.web5.ckb.uploadBlob(file, { encoding: file.type }));
-  const blobRefStr = result.data.blob.ref.toString()
-  let server = result.data.blobServer
-  const didSlice = did.replace(DID_PREFIX, '')
-
-  if (!server?.endsWith('/')) {
-    server += '/'
+  // 文件验证
+  if (!file) {
+    throw new Error("No file provided");
   }
 
-  // https://<pds>/blocks/<did>/<cid>
-  return `${server}blocks/${didSlice}/${blobRefStr}`;
+  // 检查文件类型
+  if (!file.type.startsWith('image/')) {
+    throw new Error("Only image files are supported");
+  }
+
+  // 检查文件大小
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error("File size exceeds 5MB");
+  }
+
+  // 检查 DID
+  if (!did) {
+    throw new Error("User DID is required");
+  }
+
+  try {
+    const result = await sessionWrapApi(() => 
+      pdsClient.fans.web5.ckb.uploadBlob(file, { encoding: file.type })
+    );
+    
+    const blobRefStr = result.data.blob.ref.toString();
+    let server = result.data.blobServer;
+    const didSlice = did.replace(DID_PREFIX, '');
+
+    if (!server?.endsWith('/')) {
+      server += '/';
+    }
+
+    // https://<pds>/blocks/<did>/<cid>
+    return `${server}blocks/${didSlice}/${blobRefStr}`;
+  } catch (error) {
+    console.error('图片上传错误:', error);
+    throw new Error(error instanceof Error ? error.message : "Upload failed");
+  }
 }
 
 /**
