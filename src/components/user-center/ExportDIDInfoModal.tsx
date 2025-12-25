@@ -72,7 +72,7 @@ export default function ExportDIDInfoModal({ isOpen, onClose }: ExportDIDInfoMod
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${userProfile?.handle || 'Web5DID-info'}.key`;
+      link.download = `${userProfile?.handle || 'Web5DID-info'}.txt`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

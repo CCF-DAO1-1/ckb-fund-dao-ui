@@ -493,7 +493,7 @@
     "title": "Import Web5 DID Information",
     "selectKeyInfo": "Select your Web5 DID key information:",
     "clickToSelect": "Click to select Web5 DID information file or login QR code",
-    "supportedFormats": "Supports image files (key QR code) and .txt or .key files (encrypted string)",
+      "supportedFormats": "Supports image files (key QR code) and .txt files (encrypted string)",
     "selectFile": "Select File",
     "enterPassword": "Please enter an 8-digit unlock password to verify the key file:",
     "passwordPlaceholder": "Please enter",
