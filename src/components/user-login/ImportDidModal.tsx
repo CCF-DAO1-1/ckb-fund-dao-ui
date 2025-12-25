@@ -358,7 +358,7 @@ export default function ImportDidModal({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*,.txt"
+                  accept="image/*,.txt/.key"
                   onChange={handleFileSelect}
                   style={{ display: "none" }}
                 />
