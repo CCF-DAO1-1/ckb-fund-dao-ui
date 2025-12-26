@@ -483,6 +483,41 @@
   gap: 8px;
 }
 
+.refresh-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8A949E;
+  transition: color 0.2s ease;
+  margin-left: auto;
+}
+
+.refresh-button:hover:not(:disabled) {
+  color: #00CC9B;
+}
+
+.refresh-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.refresh-button.rotating {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .info-icon {
   font-size: 14px;
   cursor: pointer;

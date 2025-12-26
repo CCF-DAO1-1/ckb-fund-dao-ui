@@ -7,7 +7,7 @@ import { Secp256k1Keypair } from "@atproto/crypto";
 import { bytesFrom, hexFrom, ccc, Script, numFrom, fixedPointToString } from "@ckb-ccc/core";
 import { FansWeb5CkbIndexAction, FansWeb5CkbPreIndexAction } from "web5-api";
 import * as cbor from "@ipld/dag-cbor";
-import { tokenConfig } from "@/constant/token";
+import { tokenConfig, DEFAULT_FEE_RATE } from "@/constant/token";
 import { useWallet } from "@/provider/WalletProvider";
 
 import { DidWeb5Data } from "@/lib/molecules"; // 暂时不使用，避免序列化问题
@@ -297,7 +297,8 @@ export default function useCreateAccount({ createSuccess }: {
         return false
       }
 
-      await tx.completeFeeBy(signer as unknown as never)
+      // 使用指定的 feeRate 完成交易费用计算
+      await tx.completeFeeBy(signer as unknown as never, DEFAULT_FEE_RATE)
 
       const preDid = base32.encode(hexToUint8Array(args.slice(2, 42))).toLowerCase()
       changeParams({

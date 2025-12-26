@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { IoMdInformationCircleOutline } from "react-icons/io";
+import { IoMdInformationCircleOutline, IoMdRefresh } from "react-icons/io";
 import { MdOutlineAccountBalanceWallet, MdClose } from "react-icons/md";
 import { AiOutlineExport } from "react-icons/ai";
 import toast from "react-hot-toast";
@@ -27,7 +27,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
   const { walletAddress, isLoadingAddress, isConnected } = useWalletAddress();
   const { walletBalance, isLoadingBalance, formatBalance } = useWalletBalance();
   const { signer } = useWallet();
-  const { voteWeight, isLoading: isLoadingVoteWeight, formatVoteWeight } = useVoteWeight();
+  const { voteWeight, isLoading: isLoadingVoteWeight, formatVoteWeight, refreshVoteWeight } = useVoteWeight();
   const { userInfo } = useUserInfoStore();
 
   // 自定义地址格式化函数：前7个字符...后4个字符
@@ -54,6 +54,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
   const [showUnbindConfirmModal, setShowUnbindConfirmModal] = useState(false);
   const [walletToUnbind, setWalletToUnbind] = useState<string | null>(null);
   const [isUnbinding, setIsUnbinding] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const generateBindInfo = useCallback(async () => {
     console.log(11111111111111)
@@ -176,39 +177,39 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
   // 函数执行完成后不会改变函数引用，因此不会导致无限循环
 
   // 获取绑定列表
-  useEffect(() => {
-    const fetchBindList = async () => {
-      if (!userInfo?.did) {
-        setNeuronWallets([]);
-        return;
-      }
+  const fetchBindList = useCallback(async () => {
+    if (!userInfo?.did) {
+      setNeuronWallets([]);
+      return;
+    }
 
-      try {
-        setIsLoadingBindList(true);
-        const response = await getBindList({ did: userInfo.did });
-        
-        // API 返回格式: {code: 200, data: [{from: "...", timestamp: ...}], message: "OK"}
-        // requestAPI 会自动提取 data 字段，所以 response 应该是 BindItem[] 数组
-        // 每个元素格式: {from: "ckt1...", timestamp: 1762155209433}
-        let walletAddresses: string[] = [];
-        
-        if (Array.isArray(response)) {
-          // 从绑定项中提取钱包地址（from 字段）
-          walletAddresses = response
-            .map((item) => item?.from || item?.to || item?.address || '')
-            .filter((addr: string) => typeof addr === 'string' && addr.length > 0);
-        }
-        
-        setNeuronWallets(walletAddresses);
-      } catch {
-        setNeuronWallets([]);
-      } finally {
-        setIsLoadingBindList(false);
+    try {
+      setIsLoadingBindList(true);
+      const response = await getBindList({ did: userInfo.did });
+      
+      // API 返回格式: {code: 200, data: [{from: "...", timestamp: ...}], message: "OK"}
+      // requestAPI 会自动提取 data 字段，所以 response 应该是 BindItem[] 数组
+      // 每个元素格式: {from: "ckt1...", timestamp: 1762155209433}
+      let walletAddresses: string[] = [];
+      
+      if (Array.isArray(response)) {
+        // 从绑定项中提取钱包地址（from 字段）
+        walletAddresses = response
+          .map((item) => item?.from || item?.to || item?.address || '')
+          .filter((addr: string) => typeof addr === 'string' && addr.length > 0);
       }
-    };
-
-    fetchBindList();
+      
+      setNeuronWallets(walletAddresses);
+    } catch {
+      setNeuronWallets([]);
+    } finally {
+      setIsLoadingBindList(false);
+    }
   }, [userInfo?.did]);
+
+  useEffect(() => {
+    fetchBindList();
+  }, [fetchBindList]);
 
   const handleBindNeuron = () => {
     setShowNeuronDropdown(!showNeuronDropdown);
@@ -304,25 +305,29 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
     // 刷新绑定列表
-    if (userInfo?.did) {
-      const fetchBindList = async () => {
-        try {
-          setIsLoadingBindList(true);
-          const response = await getBindList({ did: userInfo.did });
-          let walletAddresses: string[] = [];
-          if (Array.isArray(response)) {
-            walletAddresses = response
-              .map((item) => item?.from || item?.to || item?.address || '')
-              .filter((addr: string) => typeof addr === 'string' && addr.length > 0);
-          }
-          setNeuronWallets(walletAddresses);
-        } catch (error) {
-          console.error("Failed to refresh bind list:", error);
-        } finally {
-          setIsLoadingBindList(false);
-        }
-      };
-      fetchBindList();
+    fetchBindList();
+  };
+
+  // 刷新投票权重和绑定列表
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    
+    try {
+      setIsRefreshing(true);
+      
+      // 同时刷新投票权重和绑定列表
+      await Promise.all([
+        refreshVoteWeight(),
+        fetchBindList()
+      ]);
+      
+      // 显示成功提示
+      toast.success(t("wallet.refreshSuccessMessage"));
+    } catch (error) {
+      console.error("刷新失败:", error);
+      toast.error(t("wallet.refreshFailed") || "刷新失败");
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -425,7 +430,17 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
               data-tooltip-id="my-tooltip"
               data-tooltip-content={t("wallet.votingPowerExplanation")}
             />
+            <button
+            className={`refresh-button ${isRefreshing ? 'rotating' : ''}`}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            title={t("wallet.refresh") || "刷新"}
+            aria-label={t("wallet.refresh") || "刷新"}
+          >
+            <IoMdRefresh size={18} />
+          </button>
           </h4>
+          
         </div>
         <div className="voting-power-amount">
           {isLoadingVoteWeight ? t("wallet.loading") : formatVoteWeight(voteWeight)} CKB

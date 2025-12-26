@@ -7,6 +7,11 @@ export type TokenConfig = {
   cellDeps: (CellDepInfoLike | CellDepInfoLike[])
 }
 
+// 交易费率配置（shannons per byte）
+// 默认值：1000 shannons per byte
+// 可以根据网络拥堵情况调整，值越大交易确认越快，但费用也越高
+export const DEFAULT_FEE_RATE = 4000; // shannons per byte
+
 
 export const tokenConfig: TokenConfig = {
   ...(withNetwork({
