@@ -65,13 +65,23 @@ export function useImageUpload(did?: string) {
         try {
           const url = await uploadImage(file, did);
 
+          // 验证返回的 URL
+          if (!url) {
+            throw new Error("Invalid image URL returned");
+          }
+
           // 使用之前保存的 range，如果为 null 则插入到文档末尾
           // 注意：quill.getLength() 返回的长度包含末尾的换行符
           const index = range ? range.index : quill.getLength() || 0;
 
+          // 插入图片
           quill.insertEmbed(index, "image", url);
+          
           // 插入后将光标移动到图片之后
-          quill.setSelection(index + 1);
+          // 使用 setTimeout 确保插入操作完成后再设置光标
+          setTimeout(() => {
+            quill.setSelection(index + 1);
+          }, 0);
 
           toast.success(t("editor.uploadSuccess") || "Upload success");
         } catch (error) {
@@ -82,15 +92,19 @@ export function useImageUpload(did?: string) {
               : t("editor.uploadError") || "Upload failed";
           
           // 根据错误类型显示不同的提示
-          if (errorMessage.includes("File size exceeds")) {
+          if (errorMessage.includes("File size exceeds") || errorMessage.includes("File size cannot exceed")) {
             toast.error(t("editor.fileTooLarge") || "File size cannot exceed 5MB");
-          } else if (errorMessage.includes("Only image files")) {
+          } else if (errorMessage.includes("Only image files") || errorMessage.includes("Only image files are supported")) {
             toast.error(t("editor.invalidFileType") || "Only image files are supported");
+          } else if (errorMessage.includes("User DID is required") || errorMessage.includes("Please login")) {
+            toast.error(t("errors.userNotLoggedIn") || "Please login first");
           } else {
             toast.error(errorMessage);
           }
         } finally {
           toast.dismiss(loadingToast);
+          // 清理 input 元素，允许重复选择同一文件
+          input.value = '';
         }
       };
     },

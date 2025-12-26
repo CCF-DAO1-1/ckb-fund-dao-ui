@@ -11,8 +11,17 @@ export const SERVER = process.env.NEXT_PUBLIC_API_ADDRESS || ''
 let isRefreshingToken = false;
 let refreshTokenPromise: Promise<string> | null = null;
 
+// 请求队列：当 token 刷新时，其他请求等待
+type QueuedRequest = {
+  resolve: (token: string) => void;
+  reject: (error: Error) => void;
+};
+
+let requestQueue: QueuedRequest[] = [];
+
 /**
  * 刷新 access token
+ * 支持请求队列：当 token 刷新时，其他请求会等待刷新完成
  */
 async function refreshAccessToken(): Promise<string> {
   // 如果正在刷新，返回同一个 Promise
@@ -24,6 +33,12 @@ async function refreshAccessToken(): Promise<string> {
   refreshTokenPromise = (async () => {
     try {
       const pdsClient = getPDSClient();
+      
+      // 检查是否有 refreshJwt
+      if (!pdsClient.session?.refreshJwt) {
+        throw new Error('No refresh token available');
+      }
+
       const { data } = await pdsClient.com.atproto.server.refreshSession();
       
       // 更新 sessionManager
@@ -51,7 +66,19 @@ async function refreshAccessToken(): Promise<string> {
         }
       }
       
-      return data.accessJwt;
+      const newToken = data.accessJwt;
+      
+      // 通知队列中的所有请求
+      requestQueue.forEach(({ resolve }) => resolve(newToken));
+      requestQueue = [];
+      
+      return newToken;
+    } catch (error) {
+      // 通知队列中的所有请求失败
+      const err = error instanceof Error ? error : new Error(String(error));
+      requestQueue.forEach(({ reject }) => reject(err));
+      requestQueue = [];
+      throw err;
     } finally {
       isRefreshingToken = false;
       refreshTokenPromise = null;
@@ -59,6 +86,19 @@ async function refreshAccessToken(): Promise<string> {
   })();
 
   return refreshTokenPromise;
+}
+
+/**
+ * 等待 token 刷新完成
+ */
+async function waitForTokenRefresh(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (refreshTokenPromise) {
+      refreshTokenPromise.then(resolve).catch(reject);
+    } else {
+      requestQueue.push({ resolve, reject });
+    }
+  });
 }
 
 export type RequestConfig = AxiosRequestConfig & {
@@ -150,21 +190,42 @@ export async function requestAPI(url: string, config: RequestConfig) {
         ('error' in responseData && (responseData as { error?: string }).error === 'ExpiredToken')));
 
     // 如果是 token 过期，尝试刷新 token 并重试
-    if (isTokenExpired && pdsClient.session?.refreshJwt) {
-      try {
-        console.log('Token 过期，尝试刷新 token...');
-        const newAccessToken = await refreshAccessToken();
-        
-        // 使用新的 token 重试请求
-        response = await makeRequest(newAccessToken);
-        
-        console.log('Token 刷新成功，重试请求成功:', {
-          url,
-          status: response.status
-        });
-      } catch (refreshError) {
-        console.error('刷新 token 失败:', refreshError);
-        // 刷新失败，抛出原始错误
+    if (isTokenExpired) {
+      if (pdsClient.session?.refreshJwt) {
+        try {
+          console.log('Token 过期，尝试刷新 token...');
+          
+          // 如果正在刷新，等待刷新完成
+          let newAccessToken: string;
+          if (isRefreshingToken) {
+            newAccessToken = await waitForTokenRefresh();
+          } else {
+            newAccessToken = await refreshAccessToken();
+          }
+          
+          // 使用新的 token 重试请求
+          response = await makeRequest(newAccessToken);
+          
+          console.log('Token 刷新成功，重试请求成功:', {
+            url,
+            status: response.status
+          });
+        } catch (refreshError) {
+          console.error('刷新 token 失败:', refreshError);
+          // 刷新失败，清除 session 并抛出错误
+          if (!isServer) {
+            // 可以在这里触发登出逻辑
+            // throttleLogout();
+          }
+          throw error;
+        }
+      } else {
+        // 没有 refreshJwt，无法刷新，需要重新登录
+        console.error('Token 过期且没有 refresh token，需要重新登录');
+        if (!isServer) {
+          // 可以在这里触发登出逻辑
+          // throttleLogout();
+        }
         throw error;
       }
     } else {
@@ -194,9 +255,34 @@ export async function requestAPI(url: string, config: RequestConfig) {
   // 检查响应数据中的错误码（在数据提取之前）
   const responseData = response?.data;
   
-  if (responseData?.code === 401 && !pdsClient.session?.refreshJwt) {
-    // 如果是 401 且没有 refreshJwt，可能需要重新登录
-    // throttleLogout();
+  // 处理响应中的 401 错误（业务层面的 token 过期）
+  if (responseData?.code === 401) {
+    if (pdsClient.session?.refreshJwt) {
+      // 有 refreshJwt，尝试刷新并重试
+      try {
+        console.log('响应返回 401，尝试刷新 token...');
+        let newAccessToken: string;
+        if (isRefreshingToken) {
+          newAccessToken = await waitForTokenRefresh();
+        } else {
+          newAccessToken = await refreshAccessToken();
+        }
+        // 使用新的 token 重试请求
+        response = await makeRequest(newAccessToken);
+      } catch (refreshError) {
+        console.error('刷新 token 失败:', refreshError);
+        // 刷新失败，可能需要重新登录
+        if (!isServer) {
+          // throttleLogout();
+        }
+      }
+    } else {
+      // 没有 refreshJwt，需要重新登录
+      console.warn('响应返回 401 且没有 refresh token，需要重新登录');
+      if (!isServer) {
+        // throttleLogout();
+      }
+    }
   }
 
   // 处理 404 错误，跳转到 404 页面

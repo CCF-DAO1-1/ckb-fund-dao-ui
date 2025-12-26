@@ -89,19 +89,55 @@ export async function uploadImage(file: File, did: string): Promise<string> {
       pdsClient.fans.web5.ckb.uploadBlob(file, { encoding: file.type })
     );
     
+    // 检查返回结果
+    if (!result || !result.data) {
+      throw new Error("Invalid response from upload service");
+    }
+
+    // 检查 blob 数据
+    if (!result.data.blob || !result.data.blob.ref) {
+      throw new Error("Invalid blob data in response");
+    }
+
     const blobRefStr = result.data.blob.ref.toString();
     let server = result.data.blobServer;
+
+    // 检查 blobServer
+    if (!server) {
+      throw new Error("Blob server URL not found in response");
+    }
+
     const didSlice = did.replace(DID_PREFIX, '');
 
-    if (!server?.endsWith('/')) {
+    // 确保 server URL 以 / 结尾
+    if (!server.endsWith('/')) {
       server += '/';
     }
 
-    // https://<pds>/blocks/<did>/<cid>
-    return `${server}blocks/${didSlice}/${blobRefStr}`;
+    // 构建图片 URL: https://<pds>/blocks/<did>/<cid>
+    const imageUrl = `${server}blocks/${didSlice}/${blobRefStr}`;
+    
+    return imageUrl;
   } catch (error) {
     console.error('图片上传错误:', error);
-    throw new Error(error instanceof Error ? error.message : "Upload failed");
+    
+    // 提供更详细的错误信息
+    if (error instanceof Error) {
+      // 如果是已知的错误类型，直接抛出
+      if (error.message.includes("No file provided") ||
+          error.message.includes("Only image files") ||
+          error.message.includes("File size exceeds") ||
+          error.message.includes("User DID is required") ||
+          error.message.includes("Invalid response") ||
+          error.message.includes("Invalid blob data") ||
+          error.message.includes("Blob server URL")) {
+        throw error;
+      }
+      // 其他错误，包装成更友好的错误信息
+      throw new Error(`Upload failed: ${error.message}`);
+    }
+    
+    throw new Error("Upload failed: Unknown error");
   }
 }
 

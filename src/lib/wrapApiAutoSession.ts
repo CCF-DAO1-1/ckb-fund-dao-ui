@@ -1,48 +1,73 @@
 import getPDSClient from "./pdsClient";
 import storage from "./storage";
 
+// 防止并发刷新 token（用于 PDS API）
+let isRefreshingPDSToken = false;
+let refreshPDSTokenPromise: Promise<string> | null = null;
+
+/**
+ * 刷新 PDS session token
+ * 与 request.ts 中的 refreshAccessToken 逻辑保持一致
+ */
 async function refreshToken() {
+  // 如果正在刷新，返回同一个 Promise
+  if (isRefreshingPDSToken && refreshPDSTokenPromise) {
+    return refreshPDSTokenPromise;
+  }
+
   const pdsClient = getPDSClient()
   const localStorage = storage.getToken()
   if (!localStorage) {
     throw new Error('No local storage found')
   }
 
-  // 尝试刷新 token
-  try {
-    const { data } = await pdsClient.com.atproto.server.refreshSession()
-    
-    // 更新 sessionManager
-    pdsClient.sessionManager.session = {
-      ...data,
-      active: data.active ?? true
-    }
-    
-    // 更新缓存中的 userInfo（包含新的 accessJwt 和 refreshJwt）
-    storage.setUserInfoCache(data)
-    
-    // 如果 Zustand store 已经初始化，也需要更新 store 中的 userInfo
-    // 使用动态导入避免循环依赖，并且只在客户端执行
-    if (typeof window !== 'undefined') {
-      try {
-        const { default: useUserInfoStore } = await import('../store/userInfo');
-        const updateUserInfoFromSession = useUserInfoStore.getState().updateUserInfoFromSession;
-        if (updateUserInfoFromSession) {
-          updateUserInfoFromSession();
-        }
-      } catch (importError) {
-        // 如果导入失败（比如 SSR），忽略错误
-        console.warn('无法更新 Zustand store 中的 userInfo:', importError);
-      }
-    }
-    
-    return data.accessJwt
-  } catch (error) {
-    console.error('Failed to refresh token:', error)
-    // 如果刷新失败，可能需要重新登录
-    // 这里简单抛出错误，由调用者处理
-    throw error
+  // 检查是否有 refreshJwt
+  if (!pdsClient.session?.refreshJwt) {
+    throw new Error('No refresh token available')
   }
+
+  isRefreshingPDSToken = true;
+  refreshPDSTokenPromise = (async () => {
+    try {
+      const { data } = await pdsClient.com.atproto.server.refreshSession()
+      
+      // 更新 sessionManager
+      pdsClient.sessionManager.session = {
+        ...data,
+        active: data.active ?? true
+      }
+      
+      // 更新缓存中的 userInfo（包含新的 accessJwt 和 refreshJwt）
+      storage.setUserInfoCache(data)
+      
+      // 如果 Zustand store 已经初始化，也需要更新 store 中的 userInfo
+      // 使用动态导入避免循环依赖，并且只在客户端执行
+      if (typeof window !== 'undefined') {
+        try {
+          const { default: useUserInfoStore } = await import('../store/userInfo');
+          const updateUserInfoFromSession = useUserInfoStore.getState().updateUserInfoFromSession;
+          if (updateUserInfoFromSession) {
+            updateUserInfoFromSession();
+          }
+        } catch (importError) {
+          // 如果导入失败（比如 SSR），忽略错误
+          console.warn('无法更新 Zustand store 中的 userInfo:', importError);
+        }
+      }
+      
+      return data.accessJwt
+    } catch (error) {
+      console.error('Failed to refresh token:', error)
+      // 如果刷新失败，可能需要重新登录
+      // 这里简单抛出错误，由调用者处理
+      throw error
+    } finally {
+      isRefreshingPDSToken = false;
+      refreshPDSTokenPromise = null;
+    }
+  })();
+
+  return refreshPDSTokenPromise;
 }
 
 interface ApiError {
