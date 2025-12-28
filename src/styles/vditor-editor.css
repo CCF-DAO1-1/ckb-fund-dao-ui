@@ -1,0 +1,189 @@
+/* Vditor 编辑器容器样式 */
+.vditor-editor-container {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.vditor-editor-wrapper {
+  width: 100%;
+}
+
+/* 覆盖 Vditor 默认样式以匹配项目主题 */
+.vditor {
+  background-color: #262A33;
+  border: 1px solid #4C525C;
+  border-radius: 6px;
+  color: #FFFFFF;
+}
+
+.vditor-toolbar {
+  background-color: #1F2329;
+  border-bottom: 1px solid #4C525C;
+  padding: 8px;
+}
+
+.vditor-toolbar button {
+  color: #8A949E;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.vditor-toolbar button:hover {
+  color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.vditor-toolbar button.vditor-toolbar__item--active {
+  color: #00CC9B;
+  background-color: rgba(0, 204, 155, 0.2);
+}
+
+.vditor-content {
+  background-color: #262A33;
+  color: #FFFFFF;
+}
+
+.vditor-content__editor {
+  background-color: #262A33;
+  color: #FFFFFF;
+}
+
+.vditor-content__editor pre {
+  background-color: #1A1D23;
+  color: #FFFFFF;
+  border: 1px solid #4C525C;
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.vditor-content__editor code {
+  background-color: #1A1D23;
+  color: #00CC9B;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+.vditor-content__editor blockquote {
+  border-left: 4px solid #00CC9B;
+  padding-left: 16px;
+  margin: 12px 0;
+  color: #8A949E;
+  font-style: italic;
+}
+
+.vditor-content__editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+.vditor-content__editor a {
+  color: #00CC9B;
+  text-decoration: underline;
+}
+
+.vditor-content__editor a:hover {
+  color: #00E6B8;
+}
+
+.vditor-content__editor table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+}
+
+.vditor-content__editor table th,
+.vditor-content__editor table td {
+  border: 1px solid #4C525C;
+  padding: 8px;
+  text-align: left;
+}
+
+.vditor-content__editor table th {
+  background-color: #1F2329;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.vditor-content__editor table td {
+  background-color: #262A33;
+  color: #FFFFFF;
+}
+
+.vditor-content__editor h1,
+.vditor-content__editor h2,
+.vditor-content__editor h3,
+.vditor-content__editor h4,
+.vditor-content__editor h5,
+.vditor-content__editor h6 {
+  color: #FFFFFF;
+  font-weight: bold;
+  margin: 16px 0 8px 0;
+}
+
+.vditor-content__editor h1 {
+  font-size: 24px;
+}
+
+.vditor-content__editor h2 {
+  font-size: 20px;
+}
+
+.vditor-content__editor h3 {
+  font-size: 18px;
+}
+
+.vditor-content__editor ul,
+.vditor-content__editor ol {
+  margin: 8px 0;
+  padding-left: 24px;
+  color: #FFFFFF;
+}
+
+.vditor-content__editor li {
+  margin: 4px 0;
+  color: #FFFFFF;
+}
+
+.vditor-content__editor p {
+  margin: 8px 0;
+  color: #FFFFFF;
+  line-height: 1.6;
+}
+
+/* 预览区域样式 */
+.vditor-preview {
+  background-color: #262A33;
+  color: #FFFFFF;
+  border-left: 1px solid #4C525C;
+}
+
+.vditor-preview__content {
+  background-color: #262A33;
+  color: #FFFFFF;
+}
+
+/* 加载状态 */
+.vditor-editor-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #4C525C;
+  border-radius: 6px;
+  background-color: #262A33;
+  color: #6b7280;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .vditor-toolbar {
+    padding: 4px;
+  }
+
+  .vditor-toolbar button {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}
+

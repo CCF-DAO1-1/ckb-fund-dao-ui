@@ -1,11 +1,7 @@
 import React from 'react';
-import dynamic from 'next/dynamic';
 import { useI18n } from '@/contexts/I18nContext';
-
-// 动态导入ReactQuill，禁用SSR
-const ReactQuill = dynamic(() => import("react-quill-new"), {
-  ssr: false,
-});
+import LexicalRichTextEditor from '@/components/common/LexicalRichTextEditor';
+import useUserInfoStore from '@/store/userInfo';
 
 interface TeamIntroductionProps {
   formData: {
@@ -13,19 +9,22 @@ interface TeamIntroductionProps {
   };
   onInputChange: (value: string) => void;
   isClient: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  quillModules: any;
+  quillModules: unknown;
   quillFormats: string[];
 }
 
 const TeamIntroduction: React.FC<TeamIntroductionProps> = ({ 
   formData, 
   onInputChange, 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isClient, 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   quillModules, 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   quillFormats 
 }) => {
   const { messages } = useI18n();
+  const { userInfo } = useUserInfoStore();
   
   return (
     <div className="form-fields">
@@ -33,40 +32,15 @@ const TeamIntroduction: React.FC<TeamIntroductionProps> = ({
         <label htmlFor="team" className="form-label">
           {messages.proposalSteps.teamIntroduction.title}
         </label>
-        <div className="editor-container">
-          {isClient ? (
-            <div className="quill-wrapper">
-              <ReactQuill
-                theme="snow"
-                value={formData.team}
-                onChange={onInputChange}
-                modules={quillModules}
-                formats={quillFormats}
-                placeholder={messages.proposalSteps.teamIntroduction.placeholder}
-                style={{
-                  height: "300px"
-                }}
-              />
-            </div>
-          ) : (
-            <div
-              style={{
-                height: "300px",
-                marginBottom: "50px",
-                border: "1px solid #4C525C",
-                borderRadius: "6px",
-                backgroundColor: "#262A33",
-                padding: "12px",
-                color: "#6b7280",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {messages.proposalSteps.teamIntroduction.editorLoading}
-            </div>
-          )}
-        </div>
+        <LexicalRichTextEditor
+          value={formData.team}
+          onChange={onInputChange}
+          placeholder={messages.proposalSteps.teamIntroduction.placeholder}
+          height="300px"
+          did={userInfo?.did}
+          toolbarPreset="full"
+          loadingText={messages.proposalSteps.teamIntroduction.editorLoading}
+        />
       </div>
     </div>
   );

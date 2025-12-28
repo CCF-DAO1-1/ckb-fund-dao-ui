@@ -1,11 +1,7 @@
 import React from 'react';
-import dynamic from 'next/dynamic';
 import { useI18n } from '@/contexts/I18nContext';
-
-// 动态导入ReactQuill，禁用SSR
-const ReactQuill = dynamic(() => import("react-quill-new"), {
-  ssr: false,
-});
+import VditorRichTextEditor from '@/components/common/VditorRichTextEditor';
+import useUserInfoStore from '@/store/userInfo';
 
 interface ProjectGoalsProps {
   formData: {
@@ -13,19 +9,22 @@ interface ProjectGoalsProps {
   };
   onInputChange: (value: string) => void;
   isClient: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  quillModules: any;
+  quillModules: unknown;
   quillFormats: string[];
 }
 
 const ProjectGoals: React.FC<ProjectGoalsProps> = ({ 
   formData, 
   onInputChange, 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isClient, 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   quillModules, 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   quillFormats 
 }) => {
   const { messages } = useI18n();
+  const { userInfo } = useUserInfoStore();
   
   return (
     <div className="form-fields">
@@ -33,40 +32,16 @@ const ProjectGoals: React.FC<ProjectGoalsProps> = ({
         <label htmlFor="goals" className="form-label">
           {messages.proposalSteps.projectGoals.title}
         </label>
-        <div className="editor-container">
-          {isClient ? (
-            <div className="quill-wrapper">
-              <ReactQuill
-                theme="snow"
-                value={formData.goals}
-                onChange={onInputChange}
-                modules={quillModules}
-                formats={quillFormats}
-                placeholder={messages.proposalSteps.projectGoals.placeholder}
-                style={{
-                  height: "300px"
-                }}
-              />
-            </div>
-          ) : (
-            <div
-              style={{
-                height: "300px",
-                marginBottom: "50px",
-                border: "1px solid #4C525C",
-                borderRadius: "6px",
-                backgroundColor: "#262A33",
-                padding: "12px",
-                color: "#6b7280",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {messages.proposalSteps.projectGoals.editorLoading}
-            </div>
-          )}
-        </div>
+        <VditorRichTextEditor
+          value={formData.goals}
+          onChange={onInputChange}
+          placeholder={messages.proposalSteps.projectGoals.placeholder}
+          height="300px"
+          did={userInfo?.did}
+          toolbarPreset="full"
+          mode="ir"
+          loadingText={messages.proposalSteps.projectGoals.editorLoading}
+        />
       </div>
     </div>
   );

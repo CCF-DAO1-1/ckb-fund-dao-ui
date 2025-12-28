@@ -1,13 +1,9 @@
 import React from "react";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import CustomDatePicker from "@/components/ui/DatePicker";
 import { useI18n } from "@/contexts/I18nContext";
-
-// 动态导入ReactQuill，禁用SSR
-const ReactQuill = dynamic(() => import("react-quill-new"), {
-  ssr: false,
-});
+import LexicalRichTextEditor from "@/components/common/LexicalRichTextEditor";
+import useUserInfoStore from "@/store/userInfo";
 
 interface Milestone {
   id: string;
@@ -28,8 +24,7 @@ interface ProjectMilestonesProps {
   updateMilestone: (id: string, field: string, value: string) => void;
   onMilestoneDateChange: (milestoneId: string, date: Date | null) => void;
   isClient: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  quillModules: any;
+  quillModules: unknown;
   quillFormats: string[];
 }
 
@@ -41,11 +36,15 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({
   removeMilestone,
   updateMilestone,
   onMilestoneDateChange,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isClient,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   quillModules,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   quillFormats,
 }) => {
   const { messages } = useI18n();
+  const { userInfo } = useUserInfoStore();
 
   return (
     <div className="form-fields">
@@ -165,52 +164,27 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({
                       <label className="form-label">
                         {messages.proposalSteps.projectMilestones.description}
                       </label>
-                      <div className="editor-container">
-                        {isClient ? (
-                          <div className="quill-wrapper">
-                            <ReactQuill
-                              theme="snow"
-                              value={milestone.description}
-                              onChange={(value) =>
-                                updateMilestone(
-                                  milestone.id,
-                                  "description",
-                                  value
-                                )
-                              }
-                              modules={quillModules}
-                              formats={quillFormats}
-                              placeholder={
-                                messages.proposalSteps.projectMilestones
-                                  .descriptionPlaceholder
-                              }
-                              style={{
-                                height: "200px",
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <div
-                            style={{
-                              height: "200px",
-                              marginBottom: "20px",
-                              border: "1px solid #4C525C",
-                              borderRadius: "6px",
-                              backgroundColor: "#262A33",
-                              padding: "12px",
-                              color: "#6b7280",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            {
-                              messages.proposalSteps.projectMilestones
-                                .editorLoading
-                            }
-                          </div>
-                        )}
-                      </div>
+                      <LexicalRichTextEditor
+                        value={milestone.description}
+                        onChange={(value) =>
+                          updateMilestone(
+                            milestone.id,
+                            "description",
+                            value
+                          )
+                        }
+                        placeholder={
+                          messages.proposalSteps.projectMilestones
+                            .descriptionPlaceholder
+                        }
+                        height="200px"
+                        did={userInfo?.did}
+                        toolbarPreset="full"
+                        loadingText={
+                          messages.proposalSteps.projectMilestones
+                            .editorLoading
+                        }
+                      />
                     </div>
                   </div>
                 )
