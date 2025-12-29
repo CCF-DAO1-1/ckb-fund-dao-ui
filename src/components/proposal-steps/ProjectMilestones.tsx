@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import CustomDatePicker from "@/components/ui/DatePicker";
 import { useI18n } from "@/contexts/I18nContext";
-import LexicalRichTextEditor from "@/components/common/LexicalRichTextEditor";
+import VditorRichTextEditor from "@/components/common/VditorRichTextEditor";
 import useUserInfoStore from "@/store/userInfo";
 
 interface Milestone {
@@ -164,7 +164,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({
                       <label className="form-label">
                         {messages.proposalSteps.projectMilestones.description}
                       </label>
-                      <LexicalRichTextEditor
+                      <VditorRichTextEditor
                         value={milestone.description}
                         onChange={(value) =>
                           updateMilestone(
@@ -180,6 +180,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({
                         height="200px"
                         did={userInfo?.did}
                         toolbarPreset="full"
+                        mode="ir"
                         loadingText={
                           messages.proposalSteps.projectMilestones
                             .editorLoading

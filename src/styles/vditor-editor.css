@@ -10,20 +10,68 @@
 
 /* 覆盖 Vditor 默认样式以匹配项目主题 */
 .vditor {
-  background-color: #262A33;
+  background-color: #262A33 !important;
   border: 1px solid #4C525C;
   border-radius: 6px;
   color: #FFFFFF;
 }
 
+/* 确保所有 Vditor 容器都有不透明背景 */
+.vditor * {
+  box-sizing: border-box;
+}
+
+/* 强制所有 Vditor 内部元素使用深色背景 */
+.vditor > * {
+  background-color: #262A33 !important;
+}
+
+/* WYSIWYG 模式下的所有可能类名 */
+.vditor-wysiwyg {
+  background-color: #262A33 !important;
+}
+
+.vditor-wysiwyg__editor {
+  background-color: #262A33 !important;
+  color: #FFFFFF !important;
+}
+
+/* 所有可能的编辑器容器 */
+.vditor-content__editor,
+.vditor-content__editor > div,
+.vditor-content__editor > p,
+.vditor-content__editor > span {
+  background-color: #262A33 !important;
+  color: #FFFFFF !important;
+}
+
+/* 针对 contenteditable 元素 */
+[contenteditable="true"] {
+  background-color: #262A33 !important;
+  color: #FFFFFF !important;
+}
+
+/* Vditor 内部的所有 div */
+.vditor div {
+  background-color: #262A33 !important;
+}
+
+/* 确保文本区域背景 */
+.vditor textarea,
+.vditor input {
+  background-color: #262A33 !important;
+  color: #FFFFFF !important;
+}
+
 .vditor-toolbar {
-  background-color: #1F2329;
+  background-color: #262A33 !important;
   border-bottom: 1px solid #4C525C;
-  padding: 8px;
+  padding: 8px 10px !important;
 }
 
 .vditor-toolbar button {
   color: #8A949E;
+  background-color: transparent;
   transition: color 0.2s ease, background-color 0.2s ease;
 }
 
@@ -38,13 +86,101 @@
 }
 
 .vditor-content {
-  background-color: #262A33;
+  background-color: #262A33 !important;
   color: #FFFFFF;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
 }
 
 .vditor-content__editor {
-  background-color: #262A33;
+  background-color: #262A33 !important;
   color: #FFFFFF;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+/* WYSIWYG 模式下的编辑器背景 */
+.vditor-content__editor[contenteditable="true"] {
+  background-color: #262A33 !important;
+  color: #FFFFFF !important;
+}
+
+/* 确保编辑器内部所有元素都有背景 */
+.vditor-content__editor > * {
+  background-color: transparent;
+}
+
+/* WYSIWYG 模式下的编辑器内容区域 */
+.vditor-wysiwyg__editor,
+.vditor-wysiwyg__editor > *,
+.vditor-wysiwyg__editor[contenteditable="true"] {
+  background-color: #262A33 !important;
+  color: #FFFFFF !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+/* 所有可能的编辑器包装器 */
+.vditor-content,
+.vditor-content > div,
+.vditor-content > textarea {
+  background-color: #262A33 !important;
+  color: #FFFFFF !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+/* 确保编辑器主体背景 */
+.vditor-body {
+  background-color: #262A33 !important;
+}
+
+/* 编辑器内部的所有段落和文本元素 */
+.vditor-content__editor p,
+.vditor-content__editor div,
+.vditor-content__editor span,
+.vditor-content__editor h1,
+.vditor-content__editor h2,
+.vditor-content__editor h3,
+.vditor-content__editor h4,
+.vditor-content__editor h5,
+.vditor-content__editor h6 {
+  background-color: transparent !important;
+  color: #FFFFFF !important;
+}
+
+/* 预览模式背景 */
+.vditor-preview {
+  background-color: #262A33 !important;
+  color: #FFFFFF;
+  border-left: 1px solid #4C525C;
+}
+
+.vditor-preview__content {
+  background-color: #262A33 !important;
+  color: #FFFFFF;
+}
+
+/* IR 模式（即时渲染）背景 */
+.vditor-ir {
+  background-color: #262A33 !important;
+}
+
+.vditor-ir__preview {
+  background-color: #262A33 !important;
+}
+
+/* SV 模式（分屏预览）背景 */
+.vditor-sv {
+  background-color: #262A33 !important;
+}
+
+.vditor-sv__editor {
+  background-color: #262A33 !important;
+}
+
+.vditor-sv__preview {
+  background-color: #262A33 !important;
 }
 
 .vditor-content__editor pre {
@@ -152,16 +288,63 @@
   line-height: 1.6;
 }
 
-/* 预览区域样式 */
-.vditor-preview {
-  background-color: #262A33;
-  color: #FFFFFF;
-  border-left: 1px solid #4C525C;
+/* 确保编辑器包装器有背景 */
+.vditor-editor-wrapper {
+  background-color: #262A33 !important;
 }
 
-.vditor-preview__content {
-  background-color: #262A33;
+.vditor-editor-container {
+  background-color: #262A33 !important;
+}
+
+/* 输入区域背景 */
+.vditor-input {
+  background-color: #262A33 !important;
   color: #FFFFFF;
+}
+
+/* 确保所有文本区域都有背景 */
+textarea.vditor-input {
+  background-color: #262A33 !important;
+  color: #FFFFFF;
+}
+
+/* 通用规则：覆盖所有可能的白色背景 */
+.vditor [style*="background-color: white"],
+.vditor [style*="background-color: #fff"],
+.vditor [style*="background-color: #ffffff"],
+.vditor [style*="background-color: rgb(255, 255, 255)"],
+.vditor [style*="background-color: rgba(255, 255, 255"] {
+  background-color: #262A33 !important;
+}
+
+/* 确保所有可能的编辑器类都有深色背景 */
+.vditor .vditor-content__editor,
+.vditor .vditor-wysiwyg__editor,
+.vditor .vditor-ir__editor,
+.vditor .vditor-sv__editor,
+.vditor [class*="editor"],
+.vditor [class*="content"] {
+  background-color: #262A33 !important;
+  color: #FFFFFF !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+/* 设置工具栏和内容区的左右内边距 */
+.vditor-toolbar,
+.vditor-content,
+.vditor-content__editor,
+.vditor-wysiwyg__editor,
+.vditor-ir__editor,
+.vditor-sv__editor {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+/* 针对可能的 iframe（某些模式下可能使用） */
+.vditor iframe {
+  background-color: #262A33 !important;
 }
 
 /* 加载状态 */
@@ -178,7 +361,7 @@
 /* 响应式设计 */
 @media (max-width: 768px) {
   .vditor-toolbar {
-    padding: 4px;
+    padding: 4px 10px !important;
   }
 
   .vditor-toolbar button {

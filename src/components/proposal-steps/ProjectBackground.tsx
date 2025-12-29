@@ -1,6 +1,6 @@
 import React from 'react';
 import { useI18n } from '@/contexts/I18nContext';
-import LexicalRichTextEditor from '@/components/common/LexicalRichTextEditor';
+import VditorRichTextEditor from '@/components/common/VditorRichTextEditor';
 import useUserInfoStore from '@/store/userInfo';
 
 interface ProjectBackgroundProps {
@@ -32,13 +32,14 @@ const ProjectBackground: React.FC<ProjectBackgroundProps> = ({
         <label htmlFor="background" className="form-label">
           {messages.proposalSteps.projectBackground.title}
         </label>
-        <LexicalRichTextEditor
+        <VditorRichTextEditor
           value={formData.background}
           onChange={onInputChange}
           placeholder={messages.proposalSteps.projectBackground.placeholder}
           height="300px"
           did={userInfo?.did}
           toolbarPreset="full"
+          mode="ir"
           loadingText={messages.proposalSteps.projectBackground.editorLoading}
         />
       </div>

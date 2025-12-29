@@ -1,6 +1,6 @@
 import React from 'react';
 import { useI18n } from '@/contexts/I18nContext';
-import LexicalRichTextEditor from '@/components/common/LexicalRichTextEditor';
+import VditorRichTextEditor from '@/components/common/VditorRichTextEditor';
 import useUserInfoStore from '@/store/userInfo';
 
 interface TeamIntroductionProps {
@@ -32,13 +32,14 @@ const TeamIntroduction: React.FC<TeamIntroductionProps> = ({
         <label htmlFor="team" className="form-label">
           {messages.proposalSteps.teamIntroduction.title}
         </label>
-        <LexicalRichTextEditor
+        <VditorRichTextEditor
           value={formData.team}
           onChange={onInputChange}
           placeholder={messages.proposalSteps.teamIntroduction.placeholder}
           height="300px"
           did={userInfo?.did}
           toolbarPreset="full"
+          mode="ir"
           loadingText={messages.proposalSteps.teamIntroduction.editorLoading}
         />
       </div>

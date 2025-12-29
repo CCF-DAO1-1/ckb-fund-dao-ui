@@ -88,7 +88,14 @@ export default async function sessionWrapApi<T>(apiCall: () => Promise<T>, retry
     // 检查是否是 token 过期错误
     // 这里假设错误码或错误信息包含特定标识，需根据实际 PDS 响应调整
     const err = error as ApiError;
-    const isTokenExpired = err?.status === 401 || err?.error === 'ExpiredToken' || err?.message?.includes('token')
+    const errorMessage = err?.message || String(error);
+    const isTokenExpired = 
+      err?.status === 401 || 
+      err?.error === 'ExpiredToken' || 
+      err?.error === 'BadJwt' ||
+      errorMessage.includes('Token has expired') ||
+      errorMessage.includes('token') ||
+      errorMessage.includes('BadJwt')
     
     if (isTokenExpired && retryCount > 0) {
       try {

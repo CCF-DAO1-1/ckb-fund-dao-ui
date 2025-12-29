@@ -160,16 +160,18 @@ export async function createPDSRecord(params: {
     created: dayjs().format()
   }
 
-  const writeRes = await pdsClient.fans.web5.ckb.preDirectWrites({
-    repo: params.did,
-    writes: [{
-      $type: "fans.web5.ckb.preDirectWrites#create",
-      collection: newRecord.$type,
-      rkey,
-      value: newRecord
-    }],
-    validate: false,
-  })
+  const writeRes = await sessionWrapApi(() =>
+    pdsClient.fans.web5.ckb.preDirectWrites({
+      repo: params.did,
+      writes: [{
+        $type: "fans.web5.ckb.preDirectWrites#create",
+        collection: newRecord.$type,
+        rkey,
+        value: newRecord
+      }],
+      validate: false,
+    })
+  )
 
   const writerData = writeRes.data
 
@@ -246,18 +248,20 @@ export async function updatePDSRecord(params: {
     created: dayjs().format(),
   };
 
-  const writeRes = await pdsClient.fans.web5.ckb.preDirectWrites({
-    repo: params.did,
-    writes: [
-      {
-        $type: "fans.web5.ckb.preDirectWrites#update",
-        collection: newRecord.$type,
-        rkey,
-        value: newRecord,
-      },
-    ],
-    validate: false,
-  });
+  const writeRes = await sessionWrapApi(() =>
+    pdsClient.fans.web5.ckb.preDirectWrites({
+      repo: params.did,
+      writes: [
+        {
+          $type: "fans.web5.ckb.preDirectWrites#update",
+          collection: newRecord.$type,
+          rkey,
+          value: newRecord,
+        },
+      ],
+      validate: false,
+    })
+  );
 
   const writerData = writeRes.data;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "../../../../utils/i18n";
 import "@/styles/proposal.css";
@@ -19,6 +19,7 @@ import useUserInfoStore from "@/store/userInfo";
 import { useI18n } from "@/contexts/I18nContext";
 import { postUriToHref } from "@/lib/postUriHref";
 import toast from "react-hot-toast";
+import storage from "@/lib/storage";
 
 export default function CreateProposal() {
   const { t } = useTranslation();
@@ -78,45 +79,125 @@ export default function CreateProposal() {
     }>,
   });
 
-  // 草稿保存和加载功能
-  const DRAFT_KEY = "proposal_draft";
+  // 跟踪上次保存的数据，避免重复保存相同内容
+  const lastSavedDataRef = useRef<string>("");
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isSavingRef = useRef(false);
 
+  // 检查表单是否有内容
+  const hasContent = useCallback((data: typeof formData) => {
+    return !!(
+      data.title ||
+      data.background ||
+      data.goals ||
+      data.team ||
+      data.budget ||
+      data.milestones.length > 0
+    );
+  }, []);
+
+  // 比较数据是否发生变化
+  const hasDataChanged = useCallback((newData: typeof formData, oldDataString: string) => {
+    if (!oldDataString) return true;
+    try {
+      const oldData = JSON.parse(oldDataString);
+      return JSON.stringify(newData) !== JSON.stringify(oldData);
+    } catch {
+      return true;
+    }
+  }, []);
+
+  // 草稿保存和加载功能（基于用户 DID）
   const saveDraft = useCallback(
-    async (data: typeof formData) => {
+    async (data: typeof formData, force = false) => {
+      if (!userInfo?.did) {
+        // 未登录用户不保存草稿
+        return;
+      }
+
+      // 检查是否有内容
+      if (!hasContent(data)) {
+        return;
+      }
+
+      // 检查数据是否变化（除非强制保存）
+      const dataString = JSON.stringify(data);
+      if (!force && !hasDataChanged(data, lastSavedDataRef.current)) {
+        return; // 数据未变化，不保存
+      }
+
+      // 如果正在保存，跳过
+      if (isSavingRef.current) {
+        return;
+      }
+
       try {
+        isSavingRef.current = true;
         setIsDraftSaving(true);
-        const draftData = {
-          ...data,
-          savedAt: new Date().toISOString(),
-        };
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+        storage.setProposalDraft(data, userInfo.did);
+        lastSavedDataRef.current = dataString;
         setLastSaved(new Date());
       } catch (error) {
         console.error(t("proposalCreate.errors.saveDraftFailed"), error);
+        toast.error(t("proposalCreate.errors.saveDraftFailed") || "保存草稿失败");
       } finally {
+        isSavingRef.current = false;
         setIsDraftSaving(false);
       }
     },
-    [t]
+    [t, userInfo?.did, hasContent, hasDataChanged]
+  );
+
+  // 防抖保存函数
+  const debouncedSaveDraft = useCallback(
+    (data: typeof formData) => {
+      // 清除之前的定时器
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // 设置新的定时器
+      debounceTimerRef.current = setTimeout(() => {
+        saveDraft(data);
+      }, 3000); // 3秒防抖延迟
+    },
+    [saveDraft]
   );
 
   useEffect(() => {
     setIsClient(true);
-    // 加载草稿
-    try {
-      const savedDraft = localStorage.getItem(DRAFT_KEY);
-      if (savedDraft) {
-        const draftData = JSON.parse(savedDraft);
-        // 移除savedAt字段，只保留表单数据
-        const { savedAt, ...formDataFromDraft } = draftData;
-        setFormData(formDataFromDraft);
-        setLastSaved(new Date(draftData.savedAt));
+    
+    // 清理所有过期的草稿
+    storage.clearExpiredDrafts();
+    
+    // 加载当前用户的草稿
+    if (userInfo?.did) {
+      try {
+        const draftData = storage.getProposalDraft(userInfo.did);
+        if (draftData) {
+          // 移除缓存元数据，只保留表单数据
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { savedAt, version, ...formDataFromDraft } = draftData;
+          setFormData(formDataFromDraft as typeof formData);
+          // 初始化上次保存的数据引用
+          lastSavedDataRef.current = JSON.stringify(formDataFromDraft);
+          if (savedAt) {
+            setLastSaved(new Date(savedAt));
+          }
+        }
+      } catch (error) {
+        console.error(t("proposalCreate.errors.loadDraftFailed"), error);
       }
-    } catch (error) {
-      console.error(t("proposalCreate.errors.loadDraftFailed"), error);
     }
+
+    // 清理定时器
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [userInfo?.did]);
 
   // const clearDraft = useCallback(() => {
   //   try {
@@ -127,53 +208,78 @@ export default function CreateProposal() {
   //   }
   // }, [t]);
 
-  // 自动保存功能
+  // 自动保存功能（使用防抖）
   useEffect(() => {
-    if (!isClient) return;
+    if (!isClient || !userInfo?.did) return;
 
-    const timeoutId = setTimeout(() => {
-      // 检查表单是否有内容
-      const hasContent =
-        formData.title ||
-        formData.background ||
-        formData.goals ||
-        formData.team ||
-        formData.budget ||
-        formData.milestones.length > 0;
+    // 使用防抖保存
+    debouncedSaveDraft(formData);
 
-      if (hasContent) {
-        saveDraft(formData);
+    // 清理函数
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
-    }, 2000); // 2秒后自动保存
+    };
+  }, [formData, isClient, userInfo?.did, debouncedSaveDraft]);
 
-    return () => clearTimeout(timeoutId);
-  }, [formData, isClient, saveDraft]);
-
-  // 页面离开时保存草稿
+  // 页面可见性变化时保存（用户切换标签页时）
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      const hasContent =
-        formData.title ||
-        formData.background ||
-        formData.goals ||
-        formData.team ||
-        formData.budget ||
-        formData.milestones.length > 0;
+    if (!isClient || !userInfo?.did) return;
 
-      if (hasContent) {
-        saveDraft(formData);
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // 页面隐藏时，立即保存（不使用防抖）
+        if (hasContent(formData)) {
+          saveDraft(formData, true);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [formData, isClient, userInfo?.did, saveDraft, hasContent]);
+
+  // 页面离开时保存草稿（同步保存，确保不丢失数据）
+  useEffect(() => {
+    if (!isClient || !userInfo?.did) return;
+
+    const handleBeforeUnload = () => {
+      // 只有在有内容且数据有变化时才保存
+      if (hasContent(formData) && hasDataChanged(formData, lastSavedDataRef.current)) {
+        // 同步保存（使用同步 API，因为异步在 beforeunload 中可能不执行）
+        try {
+          const draftData = {
+            ...formData,
+            savedAt: new Date().toISOString(),
+            version: 1,
+          };
+          const cacheItem = {
+            data: draftData,
+            timestamp: Date.now(),
+            expiry: Date.now() + 24 * 24 * 60 * 60 * 1000,
+          };
+          const draftKey = `@dao:proposal_draft:${userInfo.did}`;
+          window.localStorage.setItem(draftKey, JSON.stringify(cacheItem));
+        } catch (error) {
+          console.error("页面离开时保存草稿失败:", error);
+        }
       }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [formData, saveDraft]);
+  }, [formData, isClient, userInfo?.did, hasContent, hasDataChanged]);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [activeMilestoneIndex, setActiveMilestoneIndex] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
+  // 草稿保存状态（可用于 UI 显示）
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isDraftSaving, setIsDraftSaving] = useState(false);
+  // 最后保存时间（可用于 UI 显示）
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // 里程碑管理函数
@@ -422,7 +528,9 @@ export default function CreateProposal() {
       });
 
       // 删除草稿
-      localStorage.removeItem(DRAFT_KEY);
+      if (userInfo?.did) {
+        storage.removeProposalDraft(userInfo.did);
+      }
 
       toast.success(t("proposalCreate.messages.submitSuccess"));
       // 跳转到详情页面，传递 cid 参数

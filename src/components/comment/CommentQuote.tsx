@@ -6,7 +6,7 @@ import "./comment.css";
 import Avatar from "@/components/common/Avatar";
 import useUserInfoStore from "@/store/userInfo";
 import { useI18n } from "@/contexts/I18nContext";
-import RichTextEditor from "@/components/common/RichTextEditor";
+import VditorRichTextEditor from "@/components/common/VditorRichTextEditor";
 
 export default function CommentQuote({
   onSubmit,
@@ -50,12 +50,13 @@ export default function CommentQuote({
         <Avatar did={userInfo?.did} size={40} alt="avatar" />
       </div>
       <div className="comment-quote-main">
-        <RichTextEditor
+        <VditorRichTextEditor
           value={content}
           onChange={setContent}
           placeholder={placeholder || messages.comment.placeholder}
           did={userInfo?.did}
           toolbarPreset="simple"
+          mode="ir"
           loadingText={messages.comment.editorLoading}
         />
         <div className="comment-quote-actions">
