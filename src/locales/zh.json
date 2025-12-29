@@ -7,7 +7,8 @@
     "learn": "学习",
     "examples": "示例",
     "goToNextjs": "前往 nextjs.org →",
-    "backToHome": "返回主页"
+    "backToHome": "返回主页",
+    "cancel": "取消"
   },
   "errors": {
     "noPermission": "无权限查看当前页面!",
@@ -145,6 +146,21 @@
       "createVoteFailed": "创建投票元数据失败"
     },
     "required": "必填"
+  },
+  "updateReceiverAddr": {
+    "title": "添加项目方金库钱包地址",
+    "addressLabel": "钱包地址",
+    "addressPlaceholder": "请输入 CKB 钱包地址",
+    "proposalUri": "提案 URI",
+    "submit": "提交",
+    "addButton": "添加钱包地址",
+    "success": "钱包地址提交成功",
+    "errors": {
+      "userNotLoggedIn": "请先登录",
+      "addressRequired": "请输入钱包地址",
+      "invalidAddress": "请输入有效的 CKB 地址",
+      "submitFailed": "提交失败，请重试"
+    }
   },
   "management": {
     "title": "管理中心",

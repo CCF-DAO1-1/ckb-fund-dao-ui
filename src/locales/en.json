@@ -7,7 +7,8 @@
     "learn": "Learn",
     "examples": "Examples",
     "goToNextjs": "Go to nextjs.org →",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "cancel": "Cancel"
   },
   "errors": {
     "noPermission": "No permission to view this page!",
@@ -109,6 +110,21 @@
       "createVoteFailed": "Failed to create vote metadata"
     },
     "required": "Required"
+  },
+  "updateReceiverAddr": {
+    "title": "Add Project Treasury Wallet Address",
+    "addressLabel": "Wallet Address",
+    "addressPlaceholder": "Please enter CKB wallet address",
+    "proposalUri": "Proposal URI",
+    "submit": "Submit",
+    "addButton": "Add Wallet Address",
+    "success": "Wallet address submitted successfully",
+    "errors": {
+      "userNotLoggedIn": "Please login first",
+      "addressRequired": "Please enter wallet address",
+      "invalidAddress": "Please enter a valid CKB address",
+      "submitFailed": "Failed to submit, please try again"
+    }
   },
   "management": {
     "title": "Management Center",

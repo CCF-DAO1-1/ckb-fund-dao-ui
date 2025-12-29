@@ -501,3 +501,38 @@ export const getVoteDetail = defineAPI<
     },
   }
 );
+
+// 更新项目金库地址参数类型
+export interface UpdateReceiverAddrParams {
+  did: string; // 用户DID
+  params: {
+    proposal_uri?: string; // 提案URI（可选）
+    receiver_addr: string; // 接收地址
+    timestamp: number; // 时间戳
+  };
+  signed_bytes: string; // 签名字节（顶层）
+  signing_key_did: string; // 签名密钥DID（顶层）
+}
+
+// 更新项目金库地址响应类型
+export interface UpdateReceiverAddrResponse {
+  success: boolean;
+  [key: string]: unknown;
+}
+
+/**
+ * 更新项目金库地址
+ * POST /api/proposal/update_receiver_addr
+ */
+export const updateReceiverAddr = defineAPI<
+  UpdateReceiverAddrParams,
+  UpdateReceiverAddrResponse
+>(
+  "/proposal/update_receiver_addr",
+  "POST",
+  {
+    divider: {
+      body: ["did", "params", "signed_bytes", "signing_key_did"],
+    },
+  }
+);

@@ -192,8 +192,8 @@ export async function requestAPI(url: string, config: RequestConfig) {
     // 如果是 token 过期，尝试刷新 token 并重试
     if (isTokenExpired) {
       if (pdsClient.session?.refreshJwt) {
-        try {
-          console.log('Token 过期，尝试刷新 token...');
+      try {
+        console.log('Token 过期，尝试刷新 token...');
           
           // 如果正在刷新，等待刷新完成
           let newAccessToken: string;
@@ -202,16 +202,16 @@ export async function requestAPI(url: string, config: RequestConfig) {
           } else {
             newAccessToken = await refreshAccessToken();
           }
-          
-          // 使用新的 token 重试请求
-          response = await makeRequest(newAccessToken);
-          
-          console.log('Token 刷新成功，重试请求成功:', {
-            url,
-            status: response.status
-          });
-        } catch (refreshError) {
-          console.error('刷新 token 失败:', refreshError);
+        
+        // 使用新的 token 重试请求
+        response = await makeRequest(newAccessToken);
+        
+        console.log('Token 刷新成功，重试请求成功:', {
+          url,
+          status: response.status
+        });
+      } catch (refreshError) {
+        console.error('刷新 token 失败:', refreshError);
           // 刷新失败，清除 session 并抛出错误
           if (!isServer) {
             // 可以在这里触发登出逻辑
@@ -280,7 +280,7 @@ export async function requestAPI(url: string, config: RequestConfig) {
       // 没有 refreshJwt，需要重新登录
       console.warn('响应返回 401 且没有 refresh token，需要重新登录');
       if (!isServer) {
-        // throttleLogout();
+    // throttleLogout();
       }
     }
   }

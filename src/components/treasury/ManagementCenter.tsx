@@ -9,6 +9,8 @@ import { TaskItem } from "@/server/task";
 import { useTranslation } from "@/utils/i18n";
 import { useI18n } from "@/contexts/I18nContext";
 import { useRouter } from "next/navigation";
+import UpdateReceiverAddrModal from "./UpdateReceiverAddrModal";
+import useUserInfoStore from "@/store/userInfo";
 
 interface ProposalItem {
   id: string;
@@ -21,6 +23,8 @@ interface ProposalItem {
   progress?: string;
   uri: string; // 添加uri字段用于跳转
   budget?: number; // 添加预算字段
+  message?: string; // 任务消息，用于判断任务类型
+  rawTask?: TaskItem; // 保留原始任务数据
 }
 
 // 任务类型枚举映射（根据后端枚举值）
@@ -94,6 +98,8 @@ const adaptTaskData = (task: TaskItem, t: (key: string) => string, locale: 'en' 
     isNew: false, // 可以根据创建时间判断是否为新任务
     uri: uri,
     budget: budget,
+    message: task.message, // 保留任务消息
+    rawTask: task, // 保留原始任务数据
   };
 };
 
@@ -103,11 +109,14 @@ export default function ManagementCenter() {
   const { t } = useTranslation();
   const { locale } = useI18n();
   const router = useRouter();
+  const { userInfo } = useUserInfoStore();
   const [activeTab, setActiveTab] = useState("pending");
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedProposal, setSelectedProposal] = useState<ProposalItem | undefined>(undefined);
+  const [showUpdateAddrModal, setShowUpdateAddrModal] = useState(false);
+  const [selectedTaskForAddr, setSelectedTaskForAddr] = useState<TaskItem | undefined>(undefined);
 
   // 使用任务列表数据
   const { 
@@ -241,6 +250,26 @@ export default function ManagementCenter() {
     setSelectedProposal(undefined);
   };
 
+  // 处理添加钱包地址
+  const handleAddReceiverAddr = (proposal: ProposalItem) => {
+    if (proposal.rawTask) {
+      setSelectedTaskForAddr(proposal.rawTask);
+      setShowUpdateAddrModal(true);
+    }
+  };
+
+  const handleUpdateAddrSuccess = () => {
+    // 刷新任务列表
+    refetch();
+    setShowUpdateAddrModal(false);
+    setSelectedTaskForAddr(undefined);
+  };
+
+  const handleUpdateAddrModalClose = () => {
+    setShowUpdateAddrModal(false);
+    setSelectedTaskForAddr(undefined);
+  };
+
   return (
     <div className="management-center">
       {/* 顶部标签页 */}
@@ -353,6 +382,24 @@ export default function ManagementCenter() {
                             {t("taskModal.buttons.createVote")}
                           </button>
                         )}
+                        {proposal.message === "UpdateReceiverAddr" && (
+                          <button
+                            className="add-addr-button"
+                            onClick={() => handleAddReceiverAddr(proposal)}
+                            style={{
+                              marginLeft: "8px",
+                              padding: "6px 12px",
+                              backgroundColor: "#00CC9B",
+                              color: "#000000",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "14px",
+                            }}
+                          >
+                            {t("updateReceiverAddr.addButton") || "添加钱包地址"}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -395,6 +442,14 @@ export default function ManagementCenter() {
         onComplete={handleTaskComplete}
         taskType={selectedProposal?.taskType}
         proposal={selectedProposal}
+      />
+
+      {/* 添加钱包地址Modal */}
+      <UpdateReceiverAddrModal
+        isOpen={showUpdateAddrModal}
+        onClose={handleUpdateAddrModalClose}
+        onSuccess={handleUpdateAddrSuccess}
+        proposalUri={selectedTaskForAddr?.target?.uri}
       />
     </div>
   );
