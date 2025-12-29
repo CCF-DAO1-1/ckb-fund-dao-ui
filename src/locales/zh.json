@@ -237,7 +237,22 @@
     "fileTooLarge": "文件大小不能超过 5MB",
     "invalidFileType": "只支持图片文件",
     "noFileSelected": "未选择文件",
-    "uploadError": "上传失败，请重试"
+    "uploadError": "上传失败，请重试",
+    "normal": "正文",
+    "heading1": "标题 1",
+    "heading2": "标题 2",
+    "heading3": "标题 3",
+    "bold": "粗体",
+    "italic": "斜体",
+    "underline": "下划线",
+    "code": "代码",
+    "link": "链接",
+    "insertImage": "插入图片",
+    "bulletList": "项目符号列表",
+    "numberedList": "编号列表",
+    "quote": "引用",
+    "blockFormat": "块格式",
+    "enterLinkUrl": "请输入链接地址"
   },
   "alerts": {
     "selectVoteTime": "请选择投票开始和结束时间",

@@ -201,7 +201,22 @@
     "fileTooLarge": "File size cannot exceed 5MB",
     "invalidFileType": "Only image files are supported",
     "noFileSelected": "No file selected",
-    "uploadError": "Upload failed, please try again"
+    "uploadError": "Upload failed, please try again",
+    "normal": "Normal",
+    "heading1": "Heading 1",
+    "heading2": "Heading 2",
+    "heading3": "Heading 3",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "code": "Code",
+    "link": "Link",
+    "insertImage": "Insert Image",
+    "bulletList": "Bullet List",
+    "numberedList": "Numbered List",
+    "quote": "Quote",
+    "blockFormat": "Block Format",
+    "enterLinkUrl": "Enter link URL"
   },
   "alerts": {
     "selectVoteTime": "Please select vote start and end time",

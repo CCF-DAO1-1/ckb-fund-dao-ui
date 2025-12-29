@@ -15,7 +15,6 @@ import TeamIntroduction from "@/components/proposal-steps/TeamIntroduction";
 import ProjectBudget from "@/components/proposal-steps/ProjectBudget";
 import ProjectMilestones from "@/components/proposal-steps/ProjectMilestones";
 import { updatePDSRecord } from "@/server/pds";
-import { useImageUpload } from "@/hooks/useImageUpload";
 import useUserInfoStore from "@/store/userInfo";
 import { useI18n } from "@/contexts/I18nContext";
 import { postUriToHref, getPostUriHref } from "@/lib/postUriHref";
@@ -189,40 +188,10 @@ export default function EditProposal({ params }: EditProposalProps) {
         }));
     };
 
-    // Quill 编辑器图片上传配置
-    const imageHandler = useImageUpload(userInfo?.did);
-
-    const quillModules = useMemo(() => ({
-        toolbar: {
-            container: [
-                [{ header: [1, 2, 3, false] }],
-                ["bold", "italic", "underline", "strike"],
-                [{ list: "ordered" }, { list: "bullet" }],
-                ["blockquote", "code-block"],
-                ["link", "image"],
-                [{ color: [] }, { background: [] }],
-                ["clean"],
-            ],
-            handlers: {
-                image: imageHandler,
-            },
-        },
-    }), [imageHandler]);
-
-    const quillFormats = [
-        "header",
-        "bold",
-        "italic",
-        "underline",
-        "strike",
-        "list",
-        "blockquote",
-        "code-block",
-        "link",
-        "image",
-        "color",
-        "background",
-    ];
+    // 保留 quillModules 和 quillFormats 以保持向后兼容（虽然不再使用）
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const quillModules = useMemo(() => ({} as any), []);
+    const quillFormats = useMemo(() => [] as string[], []);
 
     const handleInputChange = (
         e: React.ChangeEvent<
