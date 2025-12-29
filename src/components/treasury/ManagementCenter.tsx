@@ -10,7 +10,7 @@ import { useTranslation } from "@/utils/i18n";
 import { useI18n } from "@/contexts/I18nContext";
 import { useRouter } from "next/navigation";
 import UpdateReceiverAddrModal from "./UpdateReceiverAddrModal";
-import useUserInfoStore from "@/store/userInfo";
+import SendFundsModal from "./SendFundsModal";
 
 interface ProposalItem {
   id: string;
@@ -24,23 +24,39 @@ interface ProposalItem {
   uri: string; // 添加uri字段用于跳转
   budget?: number; // 添加预算字段
   message?: string; // 任务消息，用于判断任务类型
-  rawTask?: TaskItem; // 保留原始任务数据
 }
 
 // 任务类型枚举映射（根据后端枚举值）
-// 任务类型：1=CreateAMA, 3=InitiationVote等（根据实际后端枚举值调整）
+// task_type 数字映射到翻译键
+// 
+// message 字段的枚举值（来自 task 列表接口）：
+// - CreateAMA
+// - SubmitAMAReport
+// - InitiationVote
+// - UpdateReceiverAddr
+// - SendInitialFund
+// - SubmitMilestoneReport
+// - SubmitDelayReport
+// - SendMilestoneFund
+// - SubmitAcceptanceReport
+// - CreateReexamineMeeting
+// - ReexamineVote
+// - RectificationVote
+// - SubmitRectificationReport
 const TASK_TYPE_MAP: Record<number, string> = {
   1: 'organizeAMA', // CreateAMA
-  2: 'publishMinutes', // SubmitAMAReport (假设，需要根据实际枚举确认)
+  2: 'publishMinutes', // SubmitAMAReport
   3: 'createVote', // InitiationVote
-  4: 'milestoneAllocation', // UpdateReceiverAddr (假设，需要根据实际枚举确认)
+  4: 'milestoneAllocation', // UpdateReceiverAddr
   5: 'milestoneAllocation', // SendInitialFund
-  6: 'publishReport', // SubmitReport (假设，需要根据实际枚举确认)
-  7: 'milestoneVerification', // SubmitAcceptanceReport (假设，需要根据实际枚举确认)
-  8: 'organizeMeeting', // CreateReexamineMeeting
-  9: 'createVote', // ReexamineVote
-  10: 'createVote', // RectificationVote
-  11: 'publishReport', // SubmitRectificationReport (假设，需要根据实际枚举确认)
+  6: 'publishReport', // SubmitMilestoneReport
+  7: 'publishReport', // SubmitDelayReport
+  8: 'milestoneAllocation', // SendMilestoneFund
+  9: 'milestoneVerification', // SubmitAcceptanceReport
+  10: 'organizeMeeting', // CreateReexamineMeeting
+  11: 'createVote', // ReexamineVote
+  12: 'createVote', // RectificationVote
+  13: 'publishReport', // SubmitRectificationReport
 };
 
 // 将任务类型数字映射到翻译键
@@ -99,7 +115,6 @@ const adaptTaskData = (task: TaskItem, t: (key: string) => string, locale: 'en' 
     uri: uri,
     budget: budget,
     message: task.message, // 保留任务消息
-    rawTask: task, // 保留原始任务数据
   };
 };
 
@@ -109,14 +124,18 @@ export default function ManagementCenter() {
   const { t } = useTranslation();
   const { locale } = useI18n();
   const router = useRouter();
-  const { userInfo } = useUserInfoStore();
-  const [activeTab, setActiveTab] = useState("pending");
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  // UI 状态
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedProposal, setSelectedProposal] = useState<ProposalItem | undefined>(undefined);
   const [showUpdateAddrModal, setShowUpdateAddrModal] = useState(false);
   const [selectedTaskForAddr, setSelectedTaskForAddr] = useState<TaskItem | undefined>(undefined);
+  const [showSendFundsModal, setShowSendFundsModal] = useState(false);
+  const [selectedTaskForFunds, setSelectedTaskForFunds] = useState<TaskItem | undefined>(undefined);
+  
+  // 筛选状态（暂时未使用，保留用于未来功能）
+  // const [activeTab, setActiveTab] = useState("pending");
+  // const [activeFilter, setActiveFilter] = useState("all");
+  // const [searchQuery, setSearchQuery] = useState("");
 
   // 使用任务列表数据
   const { 
@@ -140,126 +159,47 @@ export default function ManagementCenter() {
     }
   }, [errorCode, locale, router]);
 
-  // 转换数据格式
+  // 转换任务数据格式
   const proposals = useMemo(() => {
     return rawTasks.map(task => adaptTaskData(task, t, locale));
   }, [rawTasks, t, locale]);
 
-  // 计算筛选选项的计数
-  // const filterCounts = useMemo(() => {
-  //   const counts = {
-  //     all: proposals.length,
-  //     ama: proposals.filter(p => p.taskType === t("taskTypes.organizeAMA")).length,
-  //     milestone: proposals.filter(p => p.taskType === t("taskTypes.milestoneVerification")).length,
-  //     allocation: proposals.filter(p => p.taskType === t("taskTypes.milestoneAllocation")).length,
-  //     completion: proposals.filter(p => p.taskType === t("taskTypes.publishReport")).length,
-  //   };
-
-  //   return getFilterOptions(t).map(option => ({
-  //     ...option,
-  //     count: counts[option.key as keyof typeof counts] || 0
-  //   }));
-  // }, [proposals, t]);
-
-  // 根据筛选条件过滤提案
-  const filteredProposals = useMemo(() => {
-    let filtered = proposals;
-
-    // 根据标签页过滤
-    if (activeTab === "new") {
-      filtered = filtered.filter(p => p.isNew);
-    } else if (activeTab === "pending") {
-      filtered = filtered.filter(p =>
-        p.status === ProposalStatus.REVIEW ||
-        p.status === ProposalStatus.VOTE ||
-        p.status === ProposalStatus.MILESTONE
-      );
-    }
-
-    // 根据筛选器过滤
-    if (activeFilter !== "all") {
-      switch (activeFilter) {
-        case "ama":
-          filtered = filtered.filter(p => p.taskType === t("taskTypes.organizeAMA"));
-          break;
-        case "milestone":
-          filtered = filtered.filter(p => p.taskType === t("taskTypes.milestoneVerification"));
-          break;
-        case "allocation":
-          filtered = filtered.filter(p => p.taskType === t("taskTypes.milestoneAllocation"));
-          break;
-        case "completion":
-          filtered = filtered.filter(p => p.taskType === t("taskTypes.publishReport"));
-          break;
-      }
-    }
-
-    // 根据搜索查询过滤
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(query) ||
-        p.type.toLowerCase().includes(query) ||
-        p.taskType.toLowerCase().includes(query)
-      );
-    }
-
-    return filtered;
-  }, [proposals, activeTab, activeFilter, searchQuery, t]);
-
   // 标记新任务（创建时间在24小时内的）
-  useEffect(() => {
+  const proposalsWithNewFlag = useMemo(() => {
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-    proposals.forEach(proposal => {
+    
+    return proposals.map(proposal => {
       const task = rawTasks.find(t => t.id.toString() === proposal.id);
       if (task) {
         const createdDate = new Date(task.created);
-        proposal.isNew = createdDate > oneDayAgo;
+        return { ...proposal, isNew: createdDate > oneDayAgo };
       }
+      return proposal;
     });
   }, [proposals, rawTasks]);
 
+  // 根据筛选条件过滤提案（当前显示所有任务，筛选功能暂时未启用）
+  const filteredProposals = useMemo(() => {
+    // 暂时返回所有提案，筛选功能可以后续启用
+    return proposalsWithNewFlag;
+  }, [proposalsWithNewFlag]);
 
-  // const handleTaskProcess = (proposal: ProposalItem) => {
-  //   setSelectedProposal(proposal);
-  //   setShowTaskModal(true);
-  // };
 
-  const handleCreateVote = (proposal: ProposalItem) => {
-    setSelectedProposal({ ...proposal, taskType: t("taskTypes.createVote") });
-    setShowTaskModal(true);
-  };
 
-  const handleTaskComplete = (data: unknown) => {
-    console.log("任务完成数据:", data);
 
-    // 如果是投票创建任务，刷新任务列表
-    if (selectedProposal?.taskType === t("taskTypes.createVote")) {
-      console.log("投票创建成功，刷新任务列表");
-      refetch();
-    }
-
-    setShowTaskModal(false);
-    setSelectedProposal(undefined);
-  };
-
-  const handleTaskModalClose = () => {
-    setShowTaskModal(false);
-    setSelectedProposal(undefined);
-  };
-
-  // 处理添加钱包地址
+  // ========== 任务操作处理函数 ==========
+  
+  // 添加钱包地址相关
   const handleAddReceiverAddr = (proposal: ProposalItem) => {
-    if (proposal.rawTask) {
-      setSelectedTaskForAddr(proposal.rawTask);
+    const task = rawTasks.find(t => t.id.toString() === proposal.id);
+    if (task) {
+      setSelectedTaskForAddr(task);
       setShowUpdateAddrModal(true);
     }
   };
 
   const handleUpdateAddrSuccess = () => {
-    // 刷新任务列表
     refetch();
     setShowUpdateAddrModal(false);
     setSelectedTaskForAddr(undefined);
@@ -270,52 +210,49 @@ export default function ManagementCenter() {
     setSelectedTaskForAddr(undefined);
   };
 
+  // 拨款相关
+  const handleSendFunds = (proposal: ProposalItem) => {
+    const task = rawTasks.find(t => t.id.toString() === proposal.id);
+    if (task) {
+      setSelectedTaskForFunds(task);
+      setShowSendFundsModal(true);
+    }
+  };
+
+  const handleSendFundsSuccess = () => {
+    refetch();
+    setShowSendFundsModal(false);
+    setSelectedTaskForFunds(undefined);
+  };
+
+  const handleSendFundsModalClose = () => {
+    setShowSendFundsModal(false);
+    setSelectedTaskForFunds(undefined);
+  };
+
+  // 创建投票相关
+  const handleCreateVote = (proposal: ProposalItem) => {
+    setSelectedProposal({ ...proposal, taskType: t("taskTypes.createVote") });
+    setShowTaskModal(true);
+  };
+
+  const handleTaskComplete = (data: unknown) => {
+    console.log("任务完成数据:", data);
+    if (selectedProposal?.taskType === t("taskTypes.createVote")) {
+      refetch();
+    }
+    setShowTaskModal(false);
+    setSelectedProposal(undefined);
+  };
+
+  const handleTaskModalClose = () => {
+    setShowTaskModal(false);
+    setSelectedProposal(undefined);
+  };
+
   return (
     <div className="management-center">
-      {/* 顶部标签页 */}
-      {/* <div className="management-tabs">
-        <button
-          className={`tab-button ${activeTab === "pending" ? "active" : ""}`}
-          onClick={() => setActiveTab("pending")}
-        >
-          {t("managementCenter.newProposals")}
-        </button>
-        <button
-          className={`tab-button ${activeTab === "new" ? "active" : ""}`}
-          onClick={() => setActiveTab("new")}
-        >
-          {t("managementCenter.newProposals")}
-          <span className="badge">{proposals.filter(p => p.isNew).length}</span>
-        </button>
-      </div> */}
-
-      {/* 筛选按钮 */}
-      <div className="filter-section">
-        {/* <div className="filter-buttons">
-          {filterCounts.map((option) => (
-            <button
-              key={option.key}
-              className={`filter-button ${
-                activeFilter === option.key ? "active" : ""
-              }`}
-              onClick={() => setActiveFilter(option.key)}
-            >
-              {option.label} ({option.count})
-            </button>
-          ))}
-        </div> */}
-
-        {/* 搜索框 */}
-        {/* <div className="search-section">
-          <input
-            type="search"
-            placeholder={t("managementCenter.searchProposals")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="management-search-input"
-          />
-        </div> */}
-      </div>
+      {/* 筛选和搜索功能暂时未启用，保留用于未来扩展 */}
 
       {/* 提案表格 */}
       <div className="proposals-table">
@@ -352,7 +289,13 @@ export default function ManagementCenter() {
                   </td>
                 </tr>
               ) : (
-                filteredProposals.map((proposal) => (
+                filteredProposals.map((proposal) => {
+                  // 使用 proposal.message 判断任务类型
+                  const taskMessage = proposal.message;
+                  const isUpdateReceiverAddr = taskMessage === "UpdateReceiverAddr";
+                  const isSendInitialFund = taskMessage === "SendInitialFund";
+                  
+                  return (
                   <tr key={proposal.id}>
                     <td>
                       <div className="proposal-name">
@@ -382,7 +325,7 @@ export default function ManagementCenter() {
                             {t("taskModal.buttons.createVote")}
                           </button>
                         )}
-                        {proposal.message === "UpdateReceiverAddr" && (
+                        {isUpdateReceiverAddr && (
                           <button
                             className="add-addr-button"
                             onClick={() => handleAddReceiverAddr(proposal)}
@@ -400,32 +343,51 @@ export default function ManagementCenter() {
                             {t("updateReceiverAddr.addButton") || "添加钱包地址"}
                           </button>
                         )}
+                        {isSendInitialFund && (
+                          <button
+                            className="send-funds-button"
+                            onClick={() => handleSendFunds(proposal)}
+                            style={{
+                              marginLeft: "8px",
+                              padding: "6px 12px",
+                              backgroundColor: "#00CC9B",
+                              color: "#000000",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "14px",
+                            }}
+                          >
+                            {t("sendFunds.button") || "拨款"}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
         )}
 
         {/* 分页组件 */}
-        {!loading && !error && totalPages && totalPages > 1 && (
+        {!loading && !error && (
           <div className="task-pagination">
             <button
               className="pagination-button"
-              disabled={page <= 1}
+              disabled={!totalPages || page <= 1}
               onClick={() => setPage(page - 1)}
               aria-label="上一页"
             >
               ‹
             </button>
             <span className="pagination-info">
-              {page} / {totalPages}
+              {page} {totalPages ? `/ ${totalPages}` : ''}
             </span>
             <button
               className="pagination-button"
-              disabled={page >= totalPages}
+              disabled={!totalPages || page >= totalPages}
               onClick={() => setPage(page + 1)}
               aria-label="下一页"
             >
@@ -450,6 +412,14 @@ export default function ManagementCenter() {
         onClose={handleUpdateAddrModalClose}
         onSuccess={handleUpdateAddrSuccess}
         proposalUri={selectedTaskForAddr?.target?.uri}
+      />
+
+      {/* 拨款Modal */}
+      <SendFundsModal
+        isOpen={showSendFundsModal}
+        onClose={handleSendFundsModalClose}
+        onSuccess={handleSendFundsSuccess}
+        proposalUri={selectedTaskForFunds?.target?.uri}
       />
     </div>
   );

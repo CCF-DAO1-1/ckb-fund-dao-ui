@@ -126,6 +126,21 @@
       "submitFailed": "Failed to submit, please try again"
     }
   },
+  "sendFunds": {
+    "title": "Send Funds",
+    "amountLabel": "Amount",
+    "amountPlaceholder": "Please enter funding amount",
+    "proposalUri": "Proposal URI",
+    "submit": "Submit",
+    "button": "Send Funds",
+    "success": "Funds sent successfully",
+    "errors": {
+      "userNotLoggedIn": "Please login first",
+      "amountRequired": "Please enter funding amount",
+      "invalidAmount": "Please enter a valid amount (number greater than 0)",
+      "submitFailed": "Failed to submit, please try again"
+    }
+  },
   "management": {
     "title": "Management Center",
     "proposalManagement": "Proposal Management",

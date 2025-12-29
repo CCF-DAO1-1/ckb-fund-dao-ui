@@ -76,3 +76,38 @@ export const getTaskList = defineAPI<
     },
   }
 );
+
+// 拨款参数类型
+export interface SendFundsParams {
+  did: string; // 用户DID
+  params: {
+    amount: string; // 拨款金额
+    proposal_uri: string; // 提案URI
+    timestamp: number; // 时间戳
+  };
+  signed_bytes: string; // 签名字节（顶层）
+  signing_key_did: string; // 签名密钥DID（顶层）
+}
+
+// 拨款响应类型
+export interface SendFundsResponse {
+  success: boolean;
+  [key: string]: unknown;
+}
+
+/**
+ * 拨款
+ * POST /api/task/send_funds
+ */
+export const sendFunds = defineAPI<
+  SendFundsParams,
+  SendFundsResponse
+>(
+  "/task/send_funds",
+  "POST",
+  {
+    divider: {
+      body: ["did", "params", "signed_bytes", "signing_key_did"],
+    },
+  }
+);
