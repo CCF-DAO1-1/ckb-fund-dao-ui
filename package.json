@@ -55,6 +55,12 @@
     "react-spinners": "^0.17.0",
     "react-tooltip": "^5.29.1",
     "vditor": "^3.11.2",
+    "@tiptap/react": "^2.1.13",
+    "@tiptap/starter-kit": "^2.1.13",
+    "@tiptap/extension-image": "^2.1.13",
+    "@tiptap/extension-link": "^2.1.13",
+    "@tiptap/extension-placeholder": "^2.1.13",
+    "@tiptap/extension-underline": "^2.1.13",
     "web5-api": "^0.0.27",
     "zustand": "^5.0.8"
   },

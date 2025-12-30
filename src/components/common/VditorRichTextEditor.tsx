@@ -20,7 +20,7 @@ export interface VditorRichTextEditorProps {
   loadingText?: string; // 加载状态文本
   className?: string;
   style?: React.CSSProperties;
-  mode?: "wysiwyg" | "sv" | "ir"; // 编辑器模式：所见即所得、分屏预览、即时渲染
+  mode?: "wysiwyg" | "sv" | "ir"; // 编辑器模式：所见即所得、分屏预览、即时渲染（默认使用 IR 模式，符合 bbs-fe 风格）
 }
 
 export default function VditorRichTextEditor({
@@ -33,7 +33,7 @@ export default function VditorRichTextEditor({
   loadingText,
   className = "",
   style,
-  mode = "wysiwyg",
+  mode = "ir", // 默认使用 IR 模式（即时渲染），符合 bbs-fe 项目风格
 }: VditorRichTextEditorProps) {
   const [isClient, setIsClient] = useState(false);
   const vditorRef = useRef<Vditor | null>(null);
@@ -283,11 +283,11 @@ export default function VditorRichTextEditor({
     }
 
     // 工具栏配置
-    // 注意：在 wysiwyg 模式下，某些工具栏选项可能不支持
+    // 参考 bbs-fe 项目的工具栏配置，提供更完整的编辑功能
     const toolbarConfig: string[] = [];
     if (toolbarPreset === "full") {
       if (mode === "wysiwyg") {
-        // WYSIWYG 模式下的工具栏
+        // WYSIWYG 模式下的工具栏（所见即所得模式）
         toolbarConfig.push(
           "headings",
           "bold",
@@ -297,16 +297,22 @@ export default function VditorRichTextEditor({
           "|",
           "list",
           "ordered-list",
+          "check",
           "|",
           "quote",
-     
-         
-         
+          "code",
+          "|",
           "upload",
-      
+          "|",
+          "undo",
+          "redo",
+          "|",
+          "fullscreen",
+          "preview",
+          "outline"
         );
-      } else {
-        // SV 或 IR 模式下的工具栏 - 移除预览相关按钮
+      } else if (mode === "ir") {
+        // IR 模式下的工具栏（即时渲染模式）
         toolbarConfig.push(
           "headings",
           "bold",
@@ -322,14 +328,57 @@ export default function VditorRichTextEditor({
           "|",
           "quote",
           "line",
-         
+          "code",
+          "inline-code",
           "|",
-         
           "upload",
-         
+          "link-to-img",
+          "|",
+          "table",
+          "|",
+          "undo",
+          "redo",
+          "|",
+          "fullscreen",
+          "preview",
+          "outline"
+        );
+      } else {
+        // SV 模式下的工具栏（分屏预览模式）
+        toolbarConfig.push(
+          "headings",
+          "bold",
+          "italic",
+          "strike",
+          "link",
+          "|",
+          "list",
+          "ordered-list",
+          "check",
+          "outdent",
+          "indent",
+          "|",
+          "quote",
+          "line",
+          "code",
+          "inline-code",
+          "|",
+          "upload",
+          "link-to-img",
+          "|",
+          "table",
+          "|",
+          "undo",
+          "redo",
+          "|",
+          "both",
+          "preview",
+          "fullscreen",
+          "outline"
         );
       }
     } else if (toolbarPreset === "simple") {
+      // 简化工具栏
       toolbarConfig.push(
         "headings",
         "bold",
@@ -341,7 +390,6 @@ export default function VditorRichTextEditor({
         "ordered-list",
         "|",
         "quote",
-       
         "|",
         "upload",
         "|",
@@ -350,16 +398,34 @@ export default function VditorRichTextEditor({
     }
 
     // 创建 Vditor 配置对象
-    // 在 wysiwyg 模式下，不设置 toolbar 以避免 customWysiwygToolbar 错误
+    // 参考 bbs-fe 项目的配置，优化编辑器体验
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const vditorConfig: any = {
       value: value || "",
       placeholder: placeholder || "Enter text...",
       height: typeof height === "number" ? height : parseInt(height) || 200,
       mode,
+      minHeight: 200, // 最小高度
+      maxHeight: 800, // 最大高度（超过后出现滚动条）
       cache: {
         id: editorIdRef.current,
         enable: true,
+      },
+      // 编辑器选项
+      options: {
+        // 启用快捷键
+        hint: {
+          emoji: {
+            "+1": "👍",
+            "-1": "👎",
+            "confused": "😕",
+            "eyes": "👀",
+            "heart": "❤️",
+            "hooray": "🎉",
+            "laugh": "😄",
+            "rocket": "🚀",
+          },
+        },
       },
       upload: {
         accept: "image/*",
@@ -517,12 +583,20 @@ export default function VditorRichTextEditor({
       },
     };
 
-    // 在 wysiwyg 模式下，设置 customWysiwygToolbar 为函数以避免错误
-    // 在其他模式下，使用配置的工具栏
+    // 设置工具栏配置
+    // 在 wysiwyg 模式下，使用 customWysiwygToolbar
+    // 在其他模式下，使用 toolbar
     if (mode === "wysiwyg") {
-      // WYSIWYG 模式下，设置 customWysiwygToolbar 为一个返回空数组的函数
-      vditorConfig.customWysiwygToolbar = () => [];
+      // WYSIWYG 模式下，设置 customWysiwygToolbar
+      // 如果工具栏配置不为空，使用配置的工具栏
+      if (toolbarConfig && toolbarConfig.length > 0) {
+        vditorConfig.customWysiwygToolbar = toolbarConfig;
+      } else {
+        // 如果没有配置，使用默认工具栏
+        vditorConfig.customWysiwygToolbar = () => [];
+      }
     } else if (toolbarConfig && toolbarConfig.length > 0) {
+      // SV 或 IR 模式下，使用 toolbar
       vditorConfig.toolbar = toolbarConfig;
     }
 

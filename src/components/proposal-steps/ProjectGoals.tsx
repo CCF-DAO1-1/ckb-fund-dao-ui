@@ -33,9 +33,9 @@ const ProjectGoals: React.FC<ProjectGoalsProps> = ({
           {messages.proposalSteps.projectGoals.title}
         </label>
         <VditorRichTextEditor
-                value={formData.goals}
-                onChange={onInputChange}
-                placeholder={messages.proposalSteps.projectGoals.placeholder}
+          value={formData.goals}
+          onChange={onInputChange}
+          placeholder={messages.proposalSteps.projectGoals.placeholder}
           height="300px"
           did={userInfo?.did}
           toolbarPreset="full"
