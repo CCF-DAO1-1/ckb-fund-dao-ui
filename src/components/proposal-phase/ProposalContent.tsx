@@ -21,13 +21,15 @@ import { postUriToHref } from "@/lib/postUriHref";
 interface ProposalContentProps {
   proposal: ProposalDetailResponse;
   commentsCount: number;
-  onQuote: (selectedText: string) => void;
+  onQuote: (selectedText: string, onSubmit: (content: string) => void) => void;
+  commentSubmitFn?: (content: string) => void;
 }
 
 export default function ProposalContent({
   proposal,
   commentsCount,
   onQuote,
+  commentSubmitFn,
 }: ProposalContentProps) {
   const { messages, locale } = useI18n();
   const { userInfo } = useUserInfoStore();
@@ -206,7 +208,7 @@ export default function ProposalContent({
       </div>
 
       <div id="proposal-detail" className="proposal-detail">
-        <QuoteButton onQuote={onQuote} />
+        <QuoteButton onQuote={onQuote} commentSubmitFn={commentSubmitFn} />
         {/* 所有步骤内容按顺序展示 */}
         {steps.map((step) => (
           <div key={step.id} className="proposal-step-content">

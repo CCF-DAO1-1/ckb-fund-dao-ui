@@ -28,12 +28,26 @@ export default function CommentQuote({
   // 当quotedText变化时更新content
   useEffect(() => {
     if (quotedText && isClient) {
-      // 在现有内容之前插入引用内容，保留当前输入的内容
-      const quotedContent = `<blockquote>${quotedText}</blockquote><p><br></p>`;
+      // 参考 bbs-fe 的实现：使用更标准的引用格式
+      // 如果 quotedText 已经是 HTML，直接使用；否则转换为 HTML
+      const quotedHtml = quotedText.startsWith('<') 
+        ? quotedText 
+        : `<p>${quotedText.replace(/\n/g, '<br>')}</p>`;
+      
+      // 使用 blockquote 包裹引用内容，参考 bbs-fe 的格式
+      const quotedContent = `<blockquote>${quotedHtml}</blockquote>\n\n`;
+      
       setContent(prevContent => {
         // 如果已有内容，在前面插入引用；如果没有内容，直接设置引用
+        // 避免重复插入引用
+        if (prevContent.includes(quotedHtml)) {
+          return prevContent;
+        }
         return prevContent.trim() ? quotedContent + prevContent : quotedContent;
       });
+    } else if (!quotedText && isClient) {
+      // 如果 quotedText 被清空，也清空编辑器内容（可选）
+      // setContent("");
     }
   }, [quotedText, isClient]);
 

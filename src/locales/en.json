@@ -240,9 +240,14 @@
     "uploadSuccess": "Image upload success",
     "uploadFailed": "Image upload failed",
     "fileTooLarge": "File size cannot exceed 5MB",
-    "invalidFileType": "Only image files are supported",
+    "fileTooLargeOriginal": "File size cannot exceed 10MB. Large images will be automatically compressed.",
+    "invalidFileType": "Only image files are supported (JPG, PNG, GIF, WEBP, BMP, SVG)",
+    "invalidFile": "Invalid file",
+    "emptyFile": "File is empty",
     "noFileSelected": "No file selected",
     "uploadError": "Upload failed, please try again",
+    "files": "files",
+    "file": "file",
     "normal": "Normal",
     "heading1": "Heading 1",
     "heading2": "Heading 2",
@@ -680,6 +685,15 @@
     "quote": "Quote",
     "quoteTitle": "Quote this text",
     "editorLoading": "Editor loading...",
+    "quoteModal": {
+      "title": "Quote Comment",
+      "preview": "Preview quoted content:",
+      "hint": "After confirmation, the quoted content will be added to the comment editor",
+      "confirm": "Confirm Quote",
+      "comment": "Comment",
+      "cancel": "Cancel",
+      "editorPlaceholder": "Please enter your comment..."
+    },
     "timeAgo": {
       "justNow": "Just now",
       "minutesAgo": "minutes ago",
@@ -1021,6 +1035,7 @@
     "messages": {
       "submitSuccess": "Proposal submitted successfully!"
     },
+    "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to leave?",
     "errors": {
       "pleaseLoginFirst": "Please login first",
       "submitFailed": "Submission failed, please try again",

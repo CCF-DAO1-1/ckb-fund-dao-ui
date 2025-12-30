@@ -706,6 +706,66 @@ padding: 12px;
   text-decoration: none;
 }
 
+/* 引用弹窗样式 */
+.quote-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 300px;
+}
+
+.quote-modal-label {
+  font-size: 14px;
+  color: #9CA3AF;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.quote-modal-preview {
+  background: #1A1D23;
+  border: 1px solid #4C525C;
+  border-radius: 8px;
+  padding: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.quote-preview-blockquote {
+  background: rgba(0, 204, 155, 0.08);
+  border-left: 4px solid #00CC9B;
+  padding: 12px 16px;
+  margin: 0;
+  border-radius: 0 6px 6px 0;
+  color: #9CA3AF;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.quote-preview-text {
+  color: #9CA3AF;
+}
+
+.quote-preview-text p {
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+.quote-preview-text p:first-child {
+  margin-top: 0;
+}
+
+.quote-preview-text p:last-child {
+  margin-bottom: 0;
+}
+
+.quote-modal-hint {
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+  margin-top: 12px;
+}
+
 .quoted-text-content a:hover {
   text-decoration: underline;
 }

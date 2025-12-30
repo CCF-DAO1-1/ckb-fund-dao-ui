@@ -19,6 +19,7 @@ interface ProposalCommentsProps {
   commentsError?: string;
   onRefetchComments: () => void;
   quotedText?: string;
+  onGetCommentSubmit?: (submitFn: (content: string) => void) => void;
 }
 
 // 适配器函数：将API返回的CommentItem转换为组件需要的Comment类型
@@ -65,7 +66,8 @@ export default function ProposalComments({
   commentsLoading, 
   commentsError, 
   onRefetchComments: _onRefetchComments,
-  quotedText: externalQuotedText = "" 
+  quotedText: externalQuotedText = "",
+  onGetCommentSubmit
 }: ProposalCommentsProps) {
   // 暂时不使用 onRefetchComments，避免发送评论后重新获取
   void _onRefetchComments;
@@ -237,6 +239,7 @@ export default function ProposalComments({
         setComments(prev => [newComment, ...prev]);
         setQuotedText("");
         setReplyToCommentId(null);
+        toast.success(t('proposalComments.success') || '评论发布成功');
       }
     } catch (error) {
       console.error('发布评论失败:', error);
@@ -304,8 +307,20 @@ export default function ProposalComments({
     }
   };
 
+  // 参考 bbs-fe 的实现：格式化引用内容，包含作者信息
   const handleReplyComment = (commentId: string, content: string) => {
-    setQuotedText(content);
+    // 找到被引用的评论，获取作者信息
+    const targetComment = apiComments?.find(c => c.cid === commentId || c.uri === commentId);
+    const authorName = targetComment?.author?.displayName || targetComment?.author?.handle || '用户';
+    
+    // 格式化引用内容：参考 bbs-fe 的格式，包含作者信息
+    // 如果内容已经是 HTML，提取纯文本；否则直接使用
+    const textContent = content.replace(/<[^>]*>/g, '').trim();
+    
+    // 构建引用格式：作者名 + 内容
+    const formattedQuote = `<p><strong>${authorName}</strong> 说：</p>${content}`;
+    
+    setQuotedText(formattedQuote);
     setReplyToCommentId(commentId);
     window.location.hash = '#comment-section';
     setTimeout(() => {
@@ -332,6 +347,13 @@ export default function ProposalComments({
   const handleDeleteComment = (commentId: string) => {
     setComments(comments.filter(comment => comment.id !== commentId));
   };
+
+  // 暴露评论提交函数给父组件
+  useEffect(() => {
+    if (onGetCommentSubmit) {
+      onGetCommentSubmit(handleAddComment);
+    }
+  }, [onGetCommentSubmit]);
 
   return (
     <div id="comment-section">

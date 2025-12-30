@@ -276,9 +276,14 @@
     "uploadSuccess": "图片上传成功",
     "uploadFailed": "图片上传失败",
     "fileTooLarge": "文件大小不能超过 5MB",
-    "invalidFileType": "只支持图片文件",
+    "fileTooLargeOriginal": "文件大小不能超过 10MB，大图片将自动压缩",
+    "invalidFileType": "只支持图片文件 (JPG, PNG, GIF, WEBP, BMP, SVG)",
+    "invalidFile": "无效的文件",
+    "emptyFile": "文件为空",
     "noFileSelected": "未选择文件",
     "uploadError": "上传失败，请重试",
+    "files": "个文件",
+    "file": "个文件",
     "normal": "正文",
     "heading1": "标题 1",
     "heading2": "标题 2",
@@ -719,6 +724,15 @@
     "quote": "引用",
     "quoteTitle": "引用此段文字",
     "editorLoading": "编辑器加载中...",
+    "quoteModal": {
+      "title": "引用评论",
+      "preview": "预览引用的内容：",
+      "hint": "确认后将引用内容添加到评论编辑框中",
+      "confirm": "确认引用",
+      "comment": "评论",
+      "cancel": "取消",
+      "editorPlaceholder": "请输入评论..."
+    },
     "timeAgo": {
       "justNow": "刚刚",
       "minutesAgo": "分钟前",
@@ -1060,6 +1074,7 @@
     "messages": {
       "submitSuccess": "提案提交成功！"
     },
+    "unsavedChangesWarning": "您有未保存的更改，确定要离开吗？",
     "errors": {
       "pleaseLoginFirst": "请先登录",
       "submitFailed": "提交失败，请重试",

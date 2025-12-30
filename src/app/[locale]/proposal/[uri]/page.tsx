@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from 'next/navigation';
 import { useTranslation } from "../../../../utils/i18n";
 import { useI18n } from "@/contexts/I18nContext";
@@ -71,16 +71,17 @@ export default function ProposalDetail() {
   //   };
   // }, []);
 
-  const handleQuote = (selectedText: string) => {
-    // 设置引用文本并跳转到评论区域
-    setQuotedText(selectedText);
-    window.location.hash = '#comment-section';
-    setTimeout(() => {
-      const commentSection = document.getElementById('comment-section');
-      if (commentSection) {
-        commentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
+  // 创建评论提交函数的引用，以便传递给 QuoteButton
+  const commentSubmitRef = useRef<((content: string) => void) | null>(null);
+
+  const handleQuote = (selectedText: string, onSubmit: (content: string) => void) => {
+    // 保存提交函数，供 QuoteButton 使用
+    commentSubmitRef.current = onSubmit;
+    // 不再跳转，直接打开弹窗（由 QuoteButton 处理）
+  };
+
+  const handleGetCommentSubmit = (submitFn: (content: string) => void) => {
+    commentSubmitRef.current = submitFn;
   };
 
   if (loading) {
@@ -149,6 +150,7 @@ export default function ProposalDetail() {
                 proposal={proposal}
                 commentsCount={apiComments?.length || 0}
                 onQuote={handleQuote}
+                commentSubmitFn={commentSubmitRef.current || undefined}
               />
               <ProposalComments 
                 proposal={proposal} 
@@ -156,7 +158,8 @@ export default function ProposalDetail() {
                 commentsLoading={commentsLoading}
                 commentsError={commentsError}
                 onRefetchComments={refetchComments}
-                quotedText={quotedText} 
+                quotedText={quotedText}
+                onGetCommentSubmit={handleGetCommentSubmit}
               />
             </div>
             {/* 右侧投票和操作区 */}

@@ -46,9 +46,9 @@ export default function VditorRichTextEditor({
     setIsClient(true);
   }, []);
 
-  // 图片压缩函数（可选）
+  // 图片压缩函数（优化版：智能压缩策略）
   const compressImage = useCallback(
-    async (file: File, maxWidth = 1920, maxHeight = 1080, quality = 0.8): Promise<File> => {
+    async (file: File, maxWidth = 1920, maxHeight = 1080, quality = 0.85): Promise<File> => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -58,16 +58,16 @@ export default function VditorRichTextEditor({
             let width = img.width;
             let height = img.height;
 
-            // 计算新尺寸
+            // 计算新尺寸（保持宽高比）
             if (width > maxWidth || height > maxHeight) {
-              if (width > height) {
-                height = (height * maxWidth) / width;
-                width = maxWidth;
-              } else {
-                width = (width * maxHeight) / height;
-                height = maxHeight;
-              }
+              const ratio = Math.min(maxWidth / width, maxHeight / height);
+              width = width * ratio;
+              height = height * ratio;
             }
+
+            // 确保尺寸为整数
+            width = Math.round(width);
+            height = Math.round(height);
 
             canvas.width = width;
             canvas.height = height;
@@ -78,23 +78,49 @@ export default function VditorRichTextEditor({
               return;
             }
 
+            // 使用更好的图片渲染质量
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
             ctx.drawImage(img, 0, 0, width, height);
 
-            canvas.toBlob(
-              (blob) => {
-                if (!blob) {
-                  reject(new Error("Failed to compress image"));
-                  return;
-                }
-                const compressedFile = new File([blob], file.name, {
-                  type: file.type,
-                  lastModified: Date.now(),
-                });
-                resolve(compressedFile);
-              },
-              file.type,
-              quality
-            );
+            // 根据文件类型选择输出格式
+            let outputType = file.type;
+            if (!outputType || outputType === "image/jpeg") {
+              outputType = "image/jpeg";
+            } else if (outputType === "image/png") {
+              outputType = "image/png";
+            } else if (outputType === "image/webp") {
+              outputType = "image/webp";
+            }
+
+            // 动态调整质量，如果压缩后仍然很大，降低质量
+            const maxSize = 2 * 1024 * 1024; // 2MB 目标大小
+
+            const tryCompress = (q: number) => {
+              canvas.toBlob(
+                (blob) => {
+                  if (!blob) {
+                    reject(new Error("Failed to compress image"));
+                    return;
+                  }
+                  
+                  // 如果文件仍然太大且质量可以继续降低，递归压缩
+                  if (blob.size > maxSize && q > 0.5) {
+                    tryCompress(q - 0.1);
+                  } else {
+                    const compressedFile = new File([blob], file.name, {
+                      type: outputType,
+                      lastModified: Date.now(),
+                    });
+                    resolve(compressedFile);
+                  }
+                },
+                outputType,
+                q
+              );
+            };
+
+            tryCompress(quality);
           };
           img.onerror = () => reject(new Error("Failed to load image"));
           img.src = e.target?.result as string;
@@ -106,43 +132,81 @@ export default function VditorRichTextEditor({
     []
   );
 
-  // 单张图片上传处理函数
+  // 文件验证函数
+  const validateImageFile = useCallback((file: File): { valid: boolean; error?: string } => {
+    // 检查文件是否存在
+    if (!file) {
+      return { valid: false, error: "No file provided" };
+    }
+
+    // 检查文件类型
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "image/bmp", "image/svg+xml"];
+    const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg"];
+    
+    const fileName = file.name.toLowerCase();
+    const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+    const hasValidType = validTypes.includes(file.type) || file.type.startsWith("image/");
+
+    if (!hasValidType && !hasValidExtension) {
+      return { 
+        valid: false, 
+        error: t("editor.invalidFileType") || "Only image files are supported (JPG, PNG, GIF, WEBP, BMP, SVG)" 
+      };
+    }
+
+    // 检查文件大小 (10MB 原始限制，压缩后 5MB)
+    const MAX_ORIGINAL_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_ORIGINAL_SIZE) {
+      return { 
+        valid: false, 
+        error: t("editor.fileTooLargeOriginal") || "File size cannot exceed 10MB. Large images will be automatically compressed." 
+      };
+    }
+
+    // 检查文件是否为空
+    if (file.size === 0) {
+      return { valid: false, error: t("editor.emptyFile") || "File is empty" };
+    }
+
+    return { valid: true };
+  }, [t]);
+
+  // 单张图片上传处理函数（增强版：支持重试和更好的错误处理）
   const uploadSingleImage = useCallback(
-    async (file: File): Promise<string> => {
+    async (file: File, retryCount = 0): Promise<string> => {
       if (!did) {
         toast.error(t("errors.userNotLoggedIn") || "Please login first");
         throw new Error("User not logged in");
       }
 
-      if (!file) {
-        throw new Error("No file provided");
+      // 文件验证
+      const validation = validateImageFile(file);
+      if (!validation.valid) {
+        toast.error(validation.error || t("editor.invalidFile") || "Invalid file");
+        throw new Error(validation.error || "Invalid file");
       }
 
-      // 文件类型验证
-      if (!file.type.startsWith("image/")) {
-        toast.error(t("editor.invalidFileType") || "Only image files are supported");
-        throw new Error("Only image files are supported");
-      }
-
-      // 文件大小验证 (5MB)
+      // 文件大小验证 (5MB 最终限制)
       const MAX_FILE_SIZE = 5 * 1024 * 1024;
       let fileToUpload = file;
 
-      // 如果文件过大，尝试压缩
-      if (file.size > MAX_FILE_SIZE) {
+      // 如果文件较大，尝试压缩（超过 1MB 或接近限制时）
+      if (file.size > 1024 * 1024 || file.size > MAX_FILE_SIZE * 0.8) {
         try {
           fileToUpload = await compressImage(file);
           // 压缩后仍然过大
           if (fileToUpload.size > MAX_FILE_SIZE) {
-            toast.error(t("editor.fileTooLarge") || "File size cannot exceed 5MB");
-            throw new Error("File size cannot exceed 5MB");
+            toast.error(t("editor.fileTooLarge") || "File size cannot exceed 5MB after compression");
+            throw new Error("File size cannot exceed 5MB after compression");
           }
-        } catch {
+        } catch (error) {
           // 压缩失败，检查原始文件大小
           if (file.size > MAX_FILE_SIZE) {
             toast.error(t("editor.fileTooLarge") || "File size cannot exceed 5MB");
             throw new Error("File size cannot exceed 5MB");
           }
+          // 如果压缩失败但文件不大，继续使用原文件
+          console.warn("Image compression failed, using original file:", error);
         }
       }
 
@@ -159,73 +223,98 @@ export default function VditorRichTextEditor({
             ? error.message
             : t("editor.uploadError") || "Upload failed";
 
+        // 如果是网络错误且重试次数未达上限，尝试重试
+        const MAX_RETRIES = 2;
+        if (
+          retryCount < MAX_RETRIES &&
+          (errorMessage.includes("network") || 
+           errorMessage.includes("timeout") ||
+           errorMessage.includes("fetch"))
+        ) {
+          console.log(`Retrying upload (${retryCount + 1}/${MAX_RETRIES})...`);
+          // 等待一段时间后重试
+          await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+          return uploadSingleImage(file, retryCount + 1);
+        }
+
+        // 根据错误类型显示不同的提示
         if (errorMessage.includes("File size exceeds") || errorMessage.includes("File size cannot exceed")) {
           toast.error(t("editor.fileTooLarge") || "File size cannot exceed 5MB");
-        } else if (errorMessage.includes("Only image files")) {
+        } else if (errorMessage.includes("Only image files") || errorMessage.includes("Only image files are supported")) {
           toast.error(t("editor.invalidFileType") || "Only image files are supported");
-        } else if (errorMessage.includes("User DID is required") || errorMessage.includes("Please login")) {
+        } else if (errorMessage.includes("User DID is required") || errorMessage.includes("Please login") || errorMessage.includes("User not logged in")) {
           toast.error(t("errors.userNotLoggedIn") || "Please login first");
+        } else if (errorMessage.includes("Session expired") || errorMessage.includes("Token has expired")) {
+          toast.error(t("errors.sessionExpired") || "Session expired, please login again");
         } else {
           toast.error(errorMessage);
         }
         throw error;
       }
     },
-    [did, t, compressImage]
+    [did, t, compressImage, validateImageFile]
   );
 
-  // 图片上传处理函数（支持多文件）
+  // 图片上传处理函数（支持多文件，增强版：更好的进度显示和错误处理）
   const handleImageUpload = useCallback(
     async (files: File[]): Promise<string> => {
       if (!files || files.length === 0) {
         throw new Error("No files provided");
       }
 
-      // 单文件上传，返回单个图片的 Markdown
-      if (files.length === 1) {
-        const loadingToast = toast.loading(t("editor.uploading") || "Uploading...");
-        try {
-          const imageUrl = await uploadSingleImage(files[0]);
-          toast.success(t("editor.uploadSuccess") || "Upload success");
-          return `![${files[0].name}](${imageUrl})`;
-        } finally {
-          toast.dismiss(loadingToast);
-        }
-      }
-
-      // 多文件上传，批量处理
-      const loadingToast = toast.loading(
-        `${t("editor.uploading") || "Uploading..."} (0/${files.length})`
-      );
+      // 限制同时上传的文件数量（防止过多并发请求）
+      const MAX_CONCURRENT_UPLOADS = 3;
       const results: string[] = [];
       let successCount = 0;
       let failCount = 0;
+      let currentIndex = 0;
+
+      // 单文件上传
+      if (files.length === 1) {
+        const fileName = files[0].name;
+        const loadingToast = toast.loading(
+          `${t("editor.uploading") || "Uploading..."} ${fileName}...`
+        );
+        try {
+          const imageUrl = await uploadSingleImage(files[0]);
+          toast.success(
+            `${t("editor.uploadSuccess") || "Upload success"}: ${fileName}`,
+            { id: loadingToast }
+          );
+          return `![${fileName}](${imageUrl})`;
+        } catch (error) {
+          toast.error(
+            `${t("editor.uploadFailed") || "Upload failed"}: ${fileName}`,
+            { id: loadingToast }
+          );
+          throw error;
+        }
+      }
+
+      // 多文件上传，批量处理（限制并发）
+      const loadingToast = toast.loading(
+        `${t("editor.uploading") || "Uploading..."} (0/${files.length})`
+      );
 
       try {
-        for (let i = 0; i < files.length; i++) {
-          try {
-            const imageUrl = await uploadSingleImage(files[i]);
-            results.push(`![${files[i].name}](${imageUrl})`);
-            successCount++;
-            toast.loading(
-              `${t("editor.uploading") || "Uploading..."} (${i + 1}/${files.length})`,
-              { id: loadingToast }
-            );
-          } catch (error) {
-            failCount++;
-            console.error(`上传文件 ${files[i].name} 失败:`, error);
-          }
+        // 并发上传，但限制并发数
+        const uploadPromises: Promise<void>[] = [];
+        
+        for (let i = 0; i < Math.min(MAX_CONCURRENT_UPLOADS, files.length); i++) {
+          uploadPromises.push(processNextFile());
         }
 
-        // 显示结果
+        await Promise.all(uploadPromises);
+
+        // 显示最终结果
         if (successCount > 0 && failCount === 0) {
           toast.success(
-            `${t("editor.uploadSuccess") || "Upload success"} (${successCount} ${files.length > 1 ? "files" : "file"})`,
+            `${t("editor.uploadSuccess") || "Upload success"}: ${successCount} ${files.length > 1 ? t("editor.files") || "files" : t("editor.file") || "file"}`,
             { id: loadingToast }
           );
         } else if (successCount > 0 && failCount > 0) {
           toast.success(
-            `${t("editor.uploadSuccess") || "Upload success"}: ${successCount} ${files.length > 1 ? "files" : "file"}, ${t("editor.uploadFailed") || "Failed"}: ${failCount}`,
+            `${t("editor.uploadSuccess") || "Upload success"}: ${successCount} ${t("editor.files") || "files"}, ${t("editor.uploadFailed") || "Failed"}: ${failCount}`,
             { id: loadingToast }
           );
         } else {
@@ -237,6 +326,34 @@ export default function VditorRichTextEditor({
       } catch (error) {
         toast.dismiss(loadingToast);
         throw error;
+      }
+
+      // 处理下一个文件的辅助函数
+      async function processNextFile(): Promise<void> {
+        while (currentIndex < files.length) {
+          const index = currentIndex++;
+          const file = files[index];
+          
+          try {
+            // 更新进度
+            toast.loading(
+              `${t("editor.uploading") || "Uploading..."} (${index + 1}/${files.length}): ${file.name}`,
+              { id: loadingToast }
+            );
+
+            const imageUrl = await uploadSingleImage(file);
+            results.push(`![${file.name}](${imageUrl})`);
+            successCount++;
+          } catch (error) {
+            failCount++;
+            console.error(`上传文件 ${file.name} 失败:`, error);
+          }
+
+          // 如果还有文件，继续处理
+          if (currentIndex < files.length) {
+            await processNextFile();
+          }
+        }
       }
     },
     [t, uploadSingleImage]
@@ -426,6 +543,17 @@ export default function VditorRichTextEditor({
             "rocket": "🚀",
           },
         },
+        // 确保图片能够正确渲染
+        preview: {
+          markdown: {
+            imageIsImage: true, // 将图片链接识别为图片
+          },
+          // 优化预览配置，避免不必要的网络请求
+          delay: 1000, // 延迟预览，避免频繁请求
+          maxWidth: 800,
+          // 禁用自动加载，避免 XHR 请求
+          parse: false,
+        },
       },
       upload: {
         accept: "image/*",
@@ -435,7 +563,17 @@ export default function VditorRichTextEditor({
           try {
             // 支持多文件上传
             const markdown = await handleImageUpload(files);
-            return markdown;
+            
+            // Vditor 的 handler 返回的字符串会被自动插入到编辑器中
+            // 在 IR 模式下，Markdown 图片语法应该自动渲染为图片
+            // 返回格式：每张图片之间用两个换行符分隔，确保正确渲染
+            if (markdown) {
+              // 确保返回的 Markdown 格式正确，Vditor 会自动渲染
+              // 添加换行符确保图片独立成行
+              return "\n\n" + markdown + "\n\n";
+            }
+            
+            return "";
           } catch (error) {
             console.error("Upload failed:", error);
             return "";
@@ -532,9 +670,22 @@ export default function VditorRichTextEditor({
                 e.preventDefault();
                 try {
                   const markdown = await handleImageUpload(imageFiles);
-                  if (markdown && vditorRef.current && typeof vditorRef.current.getValue === 'function' && typeof vditorRef.current.setValue === 'function') {
-                    const currentValue = vditorRef.current.getValue();
-                    vditorRef.current.setValue(currentValue + "\n\n" + markdown);
+                  if (markdown && vditorRef.current) {
+                    // 使用 Vditor 的 insertValue 方法插入图片（如果可用）
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const vditorInstance = vditorRef.current as any;
+                    if (typeof vditorInstance.insertValue === 'function') {
+                      // 使用 insertValue 在光标位置插入，会自动渲染
+                      vditorInstance.insertValue("\n\n" + markdown + "\n\n");
+                      const newValue = vditorInstance.getValue();
+                      onChange(newValue);
+                    } else {
+                      // 如果没有 insertValue，使用 setValue
+                      const currentValue = vditorRef.current.getValue() || "";
+                      const newValue = currentValue ? currentValue + "\n\n" + markdown + "\n\n" : markdown + "\n\n";
+                      vditorRef.current.setValue(newValue);
+                      onChange(newValue);
+                    }
                   }
                 } catch (error) {
                   console.error("粘贴图片上传失败:", error);
@@ -558,10 +709,22 @@ export default function VditorRichTextEditor({
               if (imageFiles.length > 0 && did) {
                 try {
                   const markdown = await handleImageUpload(imageFiles);
-                  if (markdown && vditorRef.current && typeof vditorRef.current.getValue === 'function' && typeof vditorRef.current.setValue === 'function') {
-                    // 在当前位置插入图片，Vditor 会自动处理插入位置
-                    const currentValue = vditorRef.current.getValue();
-                    vditorRef.current.setValue(currentValue + "\n\n" + markdown + "\n\n");
+                  if (markdown && vditorRef.current) {
+                    // 使用 Vditor 的 insertValue 方法插入图片（如果可用）
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const vditorInstance = vditorRef.current as any;
+                    if (typeof vditorInstance.insertValue === 'function') {
+                      // 使用 insertValue 在光标位置插入，会自动渲染
+                      vditorInstance.insertValue("\n\n" + markdown + "\n\n");
+                      const newValue = vditorInstance.getValue();
+                      onChange(newValue);
+                    } else {
+                      // 如果没有 insertValue，使用 setValue
+                      const currentValue = vditorRef.current.getValue() || "";
+                      const newValue = currentValue ? currentValue + "\n\n" + markdown + "\n\n" : markdown + "\n\n";
+                      vditorRef.current.setValue(newValue);
+                      onChange(newValue);
+                    }
                   }
                 } catch (error) {
                   console.error("拖拽图片上传失败:", error);
@@ -573,7 +736,16 @@ export default function VditorRichTextEditor({
       },
       input: (newValue: string) => {
         // 内容变化时触发
-        onChange(newValue);
+        // 标记为用户输入，避免在同步 value 时导致失焦
+        isUserInputRef.current = true;
+        // 使用 requestAnimationFrame 延迟 onChange 调用，避免立即触发外部状态更新导致失焦
+        requestAnimationFrame(() => {
+          onChange(newValue);
+          // 在下一个帧重置标志，给外部状态更新足够的时间
+          requestAnimationFrame(() => {
+            isUserInputRef.current = false;
+          });
+        });
       },
       focus: () => {
         // 聚焦时的处理
@@ -623,19 +795,68 @@ export default function VditorRichTextEditor({
   }, [isClient, mode, toolbarPreset, handleImageUpload, handleLinkToImage, did]); // 包含上传处理函数和 did
 
   // 同步外部 value 变化到编辑器
+  // 使用 ref 跟踪是否正在用户输入，避免在用户输入时更新导致失焦
+  const isUserInputRef = useRef(false);
+  
   useEffect(() => {
     if (vditorRef.current && value !== undefined) {
       try {
         // 检查 Vditor 实例是否完全初始化
-        if (typeof vditorRef.current.getValue === 'function') {
-          const currentValue = vditorRef.current.getValue();
-          if (currentValue !== value) {
-            vditorRef.current.setValue(value);
+        // 确保 vditorRef.current 存在且有必要的属性
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const vditorInstance = vditorRef.current as any;
+        
+        // 检查 Vditor 实例是否完全初始化（检查内部属性）
+        if (
+          vditorInstance &&
+          typeof vditorInstance.getValue === 'function' &&
+          vditorInstance.vditor &&
+          vditorInstance.vditor.currentMode !== undefined
+        ) {
+          const currentValue = vditorInstance.getValue();
+          // 只有当值真正不同且不是用户输入时才更新
+          // 使用更严格的比较，避免字符串格式差异导致的误判
+          const normalizedCurrent = currentValue?.trim() || "";
+          const normalizedValue = value?.trim() || "";
+          if (normalizedCurrent !== normalizedValue && !isUserInputRef.current) {
+            // 保存当前焦点状态和光标位置
+            const editorElement = containerRef.current?.querySelector('.vditor-ir__editor, .vditor-wysiwyg__editor, .vditor-sv__editor') as HTMLElement;
+            const hadFocus = document.activeElement === editorElement || editorElement?.contains(document.activeElement);
+            
+            // 使用 requestAnimationFrame 确保在下一个渲染周期更新，避免失焦
+            requestAnimationFrame(() => {
+              if (vditorInstance && typeof vditorInstance.setValue === 'function') {
+                vditorInstance.setValue(value);
+                
+                // 如果之前有焦点，恢复焦点
+                if (hadFocus && editorElement) {
+                  requestAnimationFrame(() => {
+                    if (editorElement && document.contains(editorElement)) {
+                      editorElement.focus();
+                      // 尝试恢复光标位置
+                      const selection = window.getSelection();
+                      if (selection && selection.rangeCount > 0) {
+                        const range = selection.getRangeAt(0);
+                        if (editorElement.contains(range.commonAncestorContainer)) {
+                          selection.removeAllRanges();
+                          selection.addRange(range);
+                        }
+                      }
+                    }
+                  });
+                }
+              }
+            });
           }
+          // 重置用户输入标志
+          isUserInputRef.current = false;
         }
       } catch (error) {
-        // 如果 Vditor 实例还未完全初始化，忽略错误
-        console.warn('Vditor instance not ready yet:', error);
+        // 如果 Vditor 实例还未完全初始化，静默忽略错误
+        // 避免在组件卸载或实例未完全初始化时输出错误
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Vditor instance not ready yet:', error);
+        }
       }
     }
   }, [value]);

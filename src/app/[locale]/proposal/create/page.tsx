@@ -81,8 +81,6 @@ export default function CreateProposal() {
 
   // 跟踪上次保存的数据，避免重复保存相同内容
   const lastSavedDataRef = useRef<string>("");
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const isSavingRef = useRef(false);
 
   // 检查表单是否有内容
   const hasContent = useCallback((data: typeof formData) => {
@@ -107,62 +105,35 @@ export default function CreateProposal() {
     }
   }, []);
 
-  // 草稿保存和加载功能（基于用户 DID）
-  const saveDraft = useCallback(
-    async (data: typeof formData, force = false) => {
-      if (!userInfo?.did) {
-        // 未登录用户不保存草稿
-        return;
-      }
+  // 同步保存草稿（用于 beforeunload 事件，必须是同步的）
+  const saveDraftSync = useCallback((data: typeof formData) => {
+    if (!userInfo?.did) {
+      return;
+    }
 
-      // 检查是否有内容
-      if (!hasContent(data)) {
-        return;
-      }
+    if (!hasContent(data)) {
+      return;
+    }
 
-      // 检查数据是否变化（除非强制保存）
-      const dataString = JSON.stringify(data);
-      if (!force && !hasDataChanged(data, lastSavedDataRef.current)) {
-        return; // 数据未变化，不保存
-      }
+    try {
+      const draftData = {
+        ...data,
+        savedAt: new Date().toISOString(),
+        version: 1,
+      };
+      const cacheItem = {
+        data: draftData,
+        timestamp: Date.now(),
+        expiry: Date.now() + 24 * 24 * 60 * 60 * 1000,
+      };
+      const draftKey = `@dao:proposal_draft:${userInfo.did}`;
+      window.localStorage.setItem(draftKey, JSON.stringify(cacheItem));
+      lastSavedDataRef.current = JSON.stringify(data);
+    } catch (error) {
+      console.error("保存草稿失败:", error);
+    }
+  }, [userInfo?.did, hasContent]);
 
-      // 如果正在保存，跳过
-      if (isSavingRef.current) {
-        return;
-      }
-
-      try {
-        isSavingRef.current = true;
-        setIsDraftSaving(true);
-        storage.setProposalDraft(data, userInfo.did);
-        lastSavedDataRef.current = dataString;
-        setLastSaved(new Date());
-      } catch (error) {
-        console.error(t("proposalCreate.errors.saveDraftFailed"), error);
-        toast.error(t("proposalCreate.errors.saveDraftFailed") || "保存草稿失败");
-      } finally {
-        isSavingRef.current = false;
-        setIsDraftSaving(false);
-      }
-    },
-    [t, userInfo?.did, hasContent, hasDataChanged]
-  );
-
-  // 防抖保存函数
-  const debouncedSaveDraft = useCallback(
-    (data: typeof formData) => {
-      // 清除之前的定时器
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-
-      // 设置新的定时器
-      debounceTimerRef.current = setTimeout(() => {
-        saveDraft(data);
-      }, 3000); // 3秒防抖延迟
-    },
-    [saveDraft]
-  );
 
   useEffect(() => {
     setIsClient(true);
@@ -181,95 +152,35 @@ export default function CreateProposal() {
           setFormData(formDataFromDraft as typeof formData);
           // 初始化上次保存的数据引用
           lastSavedDataRef.current = JSON.stringify(formDataFromDraft);
-          if (savedAt) {
-            setLastSaved(new Date(savedAt));
-          }
         }
       } catch (error) {
         console.error(t("proposalCreate.errors.loadDraftFailed"), error);
       }
     }
 
-    // 清理定时器
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userInfo?.did]);
 
-  // const clearDraft = useCallback(() => {
-  //   try {
-  //     localStorage.removeItem(DRAFT_KEY);
-  //     setLastSaved(null);
-  //   } catch (error) {
-  //     console.error(t("proposalCreate.errors.deleteDraftFailed"), error);
-  //   }
-  // }, [t]);
-
-  // 自动保存功能（使用防抖）
+  // 页面离开时提醒用户保存草稿
   useEffect(() => {
     if (!isClient || !userInfo?.did) return;
 
-    // 使用防抖保存
-    debouncedSaveDraft(formData);
-
-    // 清理函数
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [formData, isClient, userInfo?.did, debouncedSaveDraft]);
-
-  // 页面可见性变化时保存（用户切换标签页时）
-  useEffect(() => {
-    if (!isClient || !userInfo?.did) return;
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        // 页面隐藏时，立即保存（不使用防抖）
-        if (hasContent(formData)) {
-          saveDraft(formData, true);
-        }
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [formData, isClient, userInfo?.did, saveDraft, hasContent]);
-
-  // 页面离开时保存草稿（同步保存，确保不丢失数据）
-  useEffect(() => {
-    if (!isClient || !userInfo?.did) return;
-
-    const handleBeforeUnload = () => {
-      // 只有在有内容且数据有变化时才保存
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // 只有在有内容且数据有变化时才显示确认对话框
       if (hasContent(formData) && hasDataChanged(formData, lastSavedDataRef.current)) {
-        // 同步保存（使用同步 API，因为异步在 beforeunload 中可能不执行）
-        try {
-          const draftData = {
-            ...formData,
-            savedAt: new Date().toISOString(),
-            version: 1,
-          };
-          const cacheItem = {
-            data: draftData,
-            timestamp: Date.now(),
-            expiry: Date.now() + 24 * 24 * 60 * 60 * 1000,
-          };
-          const draftKey = `@dao:proposal_draft:${userInfo.did}`;
-          window.localStorage.setItem(draftKey, JSON.stringify(cacheItem));
-        } catch (error) {
-          console.error("页面离开时保存草稿失败:", error);
-        }
+        // 显示浏览器原生的确认对话框
+        e.preventDefault();
+        // 现代浏览器会忽略自定义消息，只显示默认消息
+        e.returnValue = t("proposalCreate.unsavedChangesWarning") || "您有未保存的更改，确定要离开吗？";
+        
+        // 保存草稿（同步保存，因为异步在 beforeunload 中可能不执行）
+        saveDraftSync(formData);
       }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [formData, isClient, userInfo?.did, hasContent, hasDataChanged]);
+  }, [formData, isClient, userInfo?.did, hasContent, hasDataChanged, t, saveDraftSync]);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");

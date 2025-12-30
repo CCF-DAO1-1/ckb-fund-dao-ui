@@ -36,7 +36,6 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
   formData,
 }) => {
   const { messages } = useI18n();
-  console.log(formData)
 
   return (
     <Modal
