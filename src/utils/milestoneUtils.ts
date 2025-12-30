@@ -13,14 +13,15 @@ export const generateMilestones = (proposal: Proposal): Milestone[] => {
   let startMilestoneStatus: MilestoneStatus;
   let startMilestoneProgress: number;
   
-  if (proposal.state === ProposalStatus.DRAFT || 
-      proposal.state === ProposalStatus.REVIEW || 
-      proposal.state === ProposalStatus.VOTE) {
+  // 使用数值比较，因为枚举别名可能无法正确识别
+  const stateValue = typeof proposal.state === 'number' ? proposal.state : Number(proposal.state);
+  if (stateValue === ProposalStatus.DRAFT || 
+      stateValue === ProposalStatus.INITIATION_VOTE) {
     // 提案还未通过，启动里程碑处于待开始状态
     startMilestoneStatus = MilestoneStatus.PENDING;
     startMilestoneProgress = 0;
-  } else if (proposal.state === ProposalStatus.REJECTED) {
-    // 提案被拒绝，里程碑取消
+  } else if (stateValue === ProposalStatus.COMPLETED) {
+    // 提案已完成或被拒绝，里程碑取消
     startMilestoneStatus = MilestoneStatus.CANCELLED;
     startMilestoneProgress = 0;
   } else {
@@ -55,9 +56,10 @@ export const generateMilestones = (proposal: Proposal): Milestone[] => {
     let progress = 0;
     
     // 根据提案状态和里程碑位置确定里程碑状态
-    if (proposal.state === ProposalStatus.DRAFT || 
-        proposal.state === ProposalStatus.REVIEW || 
-        proposal.state === ProposalStatus.VOTE) {
+    // 使用数值比较，因为枚举别名可能无法正确识别
+    const stateValue = typeof proposal.state === 'number' ? proposal.state : Number(proposal.state);
+    if (stateValue === ProposalStatus.DRAFT || 
+        stateValue === ProposalStatus.INITIATION_VOTE) {
       // 提案还未通过，所有里程碑都是待开始状态
       status = MilestoneStatus.PENDING;
       progress = 0;

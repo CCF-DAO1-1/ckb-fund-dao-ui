@@ -192,6 +192,7 @@ export default function TipTapEditor({
     extensions: [
       StarterKit.configure({
         // 禁用默认的图片扩展，使用自定义的
+        // @ts-expect-error - StarterKit 类型定义可能不完整，但 image 选项确实存在
         image: false,
       }),
       TipTapImage.configure({

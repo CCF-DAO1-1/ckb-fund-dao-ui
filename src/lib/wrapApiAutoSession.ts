@@ -1,6 +1,11 @@
 import getPDSClient from "./pdsClient";
 import storage from "./storage";
 
+// 自定义错误类型，用于标识 session 过期错误
+export interface SessionExpiredError extends Error {
+  isSessionExpired: true;
+}
+
 // 防止并发刷新 token（用于 PDS API）
 let isRefreshingPDSToken = false;
 let refreshPDSTokenPromise: Promise<string> | null = null;
@@ -86,8 +91,14 @@ async function refreshToken() {
       // 如果 refresh token 也过期了，清除 session 并提示用户重新登录
       if (isRefreshTokenExpired && typeof window !== 'undefined') {
         try {
-          // 清除 session
-          pdsClient.sessionManager.clear();
+          // 清除 session - 使用 logout 方法或直接设置 session 为 null
+          if (typeof pdsClient.logout === 'function') {
+            pdsClient.logout();
+          } else {
+            // 如果 logout 方法不存在，直接清除 session
+            // @ts-expect-error - sessionManager.session 可能允许设置为 null
+            pdsClient.sessionManager.session = null;
+          }
           
           // 清除本地存储的 token
           storage.removeToken();
@@ -189,8 +200,8 @@ export default async function sessionWrapApi<T>(apiCall: () => Promise<T>, retry
         
         // 如果 refresh token 也过期了，抛出更明确的错误
         if (isRefreshTokenExpired) {
-          const expiredError = new Error('Session expired, please login again');
-          (expiredError as any).isSessionExpired = true;
+          const expiredError = new Error('Session expired, please login again') as SessionExpiredError;
+          expiredError.isSessionExpired = true;
           throw expiredError;
         }
         

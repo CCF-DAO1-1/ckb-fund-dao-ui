@@ -117,7 +117,9 @@ export const generateVotingInfo = (
     const now = new Date().getTime();
     const endTime = new Date(voteMeta.end_time).getTime();
     
-    if (now > endTime || proposal.state === ProposalStatus.APPROVED || proposal.state === ProposalStatus.REJECTED) {
+    // 使用数值比较，因为枚举别名可能无法正确识别
+    const stateValue = typeof proposal.state === 'number' ? proposal.state : Number(proposal.state);
+    if (now > endTime || stateValue === ProposalStatus.COMPLETED) {
       status = VotingStatus.ENDED;
     } else {
       status = VotingStatus.PENDING;
@@ -159,9 +161,11 @@ export const generateVotingInfo = (
   
   // 确定投票状态
   let status: VotingStatus;
-  if (proposal.state === ProposalStatus.VOTE) {
+  // 使用数值比较，因为枚举别名可能无法正确识别
+  const stateValue = typeof proposal.state === 'number' ? proposal.state : Number(proposal.state);
+  if (stateValue === ProposalStatus.INITIATION_VOTE) {
     status = VotingStatus.PENDING;
-  } else if (proposal.state === ProposalStatus.APPROVED || proposal.state === ProposalStatus.REJECTED) {
+  } else if (stateValue === ProposalStatus.COMPLETED) {
     status = VotingStatus.ENDED;
   } else {
     status = VotingStatus.PENDING;

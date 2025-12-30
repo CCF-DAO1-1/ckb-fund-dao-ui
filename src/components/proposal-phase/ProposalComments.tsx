@@ -11,6 +11,7 @@ import { ProposalDetailResponse } from "@/server/proposal";
 import { getUserDisplayNameFromInfo, getUserDisplayNameFromStore } from "@/utils/userDisplayUtils";
 import toast from "react-hot-toast";
 import { useTranslation } from "@/utils/i18n";
+import { SessionExpiredError } from "@/lib/wrapApiAutoSession";
 
 interface ProposalCommentsProps {
   proposal: ProposalDetailResponse | null;
@@ -246,7 +247,9 @@ export default function ProposalComments({
       
       // 检查是否是 session 过期错误
       const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage.includes('Session expired') || (error as any)?.isSessionExpired) {
+      const isSessionExpired = errorMessage.includes('Session expired') || 
+        (error instanceof Error && 'isSessionExpired' in error && (error as SessionExpiredError).isSessionExpired);
+      if (isSessionExpired) {
         toast.error(t('proposalComments.errors.sessionExpired') || '登录已过期，请重新登录');
         // 可以在这里触发登出逻辑或跳转到登录页
         return;

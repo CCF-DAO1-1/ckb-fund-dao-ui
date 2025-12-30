@@ -523,6 +523,15 @@ interface Messages {
     quote: string;
     quoteTitle: string;
     editorLoading: string;
+    quoteModal?: {
+      title: string;
+      preview: string;
+      hint: string;
+      confirm: string;
+      comment: string;
+      cancel: string;
+      editorPlaceholder: string;
+    };
     timeAgo: {
       justNow: string;
       minutesAgo: string;

@@ -71,9 +71,12 @@ export default function ProposalSidebar({ proposal }: ProposalSidebarProps) {
     const adaptedProposal = adaptProposalDetail(proposal);
     
     // 如果是执行阶段，生成里程碑信息
-    if (adaptedProposal.state === ProposalStatus.MILESTONE || 
-        adaptedProposal.state === ProposalStatus.APPROVED || 
-        adaptedProposal.state === ProposalStatus.ENDED) {
+    // MILESTONE 是 IN_PROGRESS 的别名 (3)
+    // APPROVED 和 ENDED 都是 COMPLETED 的别名 (9)
+    const state = adaptedProposal.state;
+    const stateValue = typeof state === 'number' ? state : Number(state);
+    if (stateValue === ProposalStatus.IN_PROGRESS || 
+        stateValue === ProposalStatus.COMPLETED) {
       const milestoneData = generateMilestones(adaptedProposal);
       setMilestones(milestoneData);
     } else {
