@@ -9,6 +9,8 @@ import useUserInfoStore from "@/store/userInfo";
 import { getAvatarByDid } from "@/utils/avatarUtils";
 import { ProposalDetailResponse } from "@/server/proposal";
 import { getUserDisplayNameFromInfo, getUserDisplayNameFromStore } from "@/utils/userDisplayUtils";
+import toast from "react-hot-toast";
+import { useTranslation } from "@/utils/i18n";
 
 interface ProposalCommentsProps {
   proposal: ProposalDetailResponse | null;
@@ -68,6 +70,7 @@ export default function ProposalComments({
   // 暂时不使用 onRefetchComments，避免发送评论后重新获取
   void _onRefetchComments;
   
+  const { t } = useTranslation();
   const { userInfo, userProfile } = useUserInfoStore();
   
   const [comments, setComments] = useState<Comment[]>([]);
@@ -237,6 +240,14 @@ export default function ProposalComments({
       }
     } catch (error) {
       console.error('发布评论失败:', error);
+      
+      // 检查是否是 session 过期错误
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('Session expired') || (error as any)?.isSessionExpired) {
+        toast.error(t('proposalComments.errors.sessionExpired') || '登录已过期，请重新登录');
+        // 可以在这里触发登出逻辑或跳转到登录页
+        return;
+      }
     }
   };
 

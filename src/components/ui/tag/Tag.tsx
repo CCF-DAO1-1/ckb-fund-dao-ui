@@ -34,6 +34,27 @@ export default function Tag({
     switch (status) {
       case ProposalStatus.DRAFT:
         return t("proposalStatus.draft");
+      case ProposalStatus.INITIATION_VOTE:
+        return t("proposalStatus.initiationVote");
+      case ProposalStatus.WAITING_FOR_START_FUND:
+        return t("proposalStatus.waitingForStartFund");
+      case ProposalStatus.IN_PROGRESS:
+        return t("proposalStatus.inProgress");
+      case ProposalStatus.MILESTONE_VOTE:
+        return t("proposalStatus.milestoneVote");
+      case ProposalStatus.DELAY_VOTE:
+        return t("proposalStatus.delayVote");
+      case ProposalStatus.WAITING_FOR_MILESTONE_FUND:
+        return t("proposalStatus.waitingForMilestoneFund");
+      case ProposalStatus.REVIEW_VOTE:
+        return t("proposalStatus.reviewVote");
+      case ProposalStatus.WAITING_FOR_ACCEPTANCE_REPORT:
+        return t("proposalStatus.waitingForAcceptanceReport");
+      case ProposalStatus.COMPLETED:
+        return t("proposalStatus.completed");
+      case ProposalStatus.REEXAMINE_VOTE:
+        return t("proposalStatus.reexamineVote");
+      // 向后兼容的旧状态值
       case ProposalStatus.REVIEW:
         return t("proposalStatus.communityReview");
       case ProposalStatus.VOTE:

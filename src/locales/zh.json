@@ -222,6 +222,16 @@
   },
   "proposalStatus": {
     "draft": "草稿",
+    "initiationVote": "立项投票",
+    "waitingForStartFund": "等待启动金",
+    "inProgress": "项目执行中",
+    "milestoneVote": "里程碑验收投票",
+    "delayVote": "延期投票",
+    "waitingForMilestoneFund": "等待里程碑资金",
+    "reviewVote": "进度复核投票",
+    "waitingForAcceptanceReport": "等待验收报告",
+    "completed": "项目完成",
+    "reexamineVote": "复核投票",
     "communityReview": "社区审议中",
     "voting": "投票中",
     "milestoneDelivery": "里程碑交付中",
@@ -714,6 +724,16 @@
       "minutesAgo": "分钟前",
       "hoursAgo": "小时前",
       "daysAgo": "天前"
+    },
+    "errors": {
+      "sessionExpired": "登录已过期，请重新登录",
+      "publishFailed": "发布评论失败，请重试"
+    }
+  },
+  "proposalComments": {
+    "errors": {
+      "sessionExpired": "登录已过期，请重新登录",
+      "publishFailed": "发布评论失败，请重试"
     }
   },
   "proposalPhase": {

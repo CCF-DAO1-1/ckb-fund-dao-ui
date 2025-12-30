@@ -186,6 +186,16 @@
   },
   "proposalStatus": {
     "draft": "Draft",
+    "initiationVote": "Initiation Vote",
+    "waitingForStartFund": "Waiting For Start Fund",
+    "inProgress": "In Progress",
+    "milestoneVote": "Milestone Vote",
+    "delayVote": "Delay Vote",
+    "waitingForMilestoneFund": "Waiting For Milestone Fund",
+    "reviewVote": "Review Vote",
+    "waitingForAcceptanceReport": "Waiting For Acceptance Report",
+    "completed": "Completed",
+    "reexamineVote": "Reexamine Vote",
     "communityReview": "Community Review",
     "voting": "Voting",
     "milestoneDelivery": "Milestone Delivery",
@@ -675,6 +685,16 @@
       "minutesAgo": "minutes ago",
       "hoursAgo": "hours ago",
       "daysAgo": "days ago"
+    },
+    "errors": {
+      "sessionExpired": "Session expired, please login again",
+      "publishFailed": "Failed to publish comment, please try again"
+    }
+  },
+  "proposalComments": {
+    "errors": {
+      "sessionExpired": "Session expired, please login again",
+      "publishFailed": "Failed to publish comment, please try again"
     }
   },
   "proposalPhase": {
