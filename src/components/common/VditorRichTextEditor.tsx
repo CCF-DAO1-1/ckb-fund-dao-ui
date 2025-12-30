@@ -40,6 +40,13 @@ export default function VditorRichTextEditor({
   const containerRef = useRef<HTMLDivElement>(null);
   const editorIdRef = useRef<string>(`vditor-${Math.random().toString(36).substr(2, 9)}`);
   const { t } = useTranslation();
+  const isInitializedRef = useRef(false);
+  const lastModeRef = useRef<string>(mode);
+  const lastToolbarPresetRef = useRef<string>(toolbarPreset);
+  // 使用 ref 存储函数的最新版本，避免依赖项变化导致重新初始化
+  const handleImageUploadRef = useRef<((files: File[]) => Promise<string>) | null>(null);
+  const handleLinkToImageRef = useRef<((url: string) => Promise<string>) | null>(null);
+  const didRef = useRef<string | undefined>(did);
 
   // 检查是否在客户端
   useEffect(() => {
@@ -389,15 +396,41 @@ export default function VditorRichTextEditor({
     []
   );
 
+  // 更新 ref 以存储函数的最新版本，避免依赖项变化导致重新初始化
+  useEffect(() => {
+    handleImageUploadRef.current = handleImageUpload;
+    handleLinkToImageRef.current = handleLinkToImage;
+    didRef.current = did;
+  }, [handleImageUpload, handleLinkToImage, did]);
+
   // 初始化 Vditor
   useEffect(() => {
     if (!isClient || !containerRef.current) return;
 
+    // 检查是否需要重新初始化（只有 mode 或 toolbarPreset 变化时才重新初始化）
+    const needsReinit = 
+      !isInitializedRef.current || 
+      lastModeRef.current !== mode || 
+      lastToolbarPresetRef.current !== toolbarPreset;
+
+    if (!needsReinit) {
+      // 不需要重新初始化，直接返回
+      return;
+    }
+
     // 如果已经初始化，先销毁
     if (vditorRef.current) {
-      vditorRef.current.destroy();
+      try {
+        vditorRef.current.destroy();
+      } catch (error) {
+        console.warn('Error destroying Vditor instance:', error);
+      }
       vditorRef.current = null;
     }
+
+    // 更新引用
+    lastModeRef.current = mode;
+    lastToolbarPresetRef.current = toolbarPreset;
 
     // 工具栏配置
     // 参考 bbs-fe 项目的工具栏配置，提供更完整的编辑功能
@@ -562,7 +595,12 @@ export default function VditorRichTextEditor({
         handler: async (files: File[]) => {
           try {
             // 支持多文件上传
-            const markdown = await handleImageUpload(files);
+            // 使用 ref 获取最新的函数版本，避免依赖项变化导致重新初始化
+            if (!handleImageUploadRef.current) {
+              console.error("handleImageUpload not initialized");
+              return "";
+            }
+            const markdown = await handleImageUploadRef.current(files);
             
             // Vditor 的 handler 返回的字符串会被自动插入到编辑器中
             // 在 IR 模式下，Markdown 图片语法应该自动渲染为图片
@@ -588,7 +626,12 @@ export default function VditorRichTextEditor({
       linkToImg: {
         handler: async (url: string) => {
           try {
-            const markdown = await handleLinkToImage(url);
+            // 使用 ref 获取最新的函数版本，避免依赖项变化导致重新初始化
+            if (!handleLinkToImageRef.current) {
+              console.error("handleLinkToImage not initialized");
+              return "";
+            }
+            const markdown = await handleLinkToImageRef.current(url);
             return markdown;
           } catch (error) {
             console.error("Link to image failed:", error);
@@ -650,7 +693,7 @@ export default function VditorRichTextEditor({
             // 处理粘贴事件
             editorElement.addEventListener("paste", async (e: ClipboardEvent) => {
               const items = e.clipboardData?.items;
-              if (!items || !did) return;
+              if (!items || !didRef.current) return;
 
               const imageFiles: File[] = [];
 
@@ -669,7 +712,11 @@ export default function VditorRichTextEditor({
               if (imageFiles.length > 0) {
                 e.preventDefault();
                 try {
-                  const markdown = await handleImageUpload(imageFiles);
+                  if (!handleImageUploadRef.current) {
+                    console.error("handleImageUpload not initialized");
+                    return;
+                  }
+                  const markdown = await handleImageUploadRef.current(imageFiles);
                   if (markdown && vditorRef.current) {
                     // 使用 Vditor 的 insertValue 方法插入图片（如果可用）
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -706,9 +753,13 @@ export default function VditorRichTextEditor({
               const files = Array.from(e.dataTransfer?.files || []);
               const imageFiles = files.filter((file) => file.type.startsWith("image/"));
 
-              if (imageFiles.length > 0 && did) {
+              if (imageFiles.length > 0 && didRef.current) {
                 try {
-                  const markdown = await handleImageUpload(imageFiles);
+                  if (!handleImageUploadRef.current) {
+                    console.error("handleImageUpload not initialized");
+                    return;
+                  }
+                  const markdown = await handleImageUploadRef.current(imageFiles);
                   if (markdown && vditorRef.current) {
                     // 使用 Vditor 的 insertValue 方法插入图片（如果可用）
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -776,6 +827,7 @@ export default function VditorRichTextEditor({
     const vditor = new Vditor(containerRef.current, vditorConfig);
 
     vditorRef.current = vditor;
+    isInitializedRef.current = true;
 
     // 清理函数
     return () => {
@@ -788,11 +840,15 @@ export default function VditorRichTextEditor({
           console.warn('Error destroying Vditor instance:', error);
         } finally {
           vditorRef.current = null;
+          isInitializedRef.current = false;
         }
       }
     };
+    // 只依赖真正需要重新初始化的属性：isClient, mode, toolbarPreset
+    // handleImageUpload 和 handleLinkToImage 通过闭包访问，不需要作为依赖项
+    // did 通过闭包访问，不需要作为依赖项
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isClient, mode, toolbarPreset, handleImageUpload, handleLinkToImage, did]); // 包含上传处理函数和 did
+  }, [isClient, mode, toolbarPreset]);
 
   // 同步外部 value 变化到编辑器
   // 使用 ref 跟踪是否正在用户输入，避免在用户输入时更新导致失焦
