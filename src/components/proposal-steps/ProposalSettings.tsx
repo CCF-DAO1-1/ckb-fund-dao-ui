@@ -62,7 +62,7 @@ const ProposalSettings: React.FC<ProposalSettingsProps> = ({ formData, onInputCh
           {messages.proposalSteps.proposalSettings.releaseDate}
         </label>
         <CustomDatePicker
-          selected={formData.releaseDate ? new Date(formData.releaseDate) : null}
+          selected={formData.releaseDate ? new Date(formData.releaseDate + 'T00:00:00') : null}
           onChange={onDateChange}
           placeholderText={messages.proposalSteps.proposalSettings.datePlaceholder}
           minDate={new Date()}

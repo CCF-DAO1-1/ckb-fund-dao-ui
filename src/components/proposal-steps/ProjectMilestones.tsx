@@ -146,7 +146,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({
                         </label>
                         <CustomDatePicker
                           selected={
-                            milestone.date ? new Date(milestone.date) : null
+                            milestone.date ? new Date(milestone.date + 'T00:00:00') : null
                           }
                           onChange={(date) =>
                             onMilestoneDateChange(milestone.id, date)

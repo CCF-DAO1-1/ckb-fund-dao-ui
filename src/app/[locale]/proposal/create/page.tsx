@@ -345,10 +345,18 @@ export default function CreateProposal() {
     }));
   };
 
+  // 将日期格式化为本地时间的 YYYY-MM-DD 格式（避免时区问题）
+  const formatDateToLocalString = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleDateChange = (date: Date | null) => {
     setFormData((prev) => ({
       ...prev,
-      releaseDate: date ? date.toISOString().split("T")[0] : "",
+      releaseDate: date ? formatDateToLocalString(date) : "",
     }));
   };
 
@@ -360,7 +368,7 @@ export default function CreateProposal() {
       ...prev,
       milestones: prev.milestones.map((milestone) =>
         milestone.id === milestoneId
-          ? { ...milestone, date: date ? date.toISOString().split("T")[0] : "" }
+          ? { ...milestone, date: date ? formatDateToLocalString(date) : "" }
           : milestone
       ),
     }));
