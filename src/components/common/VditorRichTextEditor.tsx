@@ -39,10 +39,11 @@ export default function VditorRichTextEditor({
   const vditorRef = useRef<Vditor | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const editorIdRef = useRef<string>(`vditor-${Math.random().toString(36).substr(2, 9)}`);
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const isInitializedRef = useRef(false);
   const lastModeRef = useRef<string>(mode);
   const lastToolbarPresetRef = useRef<string>(toolbarPreset);
+  const lastLocaleRef = useRef<string>(locale);
   // 使用 ref 存储函数的最新版本，避免依赖项变化导致重新初始化
   const handleImageUploadRef = useRef<((files: File[]) => Promise<string>) | null>(null);
   const handleLinkToImageRef = useRef<((url: string) => Promise<string>) | null>(null);
@@ -407,11 +408,12 @@ export default function VditorRichTextEditor({
   useEffect(() => {
     if (!isClient || !containerRef.current) return;
 
-    // 检查是否需要重新初始化（只有 mode 或 toolbarPreset 变化时才重新初始化）
+    // 检查是否需要重新初始化（mode、toolbarPreset 或 locale 变化时需要重新初始化）
     const needsReinit = 
       !isInitializedRef.current || 
       lastModeRef.current !== mode || 
-      lastToolbarPresetRef.current !== toolbarPreset;
+      lastToolbarPresetRef.current !== toolbarPreset ||
+      lastLocaleRef.current !== locale;
 
     if (!needsReinit) {
       // 不需要重新初始化，直接返回
@@ -431,6 +433,7 @@ export default function VditorRichTextEditor({
     // 更新引用
     lastModeRef.current = mode;
     lastToolbarPresetRef.current = toolbarPreset;
+    lastLocaleRef.current = locale;
 
     // 工具栏配置
     // 参考 bbs-fe 项目的工具栏配置，提供更完整的编辑功能
@@ -452,14 +455,7 @@ export default function VditorRichTextEditor({
           "quote",
           "code",
           "|",
-          "upload",
-          "|",
-          "undo",
-          "redo",
-          "|",
-          "fullscreen",
-          "preview",
-          "outline"
+          "upload"
         );
       } else if (mode === "ir") {
         // IR 模式下的工具栏（即时渲染模式）
@@ -482,16 +478,8 @@ export default function VditorRichTextEditor({
           "inline-code",
           "|",
           "upload",
-          "link-to-img",
           "|",
-          "table",
-          "|",
-          "undo",
-          "redo",
-          "|",
-          "fullscreen",
-          "preview",
-          "outline"
+          "table"
         );
       } else {
         // SV 模式下的工具栏（分屏预览模式）
@@ -514,17 +502,9 @@ export default function VditorRichTextEditor({
           "inline-code",
           "|",
           "upload",
-          "link-to-img",
           "|",
-          "table",
-          "|",
-          "undo",
-          "redo",
-          "|",
-          "both",
-          "preview",
-          "fullscreen",
-          "outline"
+          "table"
+         
         );
       }
     } else if (toolbarPreset === "simple") {
@@ -541,20 +521,22 @@ export default function VditorRichTextEditor({
         "|",
         "quote",
         "|",
-        "upload",
-        "|",
-        "fullscreen"
+        "upload"
       );
     }
 
     // 创建 Vditor 配置对象
     // 参考 bbs-fe 项目的配置，优化编辑器体验
+    // 参考 vue-markdown-editor 的国际化方案，通过 lang 配置项设置语言
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const vditorConfig: any = {
       value: value || "",
       placeholder: placeholder || "Enter text...",
       height: typeof height === "number" ? height : parseInt(height) || 200,
       mode,
+      // 设置语言：根据当前 locale 设置 Vditor 的语言
+      // Vditor 支持的语言：zh_CN（中文）、en_US（英文）
+      lang: locale === 'zh' ? 'zh_CN' : 'en_US',
       minHeight: 200, // 最小高度
       maxHeight: 800, // 最大高度（超过后出现滚动条）
       cache: {
@@ -848,7 +830,7 @@ export default function VditorRichTextEditor({
     // handleImageUpload 和 handleLinkToImage 通过闭包访问，不需要作为依赖项
     // did 通过闭包访问，不需要作为依赖项
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isClient, mode, toolbarPreset]);
+  }, [isClient, mode, toolbarPreset, locale]);
 
   // 同步外部 value 变化到编辑器
   // 使用 ref 跟踪是否正在用户输入，避免在用户输入时更新导致失焦

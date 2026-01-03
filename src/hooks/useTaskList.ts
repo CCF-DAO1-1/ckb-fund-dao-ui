@@ -85,7 +85,7 @@ export function useTaskList(
         
         // 计算总页数：优先使用接口返回的 total_pages，否则根据 total 和 per_page 计算
         if (response.total_pages !== undefined) {
-          setTotalPages(response.total_pages);
+        setTotalPages(response.total_pages);
         } else if (response.total !== undefined && finalParams.per_page) {
           const calculatedTotalPages = Math.ceil(response.total / finalParams.per_page);
           setTotalPages(calculatedTotalPages);
