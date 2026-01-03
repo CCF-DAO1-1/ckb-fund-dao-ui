@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo } from 'react';
 import Tag from "@/components/ui/tag/Tag";
 import { ProposalStatus } from "@/utils/proposalUtils";
 import VotingRecordsTable from './VotingRecordsTable';
 import DiscussionRecordsTable from './DiscussionRecordsTable';
 import { useI18n } from '@/contexts/I18nContext';
+import { useSelfProposalList } from '@/hooks/useSelfProposalList';
+import { SelfProposalItem } from '@/server/proposal';
 
 interface RecordsTableProps {
   activeTab: string;
@@ -25,79 +27,80 @@ interface ProposalRecord {
 
 export default function RecordsTable({ activeTab, setActiveTab, className = '' }: RecordsTableProps) {
   const { messages } = useI18n();
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 1;
+  const { proposals, loading, error, page, totalPages, setPage } = useSelfProposalList({ page: 1, per_page: 10 });
 
-  // 将字符串状态转换为ProposalStatus枚举
-  const getStatusFromString = (status: string): ProposalStatus => {
-    switch (status) {
-      case messages.recordsTable.proposalStatuses.underReview:
-        return ProposalStatus.REVIEW;
-      case messages.recordsTable.proposalStatuses.voting:
-        return ProposalStatus.VOTE;
-      case messages.recordsTable.proposalStatuses.milestoneDelivery:
-        return ProposalStatus.MILESTONE;
-      case messages.recordsTable.proposalStatuses.approved:
-        return ProposalStatus.APPROVED;
-      case messages.recordsTable.proposalStatuses.rejected:
-        return ProposalStatus.REJECTED;
-      case messages.recordsTable.proposalStatuses.ended:
-        return ProposalStatus.ENDED;
-      case messages.recordsTable.proposalStatuses.draft:
-        return ProposalStatus.DRAFT;
-      default:
-        return ProposalStatus.REVIEW;
+  // 格式化日期
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Shanghai'
+      }) + ' (UTC+8)';
+    } catch {
+      return dateString;
     }
   };
 
-  // 模拟数据
-  const proposalRecords: ProposalRecord[] = [
-    {
-      id: '1',
-      name: messages.recordsTable.sampleData.proposalName1,
-      type: messages.recordsTable.proposalTypes.budgetApplication,
-      budget: '2,000,000 CKB',
-      status: messages.recordsTable.proposalStatuses.underReview,
-      publishDate: '2025/09/18 00:00 (UTC+8)',
-      actions: [messages.recordsTable.actions.edit, messages.recordsTable.actions.startVoting]
-    },
-    {
-      id: '2',
-      name: messages.recordsTable.sampleData.proposalName2,
-      type: messages.recordsTable.proposalTypes.budgetApplication,
-      budget: '5,000,000 CKB',
-      status: messages.recordsTable.proposalStatuses.milestoneDelivery,
-      publishDate: '2025/09/18 00:00 (UTC+8)',
-      actions: [messages.recordsTable.actions.milestoneDelivery]
-    },
-    {
-      id: '3',
-      name: messages.recordsTable.sampleData.proposalName3,
-      type: messages.recordsTable.proposalTypes.budgetApplication,
-      budget: '5,000,000 CKB',
-      status: messages.recordsTable.proposalStatuses.projectReview,
-      publishDate: '2025/09/18 00:00 (UTC+8)',
-      actions: [messages.recordsTable.actions.rectificationComplete]
-    },
-    {
-      id: '4',
-      name: messages.recordsTable.sampleData.proposalName4,
-      type: messages.recordsTable.proposalTypes.budgetApplication,
-      budget: '5,000,000 CKB',
-      status: messages.recordsTable.proposalStatuses.terminated,
-      publishDate: '2025/09/18 00:00 (UTC+8)',
-      actions: []
-    },
-    {
-      id: '5',
-      name: messages.recordsTable.sampleData.proposalName5,
-      type: messages.recordsTable.proposalTypes.budgetApplication,
-      budget: '5,000,000 CKB',
-      status: messages.recordsTable.proposalStatuses.completed,
-      publishDate: '2025/09/18 00:00 (UTC+8)',
-      actions: []
+  // 格式化预算
+  const formatBudget = (budget: string): string => {
+    try {
+      const num = parseFloat(budget);
+      if (isNaN(num)) return budget;
+      return new Intl.NumberFormat('zh-CN').format(num) + ' CKB';
+    } catch {
+      return budget;
     }
-  ];
+  };
+
+  // 转换提案数据为表格格式
+  const proposalRecords: ProposalRecord[] = useMemo(() => {
+    // 调试：打印提案数据
+    if (proposals.length > 0) {
+      console.log("提案数据:", proposals);
+    }
+    return proposals.map((proposal: SelfProposalItem) => {
+      const state = proposal.state as ProposalStatus;
+      const title = proposal.record.data.title || '';
+      const budget = proposal.record.data.budget || '0';
+      const proposalType = proposal.record.data.proposalType || '';
+      const created = proposal.record.created || '';
+
+      // 获取提案类型文本
+      const getProposalTypeText = (type: string): string => {
+        if (type === 'funding') {
+          return messages.recordsTable.proposalTypes.budgetApplication;
+        }
+        return type;
+      };
+
+      // 根据状态确定可用的操作
+      const actions: string[] = [];
+      if (state === ProposalStatus.DRAFT) {
+        actions.push(messages.recordsTable.actions.edit);
+      }
+      if (state === ProposalStatus.REVIEW) {
+        actions.push(messages.recordsTable.actions.startVoting);
+      }
+      if (state === ProposalStatus.MILESTONE) {
+        actions.push(messages.recordsTable.actions.milestoneDelivery);
+      }
+
+      return {
+        id: proposal.uri || proposal.cid,
+        name: title,
+        type: getProposalTypeText(proposalType),
+        budget: formatBudget(budget),
+        status: String(state),
+        publishDate: formatDate(created),
+        actions,
+      };
+    });
+  }, [proposals, messages]);
 
   const tabs = [
     { key: 'proposals', label: messages.recordsTable.tabs.proposals },
@@ -119,6 +122,12 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
         return <DiscussionRecordsTable />;
       case 'proposals':
       default:
+        if (loading) {
+          return <div className="loading-state">加载中...</div>;
+        }
+        if (error) {
+          return <div className="error-state">{error}</div>;
+        }
         return (
           <>
             <div className="table-container">
@@ -134,51 +143,61 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
                   </tr>
                 </thead>
                 <tbody>
-                  {proposalRecords.map((record) => (
-                    <tr key={record.id}>
-                      <td className="proposal-name">{record.name}</td>
-                      <td className="proposal-type">{record.type}</td>
-                      <td className="proposal-budget">{record.budget}</td>
-                      <td className="proposal-status">
-                        <Tag status={getStatusFromString(record.status)} size="sm" />
-                      </td>
-                      <td className="proposal-date">{record.publishDate}</td>
-                      <td className="proposal-actions">
-                        {record.actions.map((action, index) => (
-                          <button
-                            key={index}
-                            className={`action-button ${action === messages.recordsTable.actions.rectificationComplete ? 'filled' : 'outlined'}`}
-                            onClick={() => handleAction(action, record.id)}
-                          >
-                            {action}
-                          </button>
-                        ))}
+                  {proposalRecords.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="no-data">
+                        暂无数据
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    proposalRecords.map((record) => (
+                      <tr key={record.id}>
+                        <td className="proposal-name">{record.name}</td>
+                        <td className="proposal-type">{record.type}</td>
+                        <td className="proposal-budget">{record.budget}</td>
+                        <td className="proposal-status">
+                          <Tag status={Number(record.status) as ProposalStatus} size="sm" />
+                        </td>
+                        <td className="proposal-date">{record.publishDate}</td>
+                        <td className="proposal-actions">
+                          {record.actions.map((action, index) => (
+                            <button
+                              key={index}
+                              className={`action-button ${action === messages.recordsTable.actions.rectificationComplete ? 'filled' : 'outlined'}`}
+                              onClick={() => handleAction(action, record.id)}
+                            >
+                              {action}
+                            </button>
+                          ))}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
 
-            <div className="pagination">
-              <button
-                className="pagination-button"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(currentPage - 1)}
-              >
-                &lt;
-              </button>
-              <span className="pagination-info">
-                {currentPage} / {totalPages}
-              </span>
-              <button
-                className="pagination-button"
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(currentPage + 1)}
-              >
-                &gt;
-              </button>
-            </div>
+            {totalPages && totalPages > 0 && (
+              <div className="pagination">
+                <button
+                  className="pagination-button"
+                  disabled={page <= 1}
+                  onClick={() => setPage(page - 1)}
+                >
+                  &lt;
+                </button>
+                <span className="pagination-info">
+                  {page} / {totalPages}
+                </span>
+                <button
+                  className="pagination-button"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage(page + 1)}
+                >
+                  &gt;
+                </button>
+              </div>
+            )}
           </>
         );
     }

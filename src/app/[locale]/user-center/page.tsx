@@ -1,16 +1,17 @@
 'use client';
 
-// import { useState } from 'react';
+import { useState } from 'react';
 import UserProfileCard from '../../../components/user-center/UserProfileCard';
 import '@/styles/UserCenter.css';
 import Web5IdentityCard from '@/components/user-center/Web5IdentityCard';
 import WalletDaoCard from '@/components/user-center/WalletDaoCard';
+import RecordsTable from '@/components/user-center/RecordsTable';
 // import RecordsTable from '@/components/user-center/RecordsTable';
 
 
 
 export default function UserCenter() {
-  // const [activeTab, setActiveTab] = useState('proposals');
+  const [activeTab, setActiveTab] = useState('proposals');
 
   return (
     <div className="user-center-container">
@@ -23,9 +24,10 @@ export default function UserCenter() {
         </div>
 
         {/* 记录表格 */}
-        {/* <div className="user-center-records">
+        <div className="user-center-records">
+          
           <RecordsTable activeTab={activeTab} setActiveTab={setActiveTab} />
-        </div> */}
+        </div>
       </main>
     </div>
   );

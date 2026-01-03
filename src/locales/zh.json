@@ -177,6 +177,59 @@
       "submitFailed": "提交失败，请重试"
     }
   },
+  "createMeeting": {
+    "title": "组织AMA会议",
+    "selectLabel": "选择会议",
+    "selectPlaceholder": "请选择会议（可选）",
+    "loadingMeetings": "加载中...",
+    "timeLabel": "会议时间",
+    "timePlaceholder": "请选择会议时间",
+    "linkLabel": "会议链接",
+    "linkPlaceholder": "请输入会议链接（如 Zoom、腾讯会议等）",
+    "proposalUri": "提案 URI",
+    "submit": "提交",
+    "button": "组织AMA",
+    "success": "会议创建成功",
+    "errors": {
+      "userNotLoggedIn": "请先登录",
+      "timeRequired": "请输入会议时间",
+      "invalidTime": "请输入有效的会议时间",
+      "linkRequired": "请输入会议链接",
+      "invalidLink": "请输入有效的会议链接",
+      "submitFailed": "提交失败，请重试"
+    }
+  },
+  "submitMeetingReport": {
+    "title": "提交AMA报告",
+    "meetingLabel": "选择会议（可选）",
+    "selectPlaceholder": "请选择会议（可选）",
+    "loadingMeetings": "加载中...",
+    "contentLabel": "报告内容（可选）",
+    "contentPlaceholder": "请输入报告内容...",
+    "proposalUri": "提案 URI",
+    "submit": "提交",
+    "button": "提交AMA报告",
+    "success": "AMA报告提交成功",
+    "errors": {
+      "userNotLoggedIn": "请先登录",
+      "submitFailed": "提交失败，请重试"
+    }
+  },
+  "submitDelayReport": {
+    "title": "提交延期报告",
+    "reasonLabel": "延期原因（可选）",
+    "reasonPlaceholder": "请输入延期原因...",
+    "durationLabel": "延期时长（天数，可选）",
+    "durationPlaceholder": "请输入延期天数",
+    "proposalUri": "提案 URI",
+    "submit": "提交",
+    "button": "提交延期报告",
+    "success": "延期报告提交成功",
+    "errors": {
+      "userNotLoggedIn": "请先登录",
+      "submitFailed": "提交失败，请重试"
+    }
+  },
   "management": {
     "title": "管理中心",
     "proposalManagement": "提案管理",

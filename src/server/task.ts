@@ -111,3 +111,111 @@ export const sendFunds = defineAPI<
     },
   }
 );
+
+// 创建会议参数类型
+export interface CreateMeetingParams {
+  did: string; // 用户DID
+  params: {
+    proposal_uri: string; // 提案URI
+    meeting_time: string; // 会议时间（ISO 8601格式）
+    meeting_link: string; // 会议链接
+    timestamp: number; // 时间戳
+  };
+  signed_bytes: string; // 签名字节（顶层）
+  signing_key_did: string; // 签名密钥DID（顶层）
+}
+
+// 创建会议响应类型
+export interface CreateMeetingResponse {
+  success: boolean;
+  [key: string]: unknown;
+}
+
+/**
+ * 创建会议（组织AMA）
+ * POST /api/task/create_meeting
+ */
+export const createMeeting = defineAPI<
+  CreateMeetingParams,
+  CreateMeetingResponse
+>(
+  "/task/create_meeting",
+  "POST",
+  {
+    divider: {
+      body: ["did", "params", "signed_bytes", "signing_key_did"],
+    },
+  }
+);
+
+// 提交AMA报告参数类型
+export interface SubmitMeetingReportParams {
+  did: string; // 用户DID
+  params: {
+    proposal_uri: string; // 提案URI
+    meeting_id?: string | number; // 会议ID（可选）
+    report_content?: string; // 报告内容（可选）
+    timestamp: number; // 时间戳
+  };
+  signed_bytes: string; // 签名字节（顶层）
+  signing_key_did: string; // 签名密钥DID（顶层）
+}
+
+// 提交AMA报告响应类型
+export interface SubmitMeetingReportResponse {
+  success: boolean;
+  [key: string]: unknown;
+}
+
+/**
+ * 提交AMA报告
+ * POST /api/task/submit_meeting_report
+ */
+export const submitMeetingReport = defineAPI<
+  SubmitMeetingReportParams,
+  SubmitMeetingReportResponse
+>(
+  "/task/submit_meeting_report",
+  "POST",
+  {
+    divider: {
+      body: ["did", "params", "signed_bytes", "signing_key_did"],
+    },
+  }
+);
+
+// 提交延期报告参数类型
+export interface SubmitDelayReportParams {
+  did: string; // 用户DID
+  params: {
+    proposal_uri: string; // 提案URI
+    delay_reason?: string; // 延期原因（可选）
+    delay_duration?: number; // 延期时长（天数，可选）
+    timestamp: number; // 时间戳
+  };
+  signed_bytes: string; // 签名字节（顶层）
+  signing_key_did: string; // 签名密钥DID（顶层）
+}
+
+// 提交延期报告响应类型
+export interface SubmitDelayReportResponse {
+  success: boolean;
+  [key: string]: unknown;
+}
+
+/**
+ * 提交延期报告
+ * POST /api/task/submit_delay_report
+ */
+export const submitDelayReport = defineAPI<
+  SubmitDelayReportParams,
+  SubmitDelayReportResponse
+>(
+  "/task/submit_delay_report",
+  "POST",
+  {
+    divider: {
+      body: ["did", "params", "signed_bytes", "signing_key_did"],
+    },
+  }
+);

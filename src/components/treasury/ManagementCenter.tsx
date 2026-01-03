@@ -11,6 +11,9 @@ import { useI18n } from "@/contexts/I18nContext";
 import { useRouter } from "next/navigation";
 import UpdateReceiverAddrModal from "./UpdateReceiverAddrModal";
 import SendFundsModal from "./SendFundsModal";
+import CreateMeetingModal from "./CreateMeetingModal";
+import SubmitMeetingReportModal from "./SubmitMeetingReportModal";
+import SubmitDelayReportModal from "./SubmitDelayReportModal";
 
 interface ProposalItem {
   id: string;
@@ -131,6 +134,12 @@ export default function ManagementCenter() {
   const [selectedTaskForAddr, setSelectedTaskForAddr] = useState<TaskItem | undefined>(undefined);
   const [showSendFundsModal, setShowSendFundsModal] = useState(false);
   const [selectedTaskForFunds, setSelectedTaskForFunds] = useState<TaskItem | undefined>(undefined);
+  const [showCreateMeetingModal, setShowCreateMeetingModal] = useState(false);
+  const [selectedTaskForMeeting, setSelectedTaskForMeeting] = useState<TaskItem | undefined>(undefined);
+  const [showSubmitMeetingReportModal, setShowSubmitMeetingReportModal] = useState(false);
+  const [selectedTaskForMeetingReport, setSelectedTaskForMeetingReport] = useState<TaskItem | undefined>(undefined);
+  const [showSubmitDelayReportModal, setShowSubmitDelayReportModal] = useState(false);
+  const [selectedTaskForDelayReport, setSelectedTaskForDelayReport] = useState<TaskItem | undefined>(undefined);
   
   // 筛选状态（暂时未使用，保留用于未来功能）
   // const [activeTab, setActiveTab] = useState("pending");
@@ -230,6 +239,66 @@ export default function ManagementCenter() {
     setSelectedTaskForFunds(undefined);
   };
 
+  // 创建会议相关
+  const handleCreateMeeting = (proposal: ProposalItem) => {
+    const task = rawTasks.find(t => t.id.toString() === proposal.id);
+    if (task) {
+      setSelectedTaskForMeeting(task);
+      setShowCreateMeetingModal(true);
+    }
+  };
+
+  const handleCreateMeetingSuccess = () => {
+    refetch();
+    setShowCreateMeetingModal(false);
+    setSelectedTaskForMeeting(undefined);
+  };
+
+  const handleCreateMeetingModalClose = () => {
+    setShowCreateMeetingModal(false);
+    setSelectedTaskForMeeting(undefined);
+  };
+
+  // 提交AMA报告相关
+  const handleSubmitMeetingReport = (proposal: ProposalItem) => {
+    const task = rawTasks.find(t => t.id.toString() === proposal.id);
+    if (task) {
+      setSelectedTaskForMeetingReport(task);
+      setShowSubmitMeetingReportModal(true);
+    }
+  };
+
+  const handleSubmitMeetingReportSuccess = () => {
+    refetch();
+    setShowSubmitMeetingReportModal(false);
+    setSelectedTaskForMeetingReport(undefined);
+  };
+
+  const handleSubmitMeetingReportModalClose = () => {
+    setShowSubmitMeetingReportModal(false);
+    setSelectedTaskForMeetingReport(undefined);
+  };
+
+  // 提交延期报告相关
+  const handleSubmitDelayReport = (proposal: ProposalItem) => {
+    const task = rawTasks.find(t => t.id.toString() === proposal.id);
+    if (task) {
+      setSelectedTaskForDelayReport(task);
+      setShowSubmitDelayReportModal(true);
+    }
+  };
+
+  const handleSubmitDelayReportSuccess = () => {
+    refetch();
+    setShowSubmitDelayReportModal(false);
+    setSelectedTaskForDelayReport(undefined);
+  };
+
+  const handleSubmitDelayReportModalClose = () => {
+    setShowSubmitDelayReportModal(false);
+    setSelectedTaskForDelayReport(undefined);
+  };
+
   // 创建投票相关
   const handleCreateVote = (proposal: ProposalItem) => {
     setSelectedProposal({ ...proposal, taskType: t("taskTypes.createVote") });
@@ -294,6 +363,9 @@ export default function ManagementCenter() {
                   const taskMessage = proposal.message;
                   const isUpdateReceiverAddr = taskMessage === "UpdateReceiverAddr";
                   const isSendInitialFund = taskMessage === "SendInitialFund";
+                  const isCreateAMA = taskMessage === "CreateAMA";
+                  const isSubmitAMAReport = taskMessage === "SubmitAMAReport";
+                  const isSubmitDelayReport = taskMessage === "SubmitDelayReport";
                   
                   return (
                   <tr key={proposal.id}>
@@ -361,6 +433,60 @@ export default function ManagementCenter() {
                             {t("sendFunds.button") || "拨款"}
                           </button>
                         )}
+                        {isCreateAMA && (
+                          <button
+                            className="create-meeting-button"
+                            onClick={() => handleCreateMeeting(proposal)}
+                            style={{
+                              marginLeft: "8px",
+                              padding: "6px 12px",
+                              backgroundColor: "#00CC9B",
+                              color: "#000000",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "14px",
+                            }}
+                          >
+                            {t("createMeeting.button") || "组织AMA"}
+                          </button>
+                        )}
+                        {isSubmitAMAReport && (
+                          <button
+                            className="submit-meeting-report-button"
+                            onClick={() => handleSubmitMeetingReport(proposal)}
+                            style={{
+                              marginLeft: "8px",
+                              padding: "6px 12px",
+                              backgroundColor: "#00CC9B",
+                              color: "#000000",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "14px",
+                            }}
+                          >
+                            {t("submitMeetingReport.button") || "提交AMA报告"}
+                          </button>
+                        )}
+                        {isSubmitDelayReport && (
+                          <button
+                            className="submit-delay-report-button"
+                            onClick={() => handleSubmitDelayReport(proposal)}
+                            style={{
+                              marginLeft: "8px",
+                              padding: "6px 12px",
+                              backgroundColor: "#00CC9B",
+                              color: "#000000",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "14px",
+                            }}
+                          >
+                            {t("submitDelayReport.button") || "提交延期报告"}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -420,6 +546,30 @@ export default function ManagementCenter() {
         onClose={handleSendFundsModalClose}
         onSuccess={handleSendFundsSuccess}
         proposalUri={selectedTaskForFunds?.target?.uri}
+      />
+
+      {/* 创建会议Modal */}
+      <CreateMeetingModal
+        isOpen={showCreateMeetingModal}
+        onClose={handleCreateMeetingModalClose}
+        onSuccess={handleCreateMeetingSuccess}
+        proposalUri={selectedTaskForMeeting?.target?.uri}
+      />
+
+      {/* 提交AMA报告Modal */}
+      <SubmitMeetingReportModal
+        isOpen={showSubmitMeetingReportModal}
+        onClose={handleSubmitMeetingReportModalClose}
+        onSuccess={handleSubmitMeetingReportSuccess}
+        proposalUri={selectedTaskForMeetingReport?.target?.uri}
+      />
+
+      {/* 提交延期报告Modal */}
+      <SubmitDelayReportModal
+        isOpen={showSubmitDelayReportModal}
+        onClose={handleSubmitDelayReportModalClose}
+        onSuccess={handleSubmitDelayReportSuccess}
+        proposalUri={selectedTaskForDelayReport?.target?.uri}
       />
     </div>
   );

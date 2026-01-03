@@ -141,6 +141,59 @@
       "submitFailed": "Failed to submit, please try again"
     }
   },
+  "createMeeting": {
+    "title": "Organize AMA Meeting",
+    "selectLabel": "Select Meeting",
+    "selectPlaceholder": "Please select a meeting (optional)",
+    "loadingMeetings": "Loading...",
+    "timeLabel": "Meeting Time",
+    "timePlaceholder": "Please select meeting time",
+    "linkLabel": "Meeting Link",
+    "linkPlaceholder": "Please enter meeting link (e.g., Zoom, Tencent Meeting, etc.)",
+    "proposalUri": "Proposal URI",
+    "submit": "Submit",
+    "button": "Organize AMA",
+    "success": "Meeting created successfully",
+    "errors": {
+      "userNotLoggedIn": "Please login first",
+      "timeRequired": "Please enter meeting time",
+      "invalidTime": "Please enter a valid meeting time",
+      "linkRequired": "Please enter meeting link",
+      "invalidLink": "Please enter a valid meeting link",
+      "submitFailed": "Failed to submit, please try again"
+    }
+  },
+  "submitMeetingReport": {
+    "title": "Submit AMA Report",
+    "meetingLabel": "Select Meeting (optional)",
+    "selectPlaceholder": "Please select a meeting (optional)",
+    "loadingMeetings": "Loading...",
+    "contentLabel": "Report Content (optional)",
+    "contentPlaceholder": "Please enter report content...",
+    "proposalUri": "Proposal URI",
+    "submit": "Submit",
+    "button": "Submit AMA Report",
+    "success": "AMA report submitted successfully",
+    "errors": {
+      "userNotLoggedIn": "Please login first",
+      "submitFailed": "Failed to submit, please try again"
+    }
+  },
+  "submitDelayReport": {
+    "title": "Submit Delay Report",
+    "reasonLabel": "Delay Reason (optional)",
+    "reasonPlaceholder": "Please enter delay reason...",
+    "durationLabel": "Delay Duration (days, optional)",
+    "durationPlaceholder": "Please enter delay days",
+    "proposalUri": "Proposal URI",
+    "submit": "Submit",
+    "button": "Submit Delay Report",
+    "success": "Delay report submitted successfully",
+    "errors": {
+      "userNotLoggedIn": "Please login first",
+      "submitFailed": "Failed to submit, please try again"
+    }
+  },
   "management": {
     "title": "Management Center",
     "proposalManagement": "Proposal Management",

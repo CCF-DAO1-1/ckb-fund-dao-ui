@@ -147,6 +147,123 @@ export const getProposalList = defineAPI<
   }
 );
 
+// 个人提案列表项类型（与普通提案列表不同，没有author、like_count等字段）
+export interface SelfProposalItem {
+  cid: string; // 内容ID
+  progress: number; // 进度
+  receiver_addr: string | null; // 接收地址
+  record: {
+    $type: string;
+    created: string; // 创建时间（ISO 8601格式）
+    data: {
+      background: string;
+      budget: string;
+      goals: string;
+      milestones: ProposalMilestone[];
+      proposalType: string;
+      releaseDate: string;
+      team: string;
+      title: string;
+      [key: string]: unknown;
+    };
+  };
+  repo: string; // 仓库DID
+  state: number; // 提案状态
+  updated: string; // 更新时间（ISO 8601格式）
+  uri: string; // 提案URI
+}
+
+// 查询个人提案列表参数类型
+export interface ListSelfProposalParams {
+  did: string; // 用户DID
+  page?: number; // 页码（可选）
+  per_page?: number; // 每页数量（可选）
+}
+
+// 查询个人提案列表响应类型（真实API返回格式）
+export interface ListSelfProposalResponse {
+  code?: number; // 响应代码
+  data?: {
+    page?: number; // 当前页码
+    per_page?: number; // 每页数量
+    rows?: SelfProposalItem[]; // 提案列表（使用 rows 字段）
+    total?: number; // 总数量
+    total_pages?: number; // 总页数（可选）
+  };
+  message?: string; // 响应消息
+  // 兼容旧格式
+  proposals?: SelfProposalItem[]; // 提案列表（兼容字段）
+  total?: number; // 总数量（兼容字段）
+  page?: number; // 当前页码（兼容字段）
+  per_page?: number; // 每页数量（兼容字段）
+  total_pages?: number; // 总页数（兼容字段）
+  [key: string]: unknown;
+}
+
+/**
+ * 查询个人提案列表
+ * GET /api/proposal/list_self
+ */
+export const listSelfProposal = defineAPI<
+  ListSelfProposalParams,
+  ListSelfProposalResponse
+>(
+  "/proposal/list_self",
+  "GET",
+  {
+    divider: {
+      query: ["did", "page", "per_page"], // did, page, per_page作为查询参数
+    },
+  }
+);
+
+// 查询个人回复信息参数类型
+export interface GetRepliedParams {
+  did: string; // 用户DID
+  page?: number; // 页码（可选）
+  per_page?: number; // 每页数量（可选）
+}
+
+// 回复信息项类型
+export interface RepliedItem {
+  cid: string; // 内容ID
+  created: string; // 创建时间（ISO 8601格式）
+  proposal: SelfProposalItem; // 提案信息（嵌套的完整提案对象）
+  repo: string; // 仓库DID
+  text: string; // 评论内容（HTML格式）
+  to: string; // 回复目标（父评论ID，空字符串表示不是回复）
+  updated: string; // 更新时间（ISO 8601格式）
+  uri: string; // 回复URI
+  [key: string]: unknown;
+}
+
+// 查询个人回复信息响应类型
+export interface GetRepliedResponse {
+  page?: number; // 当前页码
+  per_page?: number; // 每页数量
+  rows?: RepliedItem[]; // 回复列表（使用 rows 字段）
+  total?: number; // 总数量
+  total_pages?: number; // 总页数（可选）
+  [key: string]: unknown;
+}
+
+/**
+ * 查询个人回复信息
+ * GET /api/proposal/replied
+ */
+export const getReplied = defineAPI<
+  GetRepliedParams,
+  GetRepliedResponse
+>(
+  "/proposal/replied",
+  "GET",
+  {
+    divider: {
+      query: ["did", "page", "per_page"], // did, page, per_page作为查询参数
+    },
+  }
+);
+
 // 投票权重查询参数类型
 export interface VoteWeightParams {
   ckb_addr: string; // 用户CKB地址
@@ -498,6 +615,62 @@ export const getVoteDetail = defineAPI<
   {
     divider: {
       query: ["id"], // vote_meta_id作为查询参数
+    },
+  }
+);
+
+// 查询个人投票信息参数类型
+export interface ListSelfVoteParams {
+  did: string; // 用户DID
+  page?: number; // 页码（可选）
+  per_page?: number; // 每页数量（可选）
+}
+
+// 个人投票信息项类型
+export interface SelfVoteItem {
+  id: number; // 投票ID
+  vote_meta_id: number; // 投票元数据ID
+  proposal_uri: string; // 提案URI
+  vote_option: string; // 投票选项（如 "Agree", "Against", "Abstain"）
+  vote_time: string; // 投票时间（ISO 8601格式）
+  tx_hash: string | null; // 交易哈希
+  created: string; // 创建时间（ISO 8601格式）
+  [key: string]: unknown;
+}
+
+// 查询个人投票信息响应类型（真实API返回格式）
+export interface ListSelfVoteResponse {
+  code?: number; // 响应代码
+  data?: {
+    page?: number; // 当前页码
+    per_page?: number; // 每页数量
+    rows?: SelfVoteItem[]; // 投票列表（使用 rows 字段）
+    total?: number; // 总数量
+    total_pages?: number; // 总页数（可选）
+  };
+  message?: string; // 响应消息
+  // 兼容旧格式
+  votes?: SelfVoteItem[]; // 投票列表（兼容字段）
+  total?: number; // 总数量（兼容字段）
+  page?: number; // 当前页码（兼容字段）
+  per_page?: number; // 每页数量（兼容字段）
+  total_pages?: number; // 总页数（兼容字段）
+  [key: string]: unknown;
+}
+
+/**
+ * 查询个人投票信息
+ * GET /api/vote/list_self
+ */
+export const listSelfVote = defineAPI<
+  ListSelfVoteParams,
+  ListSelfVoteResponse
+>(
+  "/vote/list_self",
+  "GET",
+  {
+    divider: {
+      query: ["did", "page", "per_page"], // did, page, per_page作为查询参数
     },
   }
 );

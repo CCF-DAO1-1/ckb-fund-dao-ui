@@ -798,6 +798,7 @@ interface Messages {
       voteDate: string;
     };
     votingStages: {
+      voting: string;
       milestoneDelivery: string;
       projectReview: string;
       finalDecision: string;

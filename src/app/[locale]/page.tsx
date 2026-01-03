@@ -159,7 +159,7 @@ export default function Treasury() {
                     <FiSearch />
                   </button>
                 </div>
-                {/* <select
+                <select
                   name="proposal-status-filter"
                   id="proposal-status-filter"
                   value={selectedStatus}
@@ -185,7 +185,7 @@ export default function Treasury() {
                     {messages.homepage.rejected}
                   </option>
                   <option value={String(ProposalStatus.ENDED)}>{messages.homepage.ended}</option>
-                </select> */}
+                </select>
               </div>
             </nav>
 

@@ -1,6 +1,9 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
+import { useSelfVoteList } from '@/hooks/useSelfVoteList';
+import { SelfVoteItem } from '@/server/proposal';
 
 interface VotingRecord {
   id: string;
@@ -17,34 +20,62 @@ interface VotingRecordsTableProps {
 
 export default function VotingRecordsTable({ className = '' }: VotingRecordsTableProps) {
   const { messages } = useI18n();
-  
-  // 模拟投票记录数据
-  const votingRecords: VotingRecord[] = [
-    {
-      id: '1',
-      proposalName: messages.votingRecords.sampleData.proposalName1,
-      votingStage: messages.votingRecords.votingStages.milestoneDelivery,
-      myChoice: messages.votingRecords.choices.approve,
-      voteQuantity: '2,000,000 CKB',
-      voteDate: '2025/09/18 00:00 (UTC+8)'
-    },
-    {
-      id: '2',
-      proposalName: messages.votingRecords.sampleData.proposalName2,
-      votingStage: messages.votingRecords.votingStages.projectReview,
-      myChoice: messages.votingRecords.choices.approve,
-      voteQuantity: '5,000,000 CKB',
-      voteDate: '2025/09/18 00:00 (UTC+8)'
-    },
-    {
-      id: '3',
-      proposalName: messages.votingRecords.sampleData.proposalName3,
-      votingStage: messages.votingRecords.votingStages.finalDecision,
-      myChoice: messages.votingRecords.choices.against,
-      voteQuantity: '5,000,000 CKB',
-      voteDate: '2025/09/18 00:00 (UTC+8)'
+  const { votes, loading, error } = useSelfVoteList({ page: 1, per_page: 10 });
+
+  // 格式化日期
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Shanghai'
+      }) + ' (UTC+8)';
+    } catch {
+      return dateString;
     }
-  ];
+  };
+
+  // 转换投票数据为表格格式
+  const votingRecords: VotingRecord[] = useMemo(() => {
+    // 获取投票选项文本
+    const getVoteOptionText = (voteOption: string): string => {
+      const optionMap: { [key: string]: string } = {
+        'Agree': messages.votingRecords.choices.approve,
+        'Against': messages.votingRecords.choices.against,
+        'Abstain': messages.votingRecords.choices.abstain,
+        'approve': messages.votingRecords.choices.approve,
+        'against': messages.votingRecords.choices.against,
+        'abstain': messages.votingRecords.choices.abstain,
+      };
+      return optionMap[voteOption] || voteOption;
+    };
+
+    return votes.map((vote: SelfVoteItem) => {
+      // 从 proposal_uri 提取提案名称（暂时使用URI，后续可以获取提案详情）
+      const proposalName = vote.proposal_uri || '未知提案';
+      // 投票阶段暂时显示为"投票"（后续可以根据 vote_meta_id 获取详细信息）
+      const votingStage = messages.votingRecords.votingStages.voting || '投票';
+      // 投票选项
+      const myChoice = getVoteOptionText(vote.vote_option);
+      // 投票数量暂时不显示（需要从其他地方获取）
+      const voteQuantity = '-';
+      // 投票时间
+      const voteDate = formatDate(vote.vote_time || vote.created);
+
+      return {
+        id: String(vote.id),
+        proposalName,
+        votingStage,
+        myChoice,
+        voteQuantity,
+        voteDate,
+      };
+    });
+  }, [votes, messages]);
 
   const getChoiceClass = (choice: string) => {
     const choiceMap: { [key: string]: string } = {
@@ -54,6 +85,14 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
     };
     return choiceMap[choice] || 'choice-default';
   };
+
+  if (loading) {
+    return <div className="loading-state">加载中...</div>;
+  }
+
+  if (error) {
+    return <div className="error-state">{error}</div>;
+  }
 
   return (
     <div className={`voting-records-table ${className}`}>
@@ -69,17 +108,25 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
             </tr>
           </thead>
           <tbody>
-            {votingRecords.map((record) => (
-              <tr key={record.id}>
-                <td className="proposal-name">{record.proposalName}</td>
-                <td className="voting-stage">{record.votingStage}</td>
-                <td className={`my-choice ${getChoiceClass(record.myChoice)}`}>
-                  {record.myChoice}
+            {votingRecords.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="no-data">
+                  暂无数据
                 </td>
-                <td className="vote-quantity">{record.voteQuantity}</td>
-                <td className="vote-date">{record.voteDate}</td>
               </tr>
-            ))}
+            ) : (
+              votingRecords.map((record) => (
+                <tr key={record.id}>
+                  <td className="proposal-name">{record.proposalName}</td>
+                  <td className="voting-stage">{record.votingStage}</td>
+                  <td className={`my-choice ${getChoiceClass(record.myChoice)}`}>
+                    {record.myChoice}
+                  </td>
+                  <td className="vote-quantity">{record.voteQuantity}</td>
+                  <td className="vote-date">{record.voteDate}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
