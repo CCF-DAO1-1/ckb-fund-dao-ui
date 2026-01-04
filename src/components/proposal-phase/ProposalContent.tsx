@@ -17,6 +17,7 @@ import { getUserDisplayNameFromInfo } from "@/utils/userDisplayUtils";
 import MilestoneList from "./MilestoneList";
 import { useRouter } from "next/navigation";
 import { postUriToHref } from "@/lib/postUriHref";
+import { isMarkdown, markdownToHtml } from "@/utils/markdownUtils";
 
 interface ProposalContentProps {
   proposal: ProposalDetailResponse;
@@ -95,125 +96,7 @@ export default function ProposalContent({
     return types[type] || messages.proposalDetail.proposalTypes.unknown;
   };
 
-  // 检测内容是否为 Markdown 格式
-  const isMarkdown = (content: string): boolean => {
-    if (!content || typeof content !== 'string') return false;
-    
-    // 如果内容以 HTML 标签开头，可能是 HTML
-    if (content.trim().startsWith('<')) {
-      // 检查是否包含常见的 Markdown 语法
-      const markdownPatterns = [
-        /^#{1,6}\s/m,           // 标题
-        /^\*\s/m,               // 无序列表
-        /^-\s/m,                // 无序列表
-        /^\d+\.\s/m,            // 有序列表
-        /\[.*\]\(.*\)/m,        // 链接
-        /!\[.*\]\(.*\)/m,       // 图片
-        /```/m,                 // 代码块
-        /`[^`]+`/m,             // 行内代码
-        /^\>/m,                 // 引用
-        /^\|.*\|/m,             // 表格
-      ];
-      
-      // 如果包含 HTML 标签但同时也包含 Markdown 语法，可能是混合格式
-      // 这里我们优先判断为 Markdown
-      return markdownPatterns.some(pattern => pattern.test(content));
-    }
-    
-    // 检查是否包含 Markdown 语法特征
-    const markdownIndicators = [
-      /^#{1,6}\s/m,           // 标题
-      /^\*\s/m,               // 无序列表
-      /^-\s/m,                // 无序列表
-      /^\d+\.\s/m,            // 有序列表
-      /\[.*\]\(.*\)/m,        // 链接
-      /!\[.*\]\(.*\)/m,       // 图片
-      /```[\s\S]*```/m,       // 代码块
-      /`[^`]+`/m,             // 行内代码
-      /^\>/m,                 // 引用
-      /^\|.*\|/m,             // 表格
-    ];
-    
-    return markdownIndicators.some(pattern => pattern.test(content));
-  };
 
-  // 简单的 Markdown 到 HTML 转换函数（处理基本语法）
-  const markdownToHtml = (markdown: string): string => {
-    let html = markdown;
-    
-    // 先处理代码块，避免代码块内的内容被其他规则处理
-    const codeBlocks: string[] = [];
-    html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
-      const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
-      codeBlocks.push(`<pre><code>${code}</code></pre>`);
-      return placeholder;
-    });
-    
-    // 处理行内代码
-    const inlineCodes: string[] = [];
-    html = html.replace(/`([^`]+)`/g, (match, code) => {
-      const placeholder = `__INLINE_CODE_${inlineCodes.length}__`;
-      inlineCodes.push(`<code>${code}</code>`);
-      return placeholder;
-    });
-    
-    // 先处理图片（必须在链接之前，因为图片语法包含链接语法）
-    // 图片 ![alt](url) - 使用更精确的正则，确保 ! 在开头
-    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, url) => {
-      // 转义 URL 中的特殊字符
-      const escapedUrl = url.replace(/"/g, '&quot;');
-      const escapedAlt = alt.replace(/"/g, '&quot;');
-      return `<img src="${escapedUrl}" alt="${escapedAlt}" style="max-width: 100%; height: auto; display: block; margin: 12px 0; border-radius: 6px;" />`;
-    });
-    
-    // 处理链接 [text](url) - 现在不会匹配图片了
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-    
-    // 恢复行内代码
-    inlineCodes.forEach((code, index) => {
-      html = html.replace(`__INLINE_CODE_${index}__`, code);
-    });
-    
-    // 恢复代码块
-    codeBlocks.forEach((code, index) => {
-      html = html.replace(`__CODE_BLOCK_${index}__`, code);
-    });
-    
-    // 标题 (# ## ### 等)
-    html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-    html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-    html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-    
-    // 粗体 **text** 或 __text__（避免匹配图片中的 !）
-    html = html.replace(/(?<!!)\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
-    
-    // 斜体 *text* 或 _text_（避免匹配列表标记）
-    html = html.replace(/(?<!\*)\*(?!\*)([^*]+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
-    html = html.replace(/(?<!_)_(?!_)([^_]+?)(?<!_)_(?!_)/g, '<em>$1</em>');
-    
-    // 引用 > text
-    html = html.replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
-    
-    // 无序列表 - 或 *
-    html = html.replace(/^[\*\-] (.*$)/gim, '<li>$1</li>');
-    // 将连续的 <li> 标签包裹在 <ul> 中
-    html = html.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
-    
-    // 有序列表 1. 2. 等
-    html = html.replace(/^\d+\. (.*$)/gim, '<li>$1</li>');
-    
-    // 换行（两个空格或两个换行符）
-    html = html.replace(/\n\n/g, '</p><p>');
-    html = html.replace(/\n/g, '<br />');
-    
-    // 包裹段落
-    if (!html.startsWith('<')) {
-      html = '<p>' + html + '</p>';
-    }
-    
-    return html;
-  };
 
   // 渲染内容（支持 Markdown 和 HTML）
   const renderContent = (content: string): string => {
