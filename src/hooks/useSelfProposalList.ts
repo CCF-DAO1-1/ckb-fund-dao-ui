@@ -55,31 +55,46 @@ export function useSelfProposalList(
       if (response) {
         // 注意：requestAPI 会自动提取 response.data.data，所以这里 response 已经是 data 字段的内容
         // 处理响应数据 - 优先使用 rows 字段（真实API格式，经过 requestAPI 处理后）
+        let currentTotal: number | undefined;
+        let currentTotalPages: number | undefined;
+        
         if (response.rows && Array.isArray(response.rows)) {
           setProposals(response.rows);
-          setTotal(response.total);
-          setTotalPages(response.total_pages);
+          currentTotal = response.total;
+          currentTotalPages = response.total_pages;
         } else if (response.data?.rows && Array.isArray(response.data.rows)) {
           // 如果还有嵌套的 data 字段（某些情况下）
           setProposals(response.data.rows);
-          setTotal(response.data.total);
-          setTotalPages(response.data.total_pages);
+          currentTotal = response.data.total;
+          currentTotalPages = response.data.total_pages;
         } else if (Array.isArray(response.proposals)) {
           // 兼容旧格式
           setProposals(response.proposals);
-          setTotal(response.total);
-          setTotalPages(response.total_pages);
+          currentTotal = response.total;
+          currentTotalPages = response.total_pages;
         } else if (Array.isArray(response)) {
           // 如果响应直接是数组
           setProposals(response);
-          setTotal(undefined);
-          setTotalPages(undefined);
+          currentTotal = undefined;
+          currentTotalPages = undefined;
         } else {
           // 调试：打印响应数据以便排查问题
           console.log("个人提案列表响应数据:", response);
           setProposals([]);
-          setTotal(0);
-          setTotalPages(0);
+          currentTotal = 0;
+          currentTotalPages = 0;
+        }
+        
+        // 设置 total 和 totalPages
+        setTotal(currentTotal);
+        // 如果 API 返回了 total_pages，直接使用；否则根据 total 和 perPage 计算
+        if (currentTotalPages !== undefined) {
+          setTotalPages(currentTotalPages);
+        } else if (currentTotal !== undefined && perPage > 0) {
+          const calculatedTotalPages = Math.ceil(currentTotal / perPage);
+          setTotalPages(calculatedTotalPages);
+        } else {
+          setTotalPages(undefined);
         }
       } else {
         setProposals([]);

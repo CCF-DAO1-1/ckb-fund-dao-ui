@@ -90,7 +90,13 @@ export default function ProposalSidebar({ proposal }: ProposalSidebarProps) {
 
   // 判断是否显示投票组件
   const adaptedProposal = adaptProposalDetail(proposal);
-  const showVoting = adaptedProposal.state === ProposalStatus.VOTE && proposal.vote_meta;
+  // 支持立项投票和里程碑验收投票状态显示投票组件
+  const stateValue = typeof adaptedProposal.state === 'number' ? adaptedProposal.state : Number(adaptedProposal.state);
+  const showVoting = (
+    stateValue === ProposalStatus.VOTE || 
+    stateValue === ProposalStatus.MILESTONE_VOTE ||
+    stateValue === ProposalStatus.INITIATION_VOTE
+  ) && proposal.vote_meta;
 
   return (
     <div className="proposal-sidebar">

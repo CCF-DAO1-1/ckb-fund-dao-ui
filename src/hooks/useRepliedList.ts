@@ -67,7 +67,15 @@ export function useRepliedList(
         }
 
         setTotal(response.total);
-        setTotalPages(response.total_pages);
+        // 如果 API 返回了 total_pages，直接使用；否则根据 total 和 perPage 计算
+        if (response.total_pages !== undefined) {
+          setTotalPages(response.total_pages);
+        } else if (response.total !== undefined && perPage > 0) {
+          const calculatedTotalPages = Math.ceil(response.total / perPage);
+          setTotalPages(calculatedTotalPages);
+        } else {
+          setTotalPages(undefined);
+        }
       } else {
         setComments([]);
         setTotal(0);
