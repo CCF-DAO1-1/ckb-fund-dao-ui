@@ -1013,7 +1013,10 @@
   },
   "discussionRecords": {
     "proposalReference": "在提案",
-    "commentIn": "中评论:"
+    "commentIn": "中评论:",
+    "loading": "加载中...",
+    "noData": "暂无数据",
+    "unknownProposal": "未知提案"
   },
   "recordsTable": {
     "tabs": {
@@ -1056,7 +1059,9 @@
       "proposalName3": "提案名称3",
       "proposalName4": "提案名称4",
       "proposalName5": "提案名称5"
-    }
+    },
+    "loading": "加载中...",
+    "noData": "暂无数据"
   },
   "votingRecords": {
     "tableHeaders": {
@@ -1080,7 +1085,10 @@
       "proposalName1": "提案名称1",
       "proposalName2": "提案名称2",
       "proposalName3": "提案名称3"
-    }
+    },
+    "loading": "加载中...",
+    "noData": "暂无投票记录",
+    "unknownProposal": "未知提案"
   },
   "previewModal": {
     "basicInfo": "基本信息",

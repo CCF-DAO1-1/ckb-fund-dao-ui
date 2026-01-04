@@ -8,6 +8,136 @@ import { CommentReplyProps } from "@/types/comment";
 import Avatar from "@/components/common/Avatar";
 import { getUserDisplayNameFromInfo } from "@/utils/userDisplayUtils";
 
+// Markdown 渲染工具函数
+const isMarkdown = (content: string): boolean => {
+  if (!content || typeof content !== 'string') return false;
+  
+  if (content.trim().startsWith('<')) {
+    const markdownPatterns = [
+      /^#{1,6}\s/m,
+      /^\*\s/m,
+      /^-\s/m,
+      /^\d+\.\s/m,
+      /\[.*\]\(.*\)/m,
+      /!\[.*\]\(.*\)/m,
+      /```/m,
+      /`[^`]+`/m,
+      /^\>/m,
+      /^\|.*\|/m,
+    ];
+    return markdownPatterns.some(pattern => pattern.test(content));
+  }
+  
+  const markdownIndicators = [
+    /^#{1,6}\s/m,
+    /^\*\s/m,
+    /^-\s/m,
+    /^\d+\.\s/m,
+    /\[.*\]\(.*\)/m,
+    /!\[.*\]\(.*\)/m,
+    /```[\s\S]*```/m,
+    /`[^`]+`/m,
+    /^\>/m,
+    /^\|.*\|/m,
+  ];
+  
+  return markdownIndicators.some(pattern => pattern.test(content));
+};
+
+const markdownToHtml = (markdown: string): string => {
+  let html = markdown;
+  
+  const codeBlocks: string[] = [];
+  html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
+    const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+    codeBlocks.push(`<pre><code>${code}</code></pre>`);
+    return placeholder;
+  });
+  
+  const inlineCodes: string[] = [];
+  html = html.replace(/`([^`]+)`/g, (match, code) => {
+    const placeholder = `__INLINE_CODE_${inlineCodes.length}__`;
+    inlineCodes.push(`<code>${code}</code>`);
+    return placeholder;
+  });
+  
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, url) => {
+    const escapedUrl = url.replace(/"/g, '&quot;');
+    const escapedAlt = alt.replace(/"/g, '&quot;');
+    return `<img src="${escapedUrl}" alt="${escapedAlt}" style="max-width: 100%; height: auto; display: block; margin: 12px 0; border-radius: 6px;" />`;
+  });
+  
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  
+  inlineCodes.forEach((code, index) => {
+    html = html.replace(`__INLINE_CODE_${index}__`, code);
+  });
+  
+  codeBlocks.forEach((code, index) => {
+    html = html.replace(`__CODE_BLOCK_${index}__`, code);
+  });
+  
+  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+  
+  html = html.replace(/(?<!!)\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+  
+  html = html.replace(/(?<!\*)\*(?!\*)([^*]+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+  html = html.replace(/(?<!_)_(?!_)([^_]+?)(?<!_)_(?!_)/g, '<em>$1</em>');
+  
+  html = html.replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
+  
+  // 处理无序列表：先标记列表项
+  html = html.replace(/^[\*\-]\s+(.*)$/gim, '__LIST_ITEM__$1__END_LIST_ITEM__');
+  
+  // 处理有序列表：先标记列表项
+  html = html.replace(/^\d+\.\s+(.*)$/gim, '__LIST_ITEM__$1__END_LIST_ITEM__');
+  
+  // 将连续的列表项标记包裹在 <ul> 中
+  // 匹配连续的列表项标记（可能包含换行）
+  html = html.replace(/(__LIST_ITEM__.*?__END_LIST_ITEM__(?:\s*__LIST_ITEM__.*?__END_LIST_ITEM__)*)/g, (match) => {
+    // 提取所有列表项内容
+    const items = match.match(/__LIST_ITEM__(.*?)__END_LIST_ITEM__/g) || [];
+    const listItems = items.map(item => {
+      const content = item.replace(/__LIST_ITEM__(.*?)__END_LIST_ITEM__/, '$1');
+      return `<li>${content}</li>`;
+    }).join('');
+    return `<ul>${listItems}</ul>`;
+  });
+  
+  // 处理换行：先处理段落分隔，再处理单行换行
+  html = html.replace(/\n\n/g, '</p><p>');
+  html = html.replace(/\n/g, '<br />');
+  
+  // 如果内容不是以 HTML 标签开头，包裹在段落中
+  if (!html.trim().match(/^<(ul|ol|blockquote|h[1-3]|pre|p)/)) {
+    html = '<p>' + html + '</p>';
+  }
+  
+  return html;
+};
+
+const renderContent = (content: string): string => {
+  if (!content) return '';
+  
+  if (content.trim().startsWith('<') && !isMarkdown(content)) {
+    return content;
+  }
+  
+  if (isMarkdown(content)) {
+    try {
+      return markdownToHtml(content);
+    } catch (error) {
+      console.warn('Markdown rendering failed, falling back to raw content:', error);
+      return content;
+    }
+  }
+  
+  return content;
+};
+
 export default function CommentReply({
   comment,
   onDelete // 暂时屏蔽
@@ -106,7 +236,7 @@ export default function CommentReply({
           {quotedContent && (
             <blockquote className="comment-quoted-content">
               <div
-                dangerouslySetInnerHTML={{ __html: quotedContent }}
+                dangerouslySetInnerHTML={{ __html: renderContent(quotedContent) }}
                 className="comment-content-html"
               />
             </blockquote>
@@ -119,7 +249,7 @@ export default function CommentReply({
       {replyContent && (
         <div className="comment-reply-text" style={{ marginTop: "12px" }}>
           <div
-            dangerouslySetInnerHTML={{ __html: replyContent }}
+            dangerouslySetInnerHTML={{ __html: renderContent(replyContent) }}
             className="comment-content-html"
           />
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Tag from "@/components/ui/tag/Tag";
 import { ProposalStatus } from "@/utils/proposalUtils";
 import VotingRecordsTable from './VotingRecordsTable';
@@ -8,6 +8,8 @@ import DiscussionRecordsTable from './DiscussionRecordsTable';
 import { useI18n } from '@/contexts/I18nContext';
 import { useSelfProposalList } from '@/hooks/useSelfProposalList';
 import { SelfProposalItem } from '@/server/proposal';
+import TaskProcessingModal, { TaskType } from "@/components/proposal/TaskProcessingModal";
+import { useTranslation } from "@/utils/i18n";
 
 interface RecordsTableProps {
   activeTab: string;
@@ -25,9 +27,27 @@ interface ProposalRecord {
   actions: string[];
 }
 
+interface ProposalItemForModal {
+  id: string;
+  name: string;
+  type: string;
+  status: ProposalStatus;
+  taskType: TaskType;
+  deadline: string;
+  isNew?: boolean;
+  progress?: string;
+  uri: string;
+  budget?: number;
+}
+
 export default function RecordsTable({ activeTab, setActiveTab, className = '' }: RecordsTableProps) {
   const { messages } = useI18n();
-  const { proposals, loading, error, page, totalPages, setPage } = useSelfProposalList({ page: 1, per_page: 10 });
+  const { t } = useTranslation();
+  const { proposals, loading, error, page, totalPages, setPage, refetch } = useSelfProposalList({ page: 1, per_page: 10 });
+  
+  // 任务处理 Modal 状态
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [selectedProposal, setSelectedProposal] = useState<ProposalItemForModal | undefined>(undefined);
 
   // 格式化日期
   const formatDate = (dateString: string): string => {
@@ -112,6 +132,47 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
 
   const handleAction = (action: string, recordId: string) => {
     console.log(`执行操作: ${action}, 记录ID: ${recordId}`);
+    
+    // 如果是开启投票操作
+    if (action === messages.recordsTable.actions.startVoting) {
+      // 从 proposals 中找到对应的提案
+      const proposal = proposals.find((p: SelfProposalItem) => (p.uri || p.cid) === recordId);
+      if (proposal) {
+        const state = proposal.state as ProposalStatus;
+        const budget = proposal.record.data.budget ? parseFloat(proposal.record.data.budget) : 0;
+        const proposalItem: ProposalItemForModal = {
+          id: recordId,
+          name: proposal.record.data.title || '',
+          type: proposal.record.data.proposalType || '',
+          status: state,
+          taskType: t("taskTypes.createVote"),
+          deadline: '',
+          uri: proposal.uri || proposal.cid,
+          budget: budget,
+        };
+        handleCreateVote(proposalItem);
+      }
+    }
+  };
+
+  // 创建投票相关
+  const handleCreateVote = (proposal: ProposalItemForModal) => {
+    setSelectedProposal({ ...proposal, taskType: t("taskTypes.createVote") });
+    setShowTaskModal(true);
+  };
+
+  const handleTaskComplete = (data: unknown) => {
+    console.log("任务完成数据:", data);
+    if (selectedProposal?.taskType === t("taskTypes.createVote")) {
+      refetch();
+    }
+    setShowTaskModal(false);
+    setSelectedProposal(undefined);
+  };
+
+  const handleTaskModalClose = () => {
+    setShowTaskModal(false);
+    setSelectedProposal(undefined);
   };
 
   const renderTableContent = () => {
@@ -123,7 +184,7 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
       case 'proposals':
       default:
         if (loading) {
-          return <div className="loading-state">加载中...</div>;
+          return <div className="loading-state">{messages.recordsTable.loading || '加载中...'}</div>;
         }
         if (error) {
           return <div className="error-state">{error}</div>;
@@ -146,7 +207,7 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
                   {proposalRecords.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="no-data">
-                        暂无数据
+                        {messages.recordsTable.noData || '暂无数据'}
                       </td>
                     </tr>
                   ) : (
@@ -218,6 +279,15 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
       </div>
 
       {renderTableContent()}
+
+      {/* 任务处理Modal */}
+      <TaskProcessingModal
+        isOpen={showTaskModal}
+        onClose={handleTaskModalClose}
+        onComplete={handleTaskComplete}
+        taskType={selectedProposal?.taskType}
+        proposal={selectedProposal}
+      />
     </div>
   );
 }

@@ -745,6 +745,9 @@ interface Messages {
   discussionRecords: {
     proposalReference: string;
     commentIn: string;
+    loading?: string;
+    noData?: string;
+    unknownProposal?: string;
   };
   recordsTable: {
     tabs: {
@@ -788,6 +791,8 @@ interface Messages {
       proposalName4: string;
       proposalName5: string;
     };
+    loading?: string;
+    noData?: string;
   };
   votingRecords: {
     tableHeaders: {
@@ -813,6 +818,9 @@ interface Messages {
       proposalName2: string;
       proposalName3: string;
     };
+    loading?: string;
+    noData?: string;
+    unknownProposal?: string;
   };
   previewModal: {
     basicInfo: string;

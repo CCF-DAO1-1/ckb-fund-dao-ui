@@ -974,13 +974,16 @@
   },
   "discussionRecords": {
     "proposalReference": "Commented in proposal",
-    "commentIn": ":"
+    "commentIn": ":",
+    "loading": "Loading...",
+    "noData": "No data",
+    "unknownProposal": "Unknown Proposal"
   },
   "recordsTable": {
     "tabs": {
-      "proposals": "Proposal Records",
+      "proposals": "Proposal",
       "voting": "Voting Records",
-      "discussion": "Discussion Records"
+      "discussion": "Discussion "
     },
     "tableHeaders": {
       "proposal": "Proposal",
@@ -1017,7 +1020,9 @@
       "proposalName3": "Proposal Name 3",
       "proposalName4": "Proposal Name 4",
       "proposalName5": "Proposal Name 5"
-    }
+    },
+    "loading": "Loading...",
+    "noData": "No data"
   },
   "votingRecords": {
     "tableHeaders": {
@@ -1041,7 +1046,10 @@
       "proposalName1": "Proposal Name 1",
       "proposalName2": "Proposal Name 2",
       "proposalName3": "Proposal Name 3"
-    }
+    },
+    "loading": "Loading...",
+    "noData": "No voting records",
+    "unknownProposal": "Unknown Proposal"
   },
   "previewModal": {
     "basicInfo": "Basic Information",

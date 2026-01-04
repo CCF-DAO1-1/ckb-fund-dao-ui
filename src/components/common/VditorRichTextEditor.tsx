@@ -514,7 +514,6 @@ export default function VditorRichTextEditor({
         "bold",
         "italic",
         "strike",
-        "link",
         "|",
         "list",
         "ordered-list",

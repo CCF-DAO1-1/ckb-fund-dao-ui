@@ -949,9 +949,10 @@
 }
 
 .discussion-item {
-  background-color: transparent;
-  padding: 16px 0;
-  border-bottom: 1px solid #4C525C33;
+  background-color: #1A1D23;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: none;
 }
 
 .discussion-item:last-child {
@@ -960,45 +961,55 @@
 
 .discussion-header {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .comment-date {
   font-size: 14px;
   color: #8A949E;
+  white-space: nowrap;
 }
 
 .proposal-reference {
   font-size: 14px;
   color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .proposal-link {
   color: #00D4AA;
   cursor: pointer;
-  text-decoration: underline;
+  text-decoration: none;
+  transition: color 0.2s;
 }
 
 .proposal-link:hover {
   color: #00B894;
+  text-decoration: underline;
 }
 
 .discussion-content {
   position: relative;
+  padding-left: 0;
 }
 
 .reply-item .discussion-content {
-  margin-left: 20px;
+  padding-left: 24px;
 }
 
 .reply-indicator {
   position: absolute;
-  left: -20px;
+  left: 0;
   top: 0;
+  bottom: 0;
   width: 3px;
-  height: 100%;
   background-color: #00D4AA;
   border-radius: 2px;
 }
@@ -1006,7 +1017,7 @@
 .comment-block {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .user-info {
@@ -1024,8 +1035,113 @@
 .comment-text {
   font-size: 14px;
   color: #FFFFFF;
-  line-height: 1.5;
+  line-height: 1.6;
   word-wrap: break-word;
+  margin-top: 0;
+}
+
+/* Markdown 渲染内容样式 */
+.comment-text img {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  margin: 12px 0 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.comment-text a {
+  color: #00D4AA;
+  text-decoration: underline;
+}
+
+.comment-text a:hover {
+  color: #00B894;
+}
+
+.comment-text code {
+  background-color: rgba(0, 212, 170, 0.1);
+  color: #00D4AA;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+}
+
+.comment-text pre {
+  background-color: rgba(0, 212, 170, 0.05);
+  color: #FFFFFF;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 16px 0;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  border: 1px solid rgba(0, 212, 170, 0.2);
+}
+
+.comment-text pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+}
+
+.comment-text blockquote {
+  border-left: 4px solid #00D4AA;
+  padding-left: 16px;
+  margin: 16px 0;
+  background-color: rgba(0, 212, 170, 0.05);
+  border-radius: 0 4px 4px 0;
+  font-style: italic;
+  color: #9CA3AF;
+}
+
+.comment-text h1,
+.comment-text h2,
+.comment-text h3 {
+  color: #00D4AA;
+  margin: 16px 0 8px 0;
+  font-weight: 600;
+}
+
+.comment-text h1 {
+  font-size: 24px;
+}
+
+.comment-text h2 {
+  font-size: 20px;
+}
+
+.comment-text h3 {
+  font-size: 18px;
+}
+
+.comment-text ul,
+.comment-text ol {
+  margin: 8px 0;
+  padding-left: 24px;
+  color: #FFFFFF;
+}
+
+.comment-text li {
+  margin: 4px 0;
+  color: #FFFFFF;
+}
+
+.comment-text p {
+  margin: 8px 0;
+  color: #FFFFFF;
+  line-height: 1.6;
+}
+
+.comment-text strong {
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.comment-text em {
+  font-style: italic;
+  color: #FFFFFF;
 }
 
 .proposal-id {

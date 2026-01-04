@@ -12,8 +12,31 @@
 .vditor {
   background-color: #262A33 !important;
   border: 1px solid #4C525C;
-  border-radius: 6px;
+  border-radius: 8px;
   color: #FFFFFF;
+  overflow: visible !important; /* 确保 tooltip 不被裁剪 */
+}
+
+/* 评论输入框特定样式 */
+.comment-quote-main .vditor {
+  border: 1px solid #4C525C;
+  border-radius: 8px;
+  overflow: visible !important; /* 允许 tooltip 显示 */
+  position: relative; /* 确保定位上下文 */
+}
+
+/* 确保评论输入框的圆角边框完整显示 */
+.comment-quote-main .vditor-toolbar {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  overflow: visible !important; /* 允许 tooltip 显示 */
+}
+
+.comment-quote-main .vditor-content,
+.comment-quote-main .vditor-content__editor {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  overflow: hidden; /* 内容区域不溢出圆角 */
 }
 
 /* 确保所有 Vditor 容器都有不透明背景 */
@@ -66,7 +89,13 @@
 .vditor-toolbar {
   background-color: #262A33 !important;
   border-bottom: 1px solid #4C525C;
-  padding: 8px 10px !important;
+  padding: 4px 10px !important;
+}
+
+/* 评论输入框工具栏 padding 调整 */
+.comment-quote-main .vditor-toolbar {
+  padding: 6px 16px !important;
+  border-bottom: 1px solid #4C525C;
 }
 
 .vditor-toolbar button {
@@ -97,6 +126,24 @@
   color: #FFFFFF;
   padding-left: 10px !important;
   padding-right: 10px !important;
+}
+
+/* 评论输入框内容区域 padding 调整 */
+.comment-quote-main .vditor-content {
+  padding: 12px 16px !important;
+}
+
+.comment-quote-main .vditor-content__editor {
+  padding: 12px 16px !important;
+  min-height: 100px;
+}
+
+.comment-quote-main .vditor-ir__editor {
+  padding: 12px 16px !important;
+}
+
+.comment-quote-main .vditor-wysiwyg__editor {
+  padding: 12px 16px !important;
 }
 
 /* WYSIWYG 模式下的编辑器背景 */
@@ -291,10 +338,12 @@
 /* 确保编辑器包装器有背景 */
 .vditor-editor-wrapper {
   background-color: #262A33 !important;
+  overflow: visible !important; /* 允许 tooltip 显示 */
 }
 
 .vditor-editor-container {
   background-color: #262A33 !important;
+  overflow: visible !important; /* 允许 tooltip 显示 */
 }
 
 /* 输入区域背景 */
@@ -356,6 +405,50 @@ textarea.vditor-input {
   border-radius: 6px;
   background-color: #262A33;
   color: #6b7280;
+}
+
+/* Vditor Tooltip 样式 - 确保 tooltip 正常显示 */
+.vditor-tooltip,
+.vditor-tooltip__arrow,
+[data-vditor-tooltip],
+.vditor-tooltip__inner {
+  z-index: 999999 !important; /* 提高 z-index 确保在最上层 */
+  position: fixed !important; /* 使用 fixed 定位，避免被父容器裁剪 */
+  background-color: #1A1D23 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #4C525C !important;
+  border-radius: 4px !important;
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+  white-space: nowrap !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+  pointer-events: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  max-width: none !important;
+  overflow: visible !important;
+}
+
+/* 确保 tooltip 容器可见且不被裁剪 */
+.vditor-toolbar {
+  position: relative !important;
+  overflow: visible !important; /* 允许 tooltip 显示 */
+  /* tooltip 使用 fixed 定位，不会被父容器裁剪 */
+}
+
+.vditor-toolbar__item {
+  position: relative !important;
+}
+
+.vditor-toolbar button {
+  position: relative !important;
+}
+
+/* 评论输入框的工具栏需要保持圆角 */
+.comment-quote-main .vditor-toolbar {
+  overflow: visible !important; /* 允许 tooltip 显示，圆角通过其他方式保持 */
+  /* 使用伪元素或子元素来保持圆角效果 */
 }
 
 /* 响应式设计 */

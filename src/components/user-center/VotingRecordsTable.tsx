@@ -20,7 +20,7 @@ interface VotingRecordsTableProps {
 
 export default function VotingRecordsTable({ className = '' }: VotingRecordsTableProps) {
   const { messages } = useI18n();
-  const { votes, loading, error } = useSelfVoteList({ page: 1, per_page: 10 });
+  const { votes, loading, error, page, totalPages, setPage } = useSelfVoteList({ page: 1, per_page: 10 });
 
   // 格式化日期
   const formatDate = (dateString: string): string => {
@@ -56,7 +56,7 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
 
     return votes.map((vote: SelfVoteItem) => {
       // 从 proposal_uri 提取提案名称（暂时使用URI，后续可以获取提案详情）
-      const proposalName = vote.proposal_uri || '未知提案';
+      const proposalName = vote.proposal_uri || messages.votingRecords.unknownProposal || '未知提案';
       // 投票阶段暂时显示为"投票"（后续可以根据 vote_meta_id 获取详细信息）
       const votingStage = messages.votingRecords.votingStages.voting || '投票';
       // 投票选项
@@ -87,7 +87,7 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
   };
 
   if (loading) {
-    return <div className="loading-state">加载中...</div>;
+    return <div className="loading-state">{messages.votingRecords.loading || '加载中...'}</div>;
   }
 
   if (error) {
@@ -111,7 +111,7 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
             {votingRecords.length === 0 ? (
               <tr>
                 <td colSpan={5} className="no-data">
-                  暂无数据
+                  {messages.votingRecords.noData || '暂无投票记录'}
                 </td>
               </tr>
             ) : (
@@ -130,6 +130,28 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
           </tbody>
         </table>
       </div>
+
+      {totalPages && totalPages > 0 && (
+        <div className="pagination">
+          <button
+            className="pagination-button"
+            disabled={page <= 1}
+            onClick={() => setPage(page - 1)}
+          >
+            &lt;
+          </button>
+          <span className="pagination-info">
+            {page} / {totalPages}
+          </span>
+          <button
+            className="pagination-button"
+            disabled={page >= totalPages}
+            onClick={() => setPage(page + 1)}
+          >
+            &gt;
+          </button>
+        </div>
+      )}
     </div>
   );
 }

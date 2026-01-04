@@ -146,15 +146,19 @@
   font-size: 14px;
   font-weight: 500;
   margin: 0;
+  padding: 0;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
+  line-height: 1;
+  height: auto;
+  vertical-align: middle;
 }
 
 .comment-item-header h3 span {
   color: #8A949E;
   font-weight: 400;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .comment-actions {
