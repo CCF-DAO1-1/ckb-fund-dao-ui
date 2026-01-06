@@ -54,6 +54,8 @@ export default function Tag({
         return t("proposalStatus.completed");
       case ProposalStatus.REEXAMINE_VOTE:
         return t("proposalStatus.reexamineVote");
+      case ProposalStatus.RECTIFICATION_VOTE:
+        return t("proposalStatus.rectificationVote");
       // 向后兼容的旧状态值
       case ProposalStatus.REVIEW:
         return t("proposalStatus.communityReview");

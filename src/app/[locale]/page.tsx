@@ -41,6 +41,10 @@ export default function Treasury() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentSearchQuery, setCurrentSearchQuery] = useState<string>("");
 
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const isFirstRenderRef = useRef(true);
+
   // 使用hooks获取提案列表
   const {
     proposals,
@@ -54,19 +58,18 @@ export default function Treasury() {
     limit: 20,
     viewer: userInfo?.did || null,
     q: currentSearchQuery || null,
+    state: selectedStatus ? parseInt(selectedStatus, 10) : null,
   });
-
-  const [selectedStatus, setSelectedStatus] = useState<string>("");
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   // 处理搜索
   const handleSearch = () => {
     setCurrentSearchQuery(searchQuery.trim());
     refetch({
       cursor: null,
-      limit: 2,
+      limit: 20,
       viewer: userInfo?.did || null,
       q: searchQuery.trim() || null,
+      state: selectedStatus ? parseInt(selectedStatus, 10) : null,
     });
   };
 
@@ -77,15 +80,23 @@ export default function Treasury() {
     }
   };
 
-  // 根据选中的状态过滤 proposals
-  const filteredProposals = selectedStatus
-    ? proposals.filter((proposal) => {
-      // 使用顶层的 state 字段
-      const proposalState = proposal.state;
-      const statusValue = parseInt(selectedStatus, 10);
-      return proposalState === statusValue;
-    })
-    : proposals;
+  // 状态改变时重新请求数据
+  useEffect(() => {
+    // 跳过初始挂载时的请求（初始数据已由 useProposalList 获取）
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      return;
+    }
+    
+    refetch({
+      cursor: null,
+      limit: 20,
+      viewer: userInfo?.did || null,
+      q: currentSearchQuery || null,
+      state: selectedStatus ? parseInt(selectedStatus, 10) : null,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStatus]);
 
   useEffect(() => {
     if (!loadMoreRef.current) return;
@@ -164,27 +175,23 @@ export default function Treasury() {
                   id="proposal-status-filter"
                   value={selectedStatus}
                   onChange={(e) => {
-                    const value = e.target.value;
-                    setSelectedStatus(value);
-                    // 状态改变时，重置到列表顶部（可选：如果需要重新加载数据）
-                    // 当前实现：只过滤已加载的数据
+                    setSelectedStatus(e.target.value);
                   }}
                 >
                   <option value="">{messages.homepage.all}</option>
-                  <option value={String(ProposalStatus.REVIEW)}>
-                    {messages.homepage.communityReview}
+                  <option value={String(ProposalStatus.INITIATION_VOTE)}>
+                    {messages.homepage.voting}
                   </option>
-                  <option value={String(ProposalStatus.VOTE)}>{messages.homepage.voting}</option>
-                  <option value={String(ProposalStatus.MILESTONE)}>
+                  <option value={String(ProposalStatus.IN_PROGRESS)}>
                     {messages.homepage.milestoneDelivery}
                   </option>
-                  <option value={String(ProposalStatus.APPROVED)}>
+                  <option value={String(ProposalStatus.COMPLETED)}>
                     {messages.homepage.approved}
                   </option>
-                  <option value={String(ProposalStatus.REJECTED)}>
+                  <option value={String(ProposalStatus.COMPLETED)}>
                     {messages.homepage.rejected}
                   </option>
-                  <option value={String(ProposalStatus.ENDED)}>{messages.homepage.ended}</option>
+                  <option value={String(ProposalStatus.COMPLETED)}>{messages.homepage.ended}</option>
                 </select>
               </div>
             </nav>
@@ -196,8 +203,8 @@ export default function Treasury() {
                 >
                   {messages.homepage.loadFailed} {proposalsError}
                 </li>
-              ) : filteredProposals.length > 0 ? (
-                filteredProposals.map((proposal, index) => (
+              ) : proposals.length > 0 ? (
+                proposals.map((proposal, index) => (
                   <ProposalItem key={proposal.cid || proposal.uri || `proposal-${index}`} proposal={proposal} />
                 ))
               ) : proposalsLoading ? (

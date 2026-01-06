@@ -249,6 +249,7 @@
     "waitingForAcceptanceReport": "Waiting For Acceptance Report",
     "completed": "Completed",
     "reexamineVote": "Reexamine Vote",
+    "rectificationVote": "Rectification Vote",
     "communityReview": "Community Review",
     "voting": "Voting",
     "milestoneDelivery": "Milestone Delivery",

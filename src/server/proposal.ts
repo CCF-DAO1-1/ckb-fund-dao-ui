@@ -91,6 +91,7 @@ export interface ProposalListParams {
   q?: string | null; // 关键词搜索
   repo?: string | null; // 过滤作者DID（用户 DID）
   viewer?: string | null; // 查看者的did
+  state?: number | null; // 提案状态过滤
 }
 
 // 提案列表项类型 - 与提案详情结构相同
@@ -142,7 +143,7 @@ export const getProposalList = defineAPI<
   "POST",
   {
     divider: {
-      body: ["cursor", "limit", "q", "repo", "viewer"],
+      body: ["cursor", "limit", "q", "repo", "viewer", "state"],
     },
   }
 );

@@ -42,7 +42,7 @@ interface UseProposalListResult {
  * ```
  */
 export function useProposalList(
-  initialParams: ProposalListParams = { limit: 20, viewer: null, cursor: null }
+  initialParams: ProposalListParams = { limit: 20, viewer: null, cursor: null,state: null }
 ): UseProposalListResult {
   const [proposals, setProposals] = useState<ProposalListItem[]>([]);
   const [cursor, setCursor] = useState<string>('');

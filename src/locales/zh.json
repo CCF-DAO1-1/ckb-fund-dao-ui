@@ -285,6 +285,7 @@
     "waitingForAcceptanceReport": "等待验收报告",
     "completed": "项目完成",
     "reexamineVote": "复核投票",
+    "rectificationVote": "整改投票",
     "communityReview": "社区审议中",
     "voting": "投票中",
     "milestoneDelivery": "里程碑交付中",

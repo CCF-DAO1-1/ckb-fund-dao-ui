@@ -15,6 +15,7 @@ export const formatNumber = (num: number, locale: string = 'en-US') => {
 // 8: WaitingForAcceptanceReport (等待验收报告)
 // 9: Completed (项目完成)
 // 10: ReexamineVote (复核投票)
+// 11: RectificationVote (整改投票)
 export enum ProposalStatus {
   DRAFT = 0,                        // 草稿
   INITIATION_VOTE = 1,              // 立项投票
@@ -27,6 +28,7 @@ export enum ProposalStatus {
   WAITING_FOR_ACCEPTANCE_REPORT = 8, // 等待验收报告
   COMPLETED = 9,                    // 项目完成
   REEXAMINE_VOTE = 10,              // 复核投票
+  RECTIFICATION_VOTE = 11,          // 整改投票
   
   // 向后兼容的别名（保留旧的状态值，映射到新状态）
   REVIEW = INITIATION_VOTE,          // 社区审议中 -> 立项投票
@@ -93,6 +95,7 @@ export const getStatusClass = (status: ProposalStatus) => {
     case ProposalStatus.DELAY_VOTE:
     case ProposalStatus.REVIEW_VOTE:
     case ProposalStatus.REEXAMINE_VOTE:
+    case ProposalStatus.RECTIFICATION_VOTE:
       return 'status-tag vote';
     case ProposalStatus.COMPLETED:
     case ProposalStatus.APPROVED:
@@ -126,6 +129,7 @@ export const getStatusTagClass = (status: ProposalStatus) => {
     case ProposalStatus.DELAY_VOTE:
     case ProposalStatus.REVIEW_VOTE:
     case ProposalStatus.REEXAMINE_VOTE:
+    case ProposalStatus.RECTIFICATION_VOTE:
       return 'tag-status--vote';
     case ProposalStatus.COMPLETED:
     case ProposalStatus.APPROVED:

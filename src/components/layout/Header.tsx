@@ -60,7 +60,7 @@ export default function Header() {
   const managementCenterHref = `/${locale}/management-center`;
   const userCenterHref = `/${locale}/user-center`;
   // const ruleHref = `https://pebble-lumber-0be.notion.site/Community-Fund-DAO-v1-1-Web5-23924205dae080ed9290e95519c57ab1`;
-  const ruleHref = `https://talk.nervos.org/t/dis-community-fund-dao-v1-1-web5-community-fund-dao-v1-1-web5-optimization-proposal/8973`;
+  const ruleHref = `https://docs.ccfdao.org/${locale}/docs`;
   const createProposalHref = `${homeHref}/proposal/create`;
 
   const isActive = (href: string) => {
