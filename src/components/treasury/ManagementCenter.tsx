@@ -14,6 +14,7 @@ import SendFundsModal from "./SendFundsModal";
 import CreateMeetingModal from "./CreateMeetingModal";
 import SubmitMeetingReportModal from "./SubmitMeetingReportModal";
 import SubmitDelayReportModal from "./SubmitDelayReportModal";
+import { getTaskTypeText, TaskType as TaskTypeEnum } from "@/utils/taskUtils";
 
 interface ProposalItem {
   id: string;
@@ -21,56 +22,16 @@ interface ProposalItem {
   type: string;
   status: ProposalStatus;
   taskType: TaskType;
+  task_type: number; // task_type 数字值（数组下标）
   deadline: string;
   isNew?: boolean;
   progress?: string;
   uri: string; // 添加uri字段用于跳转
   budget?: number; // 添加预算字段
-  message?: string; // 任务消息，用于判断任务类型
+  message?: string; // 任务消息（保留用于兼容）
 }
 
-// 任务类型枚举映射（根据后端枚举值）
-// task_type 数字映射到翻译键
-// 
-// message 字段的枚举值（来自 task 列表接口）：
-// - CreateAMA
-// - SubmitAMAReport
-// - InitiationVote
-// - UpdateReceiverAddr
-// - SendInitialFund
-// - SubmitMilestoneReport
-// - SubmitDelayReport
-// - SendMilestoneFund
-// - SubmitAcceptanceReport
-// - CreateReexamineMeeting
-// - ReexamineVote
-// - RectificationVote
-// - SubmitRectificationReport
-const TASK_TYPE_MAP: Record<number, string> = {
-  1: 'organizeAMA', // CreateAMA
-  2: 'publishMinutes', // SubmitAMAReport
-  3: 'createVote', // InitiationVote
-  4: 'milestoneAllocation', // UpdateReceiverAddr
-  5: 'milestoneAllocation', // SendInitialFund
-  6: 'publishReport', // SubmitMilestoneReport
-  7: 'publishReport', // SubmitDelayReport
-  8: 'milestoneAllocation', // SendMilestoneFund
-  9: 'milestoneVerification', // SubmitAcceptanceReport
-  10: 'organizeMeeting', // CreateReexamineMeeting
-  11: 'createVote', // ReexamineVote
-  12: 'createVote', // RectificationVote
-  13: 'publishReport', // SubmitRectificationReport
-};
-
-// 将任务类型数字映射到翻译键
-const getTaskTypeByNumber = (taskType: number, t: (key: string) => string): TaskType => {
-  const taskTypeKey = TASK_TYPE_MAP[taskType];
-  if (taskTypeKey) {
-    return t(`taskTypes.${taskTypeKey}`) as TaskType;
-  }
-  // 如果找不到映射，返回默认值
-  return t('taskTypes.organizeMeeting') as TaskType;
-};
+// 任务类型映射已移至 @/utils/taskUtils
 
 // 格式化截止日期
 const formatDeadline = (deadline: string, locale: 'en' | 'zh' = 'en'): string => {
@@ -102,7 +63,7 @@ const adaptTaskData = (task: TaskItem, t: (key: string) => string, locale: 'en' 
   const budget = proposal.record.data.budget ? parseFloat(proposal.record.data.budget) : 0;
 
   // 根据 task_type 数字值获取任务类型翻译
-  const taskType = getTaskTypeByNumber(task.task_type, t);
+  const taskType = getTaskTypeText(task.task_type, t) as TaskType;
   
   // 格式化截止日期
   const deadline = formatDeadline(task.deadline, locale);
@@ -113,11 +74,12 @@ const adaptTaskData = (task: TaskItem, t: (key: string) => string, locale: 'en' 
     type: proposalType,
     status: status,
     taskType: taskType,
+    task_type: task.task_type, // 保存原始的 task_type 数字值
     deadline: deadline,
     isNew: false, // 可以根据创建时间判断是否为新任务
     uri: uri,
     budget: budget,
-    message: task.message, // 保留任务消息
+    message: task.message, // 保留任务消息（用于兼容）
   };
 };
 
@@ -359,13 +321,18 @@ export default function ManagementCenter() {
                 </tr>
               ) : (
                 filteredProposals.map((proposal) => {
-                  // 使用 proposal.message 判断任务类型
-                  const taskMessage = proposal.message;
-                  const isUpdateReceiverAddr = taskMessage === "UpdateReceiverAddr";
-                  const isSendInitialFund = taskMessage === "SendInitialFund";
-                  const isCreateAMA = taskMessage === "CreateAMA";
-                  const isSubmitAMAReport = taskMessage === "SubmitAMAReport";
-                  const isSubmitDelayReport = taskMessage === "SubmitDelayReport";
+                  // 根据 task_type 判断任务类型
+                  const taskType = proposal.task_type;
+                  const isUpdateReceiverAddr = taskType === TaskTypeEnum.UPDATE_RECEIVER_ADDR;
+                  const isSendInitialFund = taskType === TaskTypeEnum.SEND_INITIAL_FUND;
+                  const isSendMilestoneFund = taskType === TaskTypeEnum.SEND_MILESTONE_FUND;
+                  const isCreateAMA = taskType === TaskTypeEnum.CREATE_AMA;
+                  const isSubmitAMAReport = taskType === TaskTypeEnum.SUBMIT_AMA_REPORT;
+                  const isSubmitDelayReport = taskType === TaskTypeEnum.SUBMIT_DELAY_REPORT;
+                  const isInitiationVote = taskType === TaskTypeEnum.INITIATION_VOTE;
+                  const isReexamineVote = taskType === TaskTypeEnum.REEXAMINE_VOTE;
+                  const isRectificationVote = taskType === TaskTypeEnum.RECTIFICATION_VOTE;
+                  const isCreateReexamineMeeting = taskType === TaskTypeEnum.CREATE_REEXAMINE_MEETING;
                   
                   return (
                   <tr key={proposal.id}>
@@ -389,10 +356,21 @@ export default function ManagementCenter() {
                         >
                           {t("taskModal.buttons.process")}
                         </button> */}
-                        {proposal.status === ProposalStatus.REVIEW && (
+                        {/* 根据 task_type 显示对应的操作按钮 */}
+                        {(isInitiationVote || isReexamineVote || isRectificationVote) && (
                           <button
                             className="vote-action-button"
                             onClick={() => handleCreateVote(proposal)}
+                            style={{
+                              marginLeft: "8px",
+                              padding: "6px 12px",
+                              backgroundColor: "#00CC9B",
+                              color: "#000000",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontSize: "14px",
+                            }}
                           >
                             {t("taskModal.buttons.createVote")}
                           </button>
@@ -415,7 +393,7 @@ export default function ManagementCenter() {
                             {t("updateReceiverAddr.addButton") || "添加钱包地址"}
                           </button>
                         )}
-                        {isSendInitialFund && (
+                        {(isSendInitialFund || isSendMilestoneFund) && (
                           <button
                             className="send-funds-button"
                             onClick={() => handleSendFunds(proposal)}
@@ -433,7 +411,7 @@ export default function ManagementCenter() {
                             {t("sendFunds.button") || "拨款"}
                           </button>
                         )}
-                        {isCreateAMA && (
+                        {(isCreateAMA || isCreateReexamineMeeting) && (
                           <button
                             className="create-meeting-button"
                             onClick={() => handleCreateMeeting(proposal)}
@@ -448,7 +426,7 @@ export default function ManagementCenter() {
                               fontSize: "14px",
                             }}
                           >
-                            {t("createMeeting.button") || "组织AMA"}
+                            {t("createMeeting.button") || "组织会议"}
                           </button>
                         )}
                         {isSubmitAMAReport && (

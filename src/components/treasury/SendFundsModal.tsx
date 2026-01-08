@@ -6,10 +6,7 @@ import { useTranslation } from "@/utils/i18n";
 import toast from "react-hot-toast";
 import useUserInfoStore from "@/store/userInfo";
 import { sendFunds } from "@/server/task";
-import storage from "@/lib/storage";
-import { Secp256k1Keypair } from "@atproto/crypto";
-import * as cbor from '@ipld/dag-cbor';
-import { uint8ArrayToHex } from "@/lib/dag-cbor";
+import { generateSignature } from "@/lib/signature";
 
 export interface SendFundsModalProps {
   isOpen: boolean;
@@ -58,27 +55,10 @@ export default function SendFundsModal({
         timestamp: Math.floor(Date.now() / 1000), // UTC 时间戳（秒）
       };
 
-      // 2. 使用 cbor.encode 编码参数
-      const unsignedCommit = cbor.encode(params);
+      // 2. 生成签名
+      const { signed_bytes: signedBytes, signing_key_did: signingKeyDid } = await generateSignature(params);
 
-      // 3. 从 storage 获取 signKey 并创建 keyPair
-      const storageInfo = storage.getToken();
-      if (!storageInfo?.signKey) {
-        throw new Error(t("sendFunds.errors.userNotLoggedIn") || "用户未登录");
-      }
-
-      const keyPair = await Secp256k1Keypair.import(storageInfo.signKey.slice(2));
-
-      // 4. 用 keyPair.sign 签名
-      const signature = await keyPair.sign(unsignedCommit);
-
-      // 5. 转换为 hex 字符串
-      const signedBytes = uint8ArrayToHex(signature);
-
-      // 6. 获取 signing_key_did
-      const signingKeyDid = keyPair.did();
-
-      // 7. 调用 API
+      // 3. 调用 API
       const response = await sendFunds({
         did: userInfo.did,
         params: params,
@@ -167,9 +147,9 @@ export default function SendFundsModal({
           />
         </div>
         {proposalUri && (
-          <div style={{ 
-            marginTop: "12px", 
-            fontSize: "12px", 
+          <div style={{
+            marginTop: "12px",
+            fontSize: "12px",
             color: "#8A949E",
             wordBreak: "break-all",
             overflowWrap: "break-word",
@@ -178,7 +158,7 @@ export default function SendFundsModal({
             <div style={{ marginBottom: "4px", fontWeight: 500 }}>
               {t("sendFunds.proposalUri") || "提案 URI"}:
             </div>
-            <div style={{ 
+            <div style={{
               wordBreak: "break-all",
               overflowWrap: "break-word",
               color: "#CCCCCC"

@@ -40,7 +40,7 @@ export interface ProposalTarget {
 // 任务项类型（根据实际后端返回数据结构）
 export interface TaskItem {
   id: number; // 任务ID
-  task_type: number; // 任务类型（数字枚举：1=CreateAMA, 3=InitiationVote等）
+  task_type: number; // 任务类型（数组下标：0=Default, 1=CreateAMA, 2=SubmitAMAReport, 3=InitiationVote等）
   message: string; // 任务消息描述
   state: number; // 任务状态
   created: string; // 创建时间 (ISO 8601)
@@ -117,8 +117,10 @@ export interface CreateMeetingParams {
   did: string; // 用户DID
   params: {
     proposal_uri: string; // 提案URI
-    meeting_time: string; // 会议时间（ISO 8601格式）
-    meeting_link: string; // 会议链接
+    start_time: string; // 会议开始时间（ISO 8601格式）
+    url: string; // 会议链接
+    title: string; // 会议标题
+    description: string; // 会议描述
     timestamp: number; // 时间戳
   };
   signed_bytes: string; // 签名字节（顶层）
@@ -153,8 +155,8 @@ export interface SubmitMeetingReportParams {
   did: string; // 用户DID
   params: {
     proposal_uri: string; // 提案URI
-    meeting_id?: string | number; // 会议ID（可选）
-    report_content?: string; // 报告内容（可选）
+    meeting_id?: number; // 会议ID（可选）
+    report?: string; // 报告内容（可选）
     timestamp: number; // 时间戳
   };
   signed_bytes: string; // 签名字节（顶层）
@@ -216,6 +218,49 @@ export const submitDelayReport = defineAPI<
   {
     divider: {
       body: ["did", "params", "signed_bytes", "signing_key_did"],
+    },
+  }
+);
+
+// 会议项类型
+export interface MeetingItem {
+  id: string | number;
+  title: string;
+  description: string;
+  start_time: string;
+  end_time: string;
+  url: string;
+  proposal_uri?: string;
+  creater?: string;
+  location?: string;
+  report?: unknown;
+  state?: number;
+  created?: string;
+  updated?: string;
+  [key: string]: unknown;
+}
+
+// 会议列表响应类型（requestAPI 会自动解包 response.data.data）
+export type MeetingListResponse = MeetingItem[];
+
+// 获取会议列表参数类型
+export interface GetMeetingListParams {
+  proposal?: string; // 提案URI，可选，用于过滤特定提案的会议
+}
+
+/**
+ * 获取会议列表
+ * GET /api/meeting
+ */
+export const getMeetingList = defineAPI<
+  GetMeetingListParams,
+  MeetingListResponse
+>(
+  "/meeting",
+  "GET",
+  {
+    divider: {
+      query: ["proposal"],
     },
   }
 );

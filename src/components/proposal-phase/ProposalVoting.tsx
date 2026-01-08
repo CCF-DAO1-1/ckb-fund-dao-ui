@@ -19,10 +19,7 @@ import { getUserDisplayNameFromInfo } from "@/utils/userDisplayUtils";
 import { getAvatarByDid } from "@/utils/avatarUtils";
 import { SuccessModal, Modal } from "@/components/ui/modal";
 import { MdErrorOutline } from "react-icons/md";
-import * as cbor from '@ipld/dag-cbor';
-import { uint8ArrayToHex } from "@/lib/dag-cbor";
-import storage from "@/lib/storage";
-import { Secp256k1Keypair } from "@atproto/crypto";
+import { generateSignature } from "@/lib/signature";
 import { ProposalDetailResponse } from "@/server/proposal";
 import "./voting.css";
 import ProposalVotingConditions from "./ProposalVotingConditions";
@@ -36,7 +33,7 @@ const adaptProposalDetail = (detail: ProposalDetailResponse): Proposal => {
     total: proposalData.milestones.length,
     progress: 0,
   } : undefined;
-  
+
   return {
     id: detail.cid,
     title: proposalData.title,
@@ -69,7 +66,7 @@ export default function ProposalVoting({
   const { messages } = useI18n();
   const { userInfo } = useUserInfoStore();
   const { signer, walletClient, openSigner, isConnected } = useWallet();
-  
+
   const [votingInfo, setVotingInfo] = useState<VotingInfo | null>(null);
   const [userVoteInfo, setUserVoteInfo] = useState<UserVoteInfo | null>(null);
   const [timeLeft, setTimeLeft] = useState("");
@@ -88,15 +85,15 @@ export default function ProposalVoting({
     if (!voteMetaId) {
       return;
     }
-    
+
     try {
       const voteDetail = await (getVoteDetail({
         id: voteMetaId,
       }) as unknown as Promise<VoteDetailResponse>);
-      
+
       let approveVotes = 0;
       let rejectVotes = 0;
-      
+
       if (voteDetail.candidate_votes && Array.isArray(voteDetail.candidate_votes)) {
         if (voteDetail.candidate_votes[1] && Array.isArray(voteDetail.candidate_votes[1])) {
           approveVotes = voteDetail.candidate_votes[1][1] ?? 0;
@@ -105,15 +102,15 @@ export default function ProposalVoting({
           rejectVotes = voteDetail.candidate_votes[2][1] ?? 0;
         }
       }
-      
+
       const totalVotes = voteDetail.valid_weight_sum ?? voteDetail.weight_sum ?? 0;
-      const approvalRate = totalVotes > 0 
-        ? (approveVotes / totalVotes) * 100 
+      const approvalRate = totalVotes > 0
+        ? (approveVotes / totalVotes) * 100
         : 0;
-      
+
       setVotingInfo(prev => {
         if (!prev) return prev;
-        
+
         return {
           ...prev,
           totalVotes: typeof totalVotes === 'number' ? totalVotes : prev.totalVotes,
@@ -123,7 +120,7 @@ export default function ProposalVoting({
             ...prev.conditions,
             currentTotalVotes: typeof totalVotes === 'number' ? totalVotes : prev.conditions.currentTotalVotes,
             currentApprovalRate: typeof approvalRate === 'number' && !isNaN(approvalRate)
-              ? approvalRate 
+              ? approvalRate
               : prev.conditions.currentApprovalRate,
           },
         };
@@ -139,9 +136,9 @@ export default function ProposalVoting({
       setVotingInfo(null);
       return;
     }
-    
+
     const adaptedProposal = adaptProposalDetail(proposal as ProposalDetailResponse);
-    
+
     if (adaptedProposal.state === ProposalStatus.VOTE && proposal.vote_meta) {
       const userVotingPower = voteWeight * 100000000;
       const voting = generateVotingInfo(adaptedProposal, proposal.vote_meta, userVotingPower);
@@ -150,21 +147,21 @@ export default function ProposalVoting({
       setVotingInfo(null);
     }
   }, [proposal, voteWeight]);
-  
+
   // 进入页面时，如果存在 voteMetaId，先调用 getVoteDetail，然后调用 getVoteStatus
   useEffect(() => {
     if (!voteMetaId) return;
-    
+
     // 先调用 getVoteDetail
     (async () => {
       try {
         const voteDetail = await (getVoteDetail({
           id: voteMetaId,
         }) as unknown as Promise<VoteDetailResponse>);
-        
+
         let approveVotes = 0;
         let rejectVotes = 0;
-        
+
         if (voteDetail.candidate_votes && Array.isArray(voteDetail.candidate_votes)) {
           if (voteDetail.candidate_votes[1] && Array.isArray(voteDetail.candidate_votes[1])) {
             approveVotes = voteDetail.candidate_votes[1][1] ?? 0;
@@ -173,15 +170,15 @@ export default function ProposalVoting({
             rejectVotes = voteDetail.candidate_votes[2][1] ?? 0;
           }
         }
-        
+
         const totalVotes = voteDetail.valid_weight_sum ?? voteDetail.weight_sum ?? 0;
-        const approvalRate = totalVotes > 0 
-          ? (approveVotes / totalVotes) * 100 
+        const approvalRate = totalVotes > 0
+          ? (approveVotes / totalVotes) * 100
           : 0;
-        
+
         setVotingInfo(prev => {
           if (!prev) return prev;
-          
+
           return {
             ...prev,
             totalVotes: typeof totalVotes === 'number' ? totalVotes : prev.totalVotes,
@@ -191,12 +188,12 @@ export default function ProposalVoting({
               ...prev.conditions,
               currentTotalVotes: typeof totalVotes === 'number' ? totalVotes : prev.conditions.currentTotalVotes,
               currentApprovalRate: typeof approvalRate === 'number' && !isNaN(approvalRate)
-                ? approvalRate 
+                ? approvalRate
                 : prev.conditions.currentApprovalRate,
             },
           };
         });
-        
+
         // getVoteDetail 完成后，调用 getVoteStatus
         if (userDid) {
           try {
@@ -204,21 +201,21 @@ export default function ProposalVoting({
               did: userDid,
               vote_meta_id: voteMetaId,
             }) as unknown as Promise<VoteRecord[]>);
-            
+
             const latestVoteRecord = voteStatusList && voteStatusList.length > 0 ? voteStatusList[0] : null;
-            
+
             if (!latestVoteRecord) {
               setUserVoteInfo({});
               return;
             }
-            
+
             let userVote: VoteOption | undefined;
             if (latestVoteRecord.candidates_index === 1) {
               userVote = VoteOption.APPROVE;
             } else if (latestVoteRecord.candidates_index === 2) {
               userVote = VoteOption.REJECT;
             }
-            
+
             setUserVoteInfo({
               userVote: userVote,
               userVoteIndex: latestVoteRecord.candidates_index,
@@ -244,17 +241,17 @@ export default function ProposalVoting({
       setShowVoteErrorModal(true);
       return;
     }
-    
+
     if (!isConnected || !signer || !walletClient) {
       openSigner();
       return;
     }
-    
+
     setIsVoting(true);
-    
+
     try {
       const currentVoteMetaId = voteMetaId || Number(proposal?.vote_meta?.id) || 2;
-      
+
       const t = (key: string) => {
         const keys = key.split('.');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -264,7 +261,7 @@ export default function ProposalVoting({
         }
         return typeof value === 'string' ? value : key;
       };
-      
+
       const result = await handleVoteUtil(userInfo.did, currentVoteMetaId, option, t);
       if (!result.success || !result.data) {
         const errorMsg = result.error || messages.modal.voteModal.voteFailedMessage;
@@ -273,7 +270,7 @@ export default function ProposalVoting({
         setIsVoting(false);
         return;
       }
-      
+
       const txResult = await buildAndSendVoteTransaction(
         result.data,
         option,
@@ -281,7 +278,7 @@ export default function ProposalVoting({
         walletClient,
         t
       );
-      
+
       if (txResult.success && txResult.txHash) {
         try {
           const candidates = result.data.vote_meta.candidates || ["Abstain", "Agree", "Against"];
@@ -293,42 +290,35 @@ export default function ProposalVoting({
             candidatesIndex = candidates.indexOf("Against");
             if (candidatesIndex === -1) candidatesIndex = 2;
           }
-          
+
           const updateParams = {
             id: currentVoteMetaId,
             tx_hash: txResult.txHash,
             candidates_index: candidatesIndex,
             timestamp: Math.floor(Date.now() / 1000),
           };
-          
-          const unsignedCommit = cbor.encode(updateParams);
-          const storageInfo = storage.getToken();
-          if (storageInfo?.signKey) {
-            const keyPair = await Secp256k1Keypair.import(storageInfo.signKey.slice(2));
-            const signature = await keyPair.sign(unsignedCommit);
-            const signedBytes = uint8ArrayToHex(signature);
-            const signingKeyDid = keyPair.did();
-            
-            await updateVoteTxHash({
-              did: userInfo.did,
-              params: updateParams,
-              signed_bytes: signedBytes,
-              signing_key_did: signingKeyDid,
-            });
-          }
+
+          const { signed_bytes: signedBytes, signing_key_did: signingKeyDid } = await generateSignature(updateParams);
+
+          await updateVoteTxHash({
+            did: userInfo.did,
+            params: updateParams,
+            signed_bytes: signedBytes,
+            signing_key_did: signingKeyDid,
+          });
         } catch (updateError) {
           const errorMsg = messages.voting?.errors?.updateTxHashFailed || "更新投票交易哈希失败";
           console.error(errorMsg + ":", updateError);
         }
-        
+
         const candidatesIndex = option === VoteOption.APPROVE ? 1 : 2;
-        
+
         setUserVoteInfo({
           userVote: option,
           userVoteIndex: candidatesIndex,
           voteState: 0,
         });
-        
+
         setTimeout(() => {
           setUserVoteInfo(prev => {
             if (prev && prev.voteState === 0) {
@@ -339,11 +329,11 @@ export default function ProposalVoting({
             return prev;
           });
         }, 30000);
-        
+
         setTimeout(() => {
           refreshVoteDetail();
         }, 2000);
-        
+
         setShowVoteSuccessModal(true);
         setIsVoting(false);
       } else {
@@ -653,14 +643,14 @@ export default function ProposalVoting({
           budget={budget}
         />
       </div>
-      
+
       {/* 投票成功弹窗 */}
       <SuccessModal
         isOpen={showVoteSuccessModal}
         onClose={() => setShowVoteSuccessModal(false)}
         message={messages.modal.voteModal.voteSuccess}
       />
-      
+
       {/* 投票失败弹窗 */}
       <Modal
         isOpen={showVoteErrorModal}

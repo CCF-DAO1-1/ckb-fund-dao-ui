@@ -6,12 +6,8 @@ import { useTranslation } from "@/utils/i18n";
 import toast from "react-hot-toast";
 import useUserInfoStore from "@/store/userInfo";
 import { createMeeting } from "@/server/task";
-import storage from "@/lib/storage";
-import { Secp256k1Keypair } from "@atproto/crypto";
-import * as cbor from '@ipld/dag-cbor';
-import { uint8ArrayToHex } from "@/lib/dag-cbor";
-import axios from "axios";
-import getPDSClient from "@/lib/pdsClient";
+import CustomDatePicker from "@/components/ui/DatePicker";
+import { generateSignature } from "@/lib/signature";
 
 export interface CreateMeetingModalProps {
   isOpen: boolean;
@@ -20,20 +16,7 @@ export interface CreateMeetingModalProps {
   proposalUri?: string;
 }
 
-// 会议项类型
-export interface MeetingItem {
-  id: string | number;
-  meeting_time: string;
-  meeting_link: string;
-  proposal_uri?: string;
-  [key: string]: unknown;
-}
 
-// 会议列表响应类型
-export interface MeetingListResponse {
-  meetings?: MeetingItem[];
-  [key: string]: unknown;
-}
 
 export default function CreateMeetingModal({
   isOpen,
@@ -43,80 +26,14 @@ export default function CreateMeetingModal({
 }: CreateMeetingModalProps) {
   const { t } = useTranslation();
   const { userInfo } = useUserInfoStore();
-  const [meetingTime, setMeetingTime] = useState("");
+  const [meetingDate, setMeetingDate] = useState<Date | null>(null);
+  const [meetingTime, setMeetingTime] = useState<Date | null>(null);
   const [meetingLink, setMeetingLink] = useState("");
-  const [selectedMeetingId, setSelectedMeetingId] = useState<string>("");
-  const [meetings, setMeetings] = useState<MeetingItem[]>([]);
-  const [loadingMeetings, setLoadingMeetings] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 获取会议列表
-  useEffect(() => {
-    if (!isOpen) return;
 
-    const fetchMeetings = async () => {
-      setLoadingMeetings(true);
-      try {
-        // 获取认证 token
-        const pdsClient = getPDSClient();
-        const token = pdsClient.session?.accessJwt;
-        
-        const response = await axios.get<MeetingListResponse>("/api/meeting", {
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        });
-
-        // 处理响应数据
-        if (response.data) {
-          if (Array.isArray(response.data)) {
-            setMeetings(response.data);
-          } else if (Array.isArray(response.data.meetings)) {
-            setMeetings(response.data.meetings);
-          } else {
-            setMeetings([]);
-          }
-        } else {
-          setMeetings([]);
-        }
-      } catch (error) {
-        console.error("获取会议列表失败:", error);
-        // 不显示错误提示，因为可能没有会议数据
-        setMeetings([]);
-      } finally {
-        setLoadingMeetings(false);
-      }
-    };
-
-    fetchMeetings();
-  }, [isOpen]);
-
-  // 当选择会议时，自动填充会议链接和时间
-  useEffect(() => {
-    if (selectedMeetingId && meetings.length > 0) {
-      const selectedMeeting = meetings.find(m => String(m.id) === selectedMeetingId);
-      if (selectedMeeting) {
-        setMeetingLink(selectedMeeting.meeting_link || "");
-        // 如果会议有时间，转换为 datetime-local 格式
-        if (selectedMeeting.meeting_time) {
-          try {
-            const meetingDate = new Date(selectedMeeting.meeting_time);
-            if (!isNaN(meetingDate.getTime())) {
-              // 转换为 datetime-local 格式 (YYYY-MM-DDTHH:mm)
-              const year = meetingDate.getFullYear();
-              const month = String(meetingDate.getMonth() + 1).padStart(2, '0');
-              const day = String(meetingDate.getDate()).padStart(2, '0');
-              const hours = String(meetingDate.getHours()).padStart(2, '0');
-              const minutes = String(meetingDate.getMinutes()).padStart(2, '0');
-              setMeetingTime(`${year}-${month}-${day}T${hours}:${minutes}`);
-            }
-          } catch (error) {
-            console.error("解析会议时间失败:", error);
-          }
-        }
-      }
-    }
-  }, [selectedMeetingId, meetings]);
 
   const handleSubmit = async () => {
     if (!userInfo?.did) {
@@ -124,20 +41,15 @@ export default function CreateMeetingModal({
       return;
     }
 
-    // 验证会议时间
-    if (!meetingTime.trim()) {
-      toast.error(t("createMeeting.errors.timeRequired") || "请输入会议时间");
+    // 验证会议日期
+    if (!meetingDate) {
+      toast.error(t("createMeeting.errors.dateRequired") || "请选择会议日期");
       return;
     }
 
-    // 验证会议时间格式（ISO 8601）
-    try {
-      const timeDate = new Date(meetingTime);
-      if (isNaN(timeDate.getTime())) {
-        throw new Error("Invalid date");
-      }
-    } catch {
-      toast.error(t("createMeeting.errors.invalidTime") || "请输入有效的会议时间");
+    // 验证会议时间
+    if (!meetingTime) {
+      toast.error(t("createMeeting.errors.timeRequired") || "请选择会议时间");
       return;
     }
 
@@ -158,48 +70,28 @@ export default function CreateMeetingModal({
     setIsSubmitting(true);
 
     try {
-      // 将 datetime-local 格式转换为 ISO 8601 格式
-      let meetingTimeISO = meetingTime.trim();
-      if (meetingTimeISO && !meetingTimeISO.includes('T')) {
-        // 如果格式是 YYYY-MM-DD HH:mm，转换为 YYYY-MM-DDTHH:mm
-        meetingTimeISO = meetingTimeISO.replace(' ', 'T');
-      }
-      // 确保是 ISO 8601 格式（如果缺少时区信息，添加 Z 表示 UTC）
-      if (meetingTimeISO && !meetingTimeISO.endsWith('Z') && !meetingTimeISO.includes('+') && !meetingTimeISO.includes('-', 10)) {
-        // 如果没有时区信息，假设是本地时间，转换为 ISO 8601
-        const localDate = new Date(meetingTimeISO);
-        if (!isNaN(localDate.getTime())) {
-          meetingTimeISO = localDate.toISOString();
-        }
-      }
+      // 合并日期和时间为一个完整的 Date 对象
+      const combinedDateTime = new Date(meetingDate);
+      combinedDateTime.setHours(meetingTime.getHours());
+      combinedDateTime.setMinutes(meetingTime.getMinutes());
+      combinedDateTime.setSeconds(0);
+      combinedDateTime.setMilliseconds(0);
+
+      // 将 Date 对象转换为 ISO 8601 格式
+      const meetingTimeISO = combinedDateTime.toISOString();
 
       // 1. 构建参数对象（用于签名）
       const params = {
         proposal_uri: proposalUri || "",
-        meeting_time: meetingTimeISO,
-        meeting_link: meetingLink.trim(),
+        start_time: meetingTimeISO,
+        url: meetingLink.trim(),
+        title: title.trim(),
+        description: description.trim(),
         timestamp: Math.floor(Date.now() / 1000), // UTC 时间戳（秒）
       };
 
-      // 2. 使用 cbor.encode 编码参数
-      const unsignedCommit = cbor.encode(params);
-
-      // 3. 从 storage 获取 signKey 并创建 keyPair
-      const storageInfo = storage.getToken();
-      if (!storageInfo?.signKey) {
-        throw new Error(t("createMeeting.errors.userNotLoggedIn") || "用户未登录");
-      }
-
-      const keyPair = await Secp256k1Keypair.import(storageInfo.signKey.slice(2));
-
-      // 4. 用 keyPair.sign 签名
-      const signature = await keyPair.sign(unsignedCommit);
-
-      // 5. 转换为 hex 字符串
-      const signedBytes = uint8ArrayToHex(signature);
-
-      // 6. 获取 signing_key_did
-      const signingKeyDid = keyPair.did();
+      // 生成签名和 signing_key_did
+      const { signed_bytes: signedBytes, signing_key_did: signingKeyDid } = await generateSignature(params);
 
       // 7. 调用 API
       const response = await createMeeting({
@@ -211,8 +103,11 @@ export default function CreateMeetingModal({
 
       if (response) {
         toast.success(t("createMeeting.success") || "会议创建成功");
-        setMeetingTime("");
+        setMeetingDate(null);
+        setMeetingTime(null);
         setMeetingLink("");
+        setTitle("");
+        setDescription("");
         onSuccess?.();
         onClose();
       } else {
@@ -229,9 +124,11 @@ export default function CreateMeetingModal({
 
   const handleClose = () => {
     if (!isSubmitting) {
-      setMeetingTime("");
+      setMeetingDate(null);
+      setMeetingTime(null);
       setMeetingLink("");
-      setSelectedMeetingId("");
+      setTitle("");
+      setDescription("");
       onClose();
     }
   };
@@ -253,169 +150,212 @@ export default function CreateMeetingModal({
           text: t("createMeeting.submit") || "提交",
           onClick: handleSubmit,
           variant: "primary",
-          disabled: isSubmitting || !meetingTime.trim() || !meetingLink.trim(),
+          disabled: isSubmitting || !meetingDate || !meetingTime || !meetingLink.trim(),
         },
       ]}
     >
       <div style={{ padding: "20px 0" }}>
-        {/* 会议选择 */}
-        <div style={{ marginBottom: "16px" }}>
-          <label
-            htmlFor="meeting-select"
-            style={{
-              display: "block",
-              marginBottom: "8px",
-              color: "#FFFFFF",
-              fontSize: "14px",
-              fontWeight: 500,
-            }}
-          >
-            {t("createMeeting.selectLabel") || "选择会议"}
-          </label>
-          <select
-            id="meeting-select"
-            value={selectedMeetingId}
-            onChange={(e) => setSelectedMeetingId(e.target.value)}
-            disabled={isSubmitting || loadingMeetings}
-            style={{
-              width: "100%",
-              maxWidth: "460px",
-              padding: "12px",
-              backgroundColor: "#1A1D23",
-              border: "1px solid #4C525C",
-              borderRadius: "6px",
-              color: "#FFFFFF",
-              fontSize: "14px",
-              outline: "none",
-              boxSizing: "border-box",
-              cursor: isSubmitting || loadingMeetings ? "not-allowed" : "pointer",
-            }}
-          >
-            <option value="">
-              {loadingMeetings 
-                ? (t("createMeeting.loadingMeetings") || "加载中...") 
-                : (t("createMeeting.selectPlaceholder") || "请选择会议（可选）")}
-            </option>
-            {meetings.map((meeting) => {
-              // 格式化会议显示文本
-              let displayText = meeting.meeting_link || String(meeting.id);
-              if (meeting.meeting_time) {
-                try {
-                  const meetingDate = new Date(meeting.meeting_time);
-                  if (!isNaN(meetingDate.getTime())) {
-                    const formattedDate = meetingDate.toLocaleString('zh-CN', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    });
-                    displayText = `${formattedDate} - ${meeting.meeting_link || '会议'}`;
-                  }
-                } catch {
-                  // 如果日期解析失败，只显示链接
-                  displayText = meeting.meeting_link || String(meeting.id);
-                }
-              }
-              return (
-                <option key={meeting.id} value={String(meeting.id)}>
-                  {displayText}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-        <div style={{ marginBottom: "16px" }}>
-          <label
-            htmlFor="meeting-time"
-            style={{
-              display: "block",
-              marginBottom: "8px",
-              color: "#FFFFFF",
-              fontSize: "14px",
-              fontWeight: 500,
-            }}
-          >
-            {t("createMeeting.timeLabel") || "会议时间"}
-          </label>
-          <input
-            id="meeting-time"
-            type="datetime-local"
-            value={meetingTime}
-            onChange={(e) => setMeetingTime(e.target.value)}
-            placeholder={t("createMeeting.timePlaceholder") || "请选择会议时间"}
-            disabled={isSubmitting}
-            style={{
-              width: "100%",
-              maxWidth: "460px",
-              padding: "12px",
-              backgroundColor: "#1A1D23",
-              border: "1px solid #4C525C",
-              borderRadius: "6px",
-              color: "#FFFFFF",
-              fontSize: "14px",
-              outline: "none",
-              boxSizing: "border-box",
-            }}
-          />
-        </div>
-        <div style={{ marginBottom: "16px" }}>
-          <label
-            htmlFor="meeting-link"
-            style={{
-              display: "block",
-              marginBottom: "8px",
-              color: "#FFFFFF",
-              fontSize: "14px",
-              fontWeight: 500,
-            }}
-          >
-            {t("createMeeting.linkLabel") || "会议链接"}
-          </label>
-          <input
-            id="meeting-link"
-            type="url"
-            value={meetingLink}
-            onChange={(e) => setMeetingLink(e.target.value)}
-            placeholder={t("createMeeting.linkPlaceholder") || "请输入会议链接（如 Zoom、腾讯会议等）"}
-            disabled={isSubmitting}
-            style={{
-              width: "100%",
-              maxWidth: "460px",
-              padding: "12px",
-              backgroundColor: "#1A1D23",
-              border: "1px solid #4C525C",
-              borderRadius: "6px",
-              color: "#FFFFFF",
-              fontSize: "14px",
-              outline: "none",
-              boxSizing: "border-box",
-            }}
-          />
-        </div>
-        {proposalUri && (
-          <div style={{ 
-            marginTop: "12px", 
-            fontSize: "12px", 
-            color: "#8A949E",
-            wordBreak: "break-all",
-            overflowWrap: "break-word",
-            lineHeight: "1.5"
-          }}>
-            <div style={{ marginBottom: "4px", fontWeight: 500 }}>
-              {t("createMeeting.proposalUri") || "提案 URI"}:
-            </div>
-            <div style={{ 
-              wordBreak: "break-all",
-              overflowWrap: "break-word",
-              color: "#CCCCCC"
-            }}>
-              {proposalUri}
+
+
+
+        <div
+          style={{
+            display: "flex",
+            gap: "12px",
+            marginBottom: "16px",
+            flexWrap: "wrap"
+          }}
+        >
+          {/* 日期选择器 */}
+          <div style={{ flex: "1", minWidth: "200px" }}>
+            <label
+              htmlFor="meeting-date"
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                color: "#FFFFFF",
+                fontSize: "14px",
+                fontWeight: 500,
+              }}
+            >
+              {t("createMeeting.dateLabel") || "会议日期"}
+            </label>
+            <div style={{ width: "100%" }}
+            >
+              <CustomDatePicker
+                selected={meetingDate}
+                onChange={(date) => setMeetingDate(date)}
+                placeholderText={t("createMeeting.datePlaceholder") || "请选择会议日期"}
+                disabled={isSubmitting}
+                minDate={new Date()}
+                dateFormat="yyyy-MM-dd"
+                className="form-input"
+              />
             </div>
           </div>
-        )}
+          {/* 时间选择器 */}
+          <div style={{ flex: "1", minWidth: "200px" }}>
+            <label
+              htmlFor="meeting-time"
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                color: "#FFFFFF",
+                fontSize: "14px",
+                fontWeight: 500,
+              }}
+            >
+              {t("createMeeting.timeLabel") || "会议时间"}
+            </label>
+            <div style={{ width: "100%" }}
+            >
+              <CustomDatePicker
+                selected={meetingTime}
+                onChange={(date) => setMeetingTime(date)}
+                placeholderText={t("createMeeting.timePlaceholder") || "请选择会议时间"}
+                disabled={isSubmitting}
+                showTimeSelect={true}
+                showTimeSelectOnly={true}
+                timeIntervals={10}
+                timeFormat="HH:mm"
+                timeCaption={t("createMeeting.timeCaption") || "时间"}
+                dateFormat="HH:mm"
+                className="form-input"
+              />
+            </div>
+          </div>
+        </div>
+
       </div>
-    </Modal>
+      {/* 会议标题 */}
+      <div style={{ marginBottom: "16px" }}>
+        <label
+          htmlFor="meeting-title"
+          style={{
+            display: "block",
+            marginBottom: "8px",
+            color: "#FFFFFF",
+            fontSize: "14px",
+            fontWeight: 500,
+          }}
+        >
+          {t("createMeeting.titleLabel") || "会议标题"}
+        </label>
+        <input
+          id="meeting-title"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder={t("createMeeting.titlePlaceholder") || "请输入会议标题"}
+          disabled={isSubmitting}
+          style={{
+            width: "100%",
+            maxWidth: "460px",
+            padding: "12px",
+            backgroundColor: "#1A1D23",
+            border: "1px solid #4C525C",
+            borderRadius: "6px",
+            color: "#FFFFFF",
+            fontSize: "14px",
+            outline: "none",
+            boxSizing: "border-box",
+          }}
+        />
+      </div>
+      {/* 会议描述 */}
+      <div style={{ marginBottom: "16px" }}>
+        <label
+          htmlFor="meeting-description"
+          style={{
+            display: "block",
+            marginBottom: "8px",
+            color: "#FFFFFF",
+            fontSize: "14px",
+            fontWeight: 500,
+          }}
+        >
+          {t("createMeeting.descriptionLabel") || "会议描述"}
+        </label>
+        <textarea
+          id="meeting-description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder={t("createMeeting.descriptionPlaceholder") || "请输入会议描述（可选）"}
+          disabled={isSubmitting}
+          rows={3}
+          style={{
+            width: "100%",
+            maxWidth: "460px",
+            padding: "12px",
+            backgroundColor: "#1A1D23",
+            border: "1px solid #4C525C",
+            borderRadius: "6px",
+            color: "#FFFFFF",
+            fontSize: "14px",
+            outline: "none",
+            boxSizing: "border-box",
+            resize: "vertical",
+          }}
+        />
+      </div>
+      {/* 会议链接 */}
+      <div style={{ marginBottom: "16px" }}>
+        <label
+          htmlFor="meeting-link"
+          style={{
+            display: "block",
+            marginBottom: "8px",
+            color: "#FFFFFF",
+            fontSize: "14px",
+            fontWeight: 500,
+          }}
+        >
+          {t("createMeeting.linkLabel") || "会议链接"}
+        </label>
+        <input
+          id="meeting-link"
+          type="url"
+          value={meetingLink}
+          onChange={(e) => setMeetingLink(e.target.value)}
+          placeholder={t("createMeeting.linkPlaceholder") || "请输入会议链接（如 Zoom、腾讯会议等）"}
+          disabled={isSubmitting}
+          style={{
+            width: "100%",
+            maxWidth: "460px",
+            padding: "12px",
+            backgroundColor: "#1A1D23",
+            border: "1px solid #4C525C",
+            borderRadius: "6px",
+            color: "#FFFFFF",
+            fontSize: "14px",
+            outline: "none",
+            boxSizing: "border-box",
+          }}
+        />
+      </div>
+      {proposalUri && (
+        <div style={{
+          marginTop: "12px",
+          fontSize: "12px",
+          color: "#8A949E",
+          wordBreak: "break-all",
+          overflowWrap: "break-word",
+          lineHeight: "1.5"
+        }}>
+          <div style={{ marginBottom: "4px", fontWeight: 500 }}>
+            {t("createMeeting.proposalUri") || "提案 URI"}:
+          </div>
+          <div style={{
+            wordBreak: "break-all",
+            overflowWrap: "break-word",
+            color: "#CCCCCC"
+          }}>
+            {proposalUri}
+          </div>
+        </div>
+      )
+      }
+    </Modal >
   );
 }
 

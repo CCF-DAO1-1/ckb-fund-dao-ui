@@ -18,6 +18,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -27,7 +28,7 @@
   background-color: #141619;
   border-radius: 15px;
   max-height: 90vh;
-  overflow: hidden;
+  overflow: visible;
   animation: slideUp 0.3s ease-out;
   display: flex;
   flex-direction: column;
@@ -38,6 +39,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -282,24 +284,24 @@
   .modal-overlay {
     padding: 10px;
   }
-  
+
   .modal-small,
   .modal-medium,
   .modal-large {
     width: 100%;
     max-width: 100%;
   }
-  
+
   .modal-header,
   .modal-content,
   .modal-actions {
     padding: 16px;
   }
-  
+
   .modal-actions {
     flex-direction: column;
   }
-  
+
   .modal-button {
     width: 100%;
   }
