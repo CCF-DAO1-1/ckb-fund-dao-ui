@@ -5,6 +5,7 @@ import { getVoteWeight } from "@/server/proposal";
 import { useTranslation } from "@/utils/i18n";
 import { useWalletAddress } from "./useWalletAddress";
 
+import { logger } from '@/lib/logger';
 /**
  * 获取用户投票权重的 Hook
  * 提供获取用户投票权重的功能
@@ -53,7 +54,7 @@ export function useVoteWeight() {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to get vote weight";
         setError(errorMessage);
-        console.error("Failed to get vote weight:", error);
+        logger.error("Failed to get vote weight:");
         setVoteWeight(0);
       } finally {
         setIsLoading(false);
@@ -87,7 +88,7 @@ export function useVoteWeight() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : t("voteWeight.getVoteWeightFailed");
       setError(errorMessage);
-      console.error(t("voteWeight.getVoteWeightFailed"), error);
+      logger.error(t("voteWeight.getVoteWeightFailed"), error);
       setVoteWeight(0);
     } finally {
       setIsLoading(false);
@@ -157,7 +158,7 @@ export function useVoteWeightByAddress(ckb_addr: string) {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to get vote weight";
         setError(errorMessage);
-        console.error("Failed to get vote weight:", error);
+        logger.error("Failed to get vote weight:");
         setVoteWeight(0);
       } finally {
         setIsLoading(false);

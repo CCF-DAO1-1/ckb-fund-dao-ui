@@ -1,5 +1,6 @@
 import { useI18n } from '../contexts/I18nContext';
 
+import { logger } from '@/lib/logger';
 export function useTranslation() {
   const { locale, messages } = useI18n();
   
@@ -12,7 +13,7 @@ export function useTranslation() {
       if (message && typeof message === 'object' && message !== null && key in message) {
         message = (message as Record<string, unknown>)[key];
       } else {
-        console.warn(`Translation key not found: ${id}`);
+        logger.warn(`Translation key not found: ${id}`);
         return id; // 如果找不到翻译，返回键名
       }
     }
@@ -29,7 +30,7 @@ export function useTranslation() {
       return message;
     }
     
-    console.warn(`Invalid translation value for key: ${id}`);
+    logger.warn(`Invalid translation value for key: ${id}`);
     return id;
   };
   

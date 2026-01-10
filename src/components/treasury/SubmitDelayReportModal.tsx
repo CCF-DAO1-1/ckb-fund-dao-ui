@@ -9,6 +9,7 @@ import { submitDelayReport } from "@/server/task";
 import { generateSignature } from "@/lib/signature";
 import VditorRichTextEditor from "@/components/common/VditorRichTextEditor";
 
+import { logger } from '@/lib/logger';
 export interface SubmitDelayReportModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -88,7 +89,7 @@ export default function SubmitDelayReportModal({
         throw new Error(t("submitDelayReport.errors.submitFailed") || "提交失败");
       }
     } catch (error) {
-      console.error("提交延期报告失败:", error);
+      logger.error("提交延期报告失败:");
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(errorMessage || t("submitDelayReport.errors.submitFailed") || "提交失败，请重试");
     } finally {

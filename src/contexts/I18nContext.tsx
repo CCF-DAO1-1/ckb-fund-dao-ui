@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import enMessages from '../locales/en.json';
 import zhMessages from '../locales/zh.json';
 
+import { logger } from '@/lib/logger';
 type Locale = 'en' | 'zh';
 
 interface Messages {
@@ -896,7 +897,7 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
         }
       } catch (error) {
         // 如果localStorage不可用，使用默认语言
-        console.warn('localStorage not available:', error);
+        logger.warn('localStorage not available:');
       }
     }
   }, [pathname, initialLocale, isClient]);
@@ -909,7 +910,7 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
         // 更新HTML lang属性
         document.documentElement.lang = newLocale;
       } catch (error) {
-        console.warn('Failed to save locale to localStorage:', error);
+        logger.warn('Failed to save locale to localStorage:');
       }
     }
   };

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { getReplied, RepliedItem } from "@/server/proposal";
 import useUserInfoStore from "@/store/userInfo";
 
+import { logger } from '@/lib/logger';
 export interface UseRepliedListResult {
   comments: RepliedItem[];
   loading: boolean;
@@ -82,7 +83,7 @@ export function useRepliedList(
         setTotalPages(0);
       }
     } catch (err) {
-      console.error("获取个人回复列表失败:", err);
+      logger.error("获取个人回复列表失败:", err);
 
       const error = err as { response?: { status?: number }; message?: string };
       const statusCode = error.response?.status;

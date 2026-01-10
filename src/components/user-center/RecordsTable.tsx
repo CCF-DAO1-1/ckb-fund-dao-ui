@@ -11,6 +11,7 @@ import { SelfProposalItem } from '@/server/proposal';
 import TaskProcessingModal, { TaskType } from "@/components/proposal/TaskProcessingModal";
 import { useTranslation } from "@/utils/i18n";
 
+import { logger } from '@/lib/logger';
 interface RecordsTableProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -81,7 +82,7 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
   const proposalRecords: ProposalRecord[] = useMemo(() => {
     // 调试：打印提案数据
     if (proposals.length > 0) {
-      console.log("提案数据:", proposals);
+      logger.log("提案数据已加载", { count: proposals.length });
     }
     return proposals.map((proposal: SelfProposalItem) => {
       const state = proposal.state as ProposalStatus;
@@ -131,7 +132,7 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
   
 
   const handleAction = (action: string, recordId: string) => {
-    console.log(`执行操作: ${action}, 记录ID: ${recordId}`);
+    logger.log(`执行操作: ${action}, 记录ID: ${recordId}`);
     
     // 如果是开启投票操作
     if (action === messages.recordsTable.actions.startVoting) {
@@ -162,7 +163,7 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
   };
 
   const handleTaskComplete = (data: unknown) => {
-    console.log("任务完成数据:", data);
+    logger.log("任务完成数据已收到");
     if (selectedProposal?.taskType === t("taskTypes.createVote")) {
       refetch();
     }

@@ -2,6 +2,7 @@
  * 加密数据
  * 使用 AES-GCM 算法加密数据
  */
+import { logger } from "@/lib/logger";
 export async function encryptData(data: string, password: string): Promise<string | null> {
   try {
     // 将密码转换为加密密钥
@@ -51,7 +52,7 @@ export async function encryptData(data: string, password: string): Promise<strin
     // 转换为 base64 字符串
     return btoa(String.fromCharCode(...combined));
   } catch (error) {
-    console.error('加密失败:', error);
+    logger.error('加密失败:', error);
     return null;
   }
 }
@@ -108,7 +109,7 @@ export async function decryptData(encryptedData: string, password: string): Prom
     const decoder = new TextDecoder();
     return decoder.decode(decrypted);
   } catch (error) {
-    console.error('解密失败:', error);
+    logger.error('解密失败:', error);
     return null;
   }
 }

@@ -24,6 +24,7 @@ import { ProposalDetailResponse } from "@/server/proposal";
 import "./voting.css";
 import ProposalVotingConditions from "./ProposalVotingConditions";
 
+import { logger } from '@/lib/logger';
 // 适配器函数：将API返回的ProposalDetailResponse转换为工具函数期望的Proposal类型
 const adaptProposalDetail = (detail: ProposalDetailResponse): Proposal => {
   const proposalData = detail.record.data;
@@ -126,7 +127,7 @@ export default function ProposalVoting({
         };
       });
     } catch (error) {
-      console.error("获取投票详情失败:", error);
+      logger.error("获取投票详情失败:");
     }
   }, [voteMetaId]);
 
@@ -221,14 +222,14 @@ export default function ProposalVoting({
               userVoteIndex: latestVoteRecord.candidates_index,
             });
           } catch (statusError) {
-            console.error("获取投票状态失败:", statusError);
+            logger.error("获取投票状态失败:", statusError);
           }
         } else {
           // 用户未登录，设置为空对象
           setUserVoteInfo({});
         }
       } catch (error) {
-        console.error("获取投票详情失败:", error);
+        logger.error("获取投票详情失败:");
       }
     })();
   }, [voteMetaId, userDid]);
@@ -308,7 +309,7 @@ export default function ProposalVoting({
           });
         } catch (updateError) {
           const errorMsg = messages.voting?.errors?.updateTxHashFailed || "更新投票交易哈希失败";
-          console.error(errorMsg + ":", updateError);
+          logger.error(errorMsg + ":", updateError);
         }
 
         const candidatesIndex = option === VoteOption.APPROVE ? 1 : 2;
@@ -344,7 +345,7 @@ export default function ProposalVoting({
       }
     } catch (error) {
       const errorLogMsg = messages.voting?.errors?.voteFailed || '投票失败';
-      console.error(errorLogMsg + ':', error);
+      logger.error(errorLogMsg + ':', error);
       let errorMsg = messages.modal.voteModal.voteFailedMessage;
       if (error instanceof Error) {
         errorMsg = error.message || errorMsg;

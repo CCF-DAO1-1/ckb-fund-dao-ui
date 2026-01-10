@@ -8,6 +8,7 @@ import useUserInfoStore from "@/store/userInfo";
 import { updateReceiverAddr } from "@/server/proposal";
 import { generateSignature } from "@/lib/signature";
 
+import { logger } from '@/lib/logger';
 export interface UpdateReceiverAddrModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -75,7 +76,7 @@ export default function UpdateReceiverAddrModal({
         throw new Error(t("updateReceiverAddr.errors.submitFailed") || "提交失败");
       }
     } catch (error) {
-      console.error("更新钱包地址失败:", error);
+      logger.error("更新钱包地址失败:");
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(errorMessage || t("updateReceiverAddr.errors.submitFailed") || "提交失败，请重试");
     } finally {

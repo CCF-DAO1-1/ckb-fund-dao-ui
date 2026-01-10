@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { postUriToHref } from "@/lib/postUriHref";
 import { isMarkdown, markdownToHtml } from "@/utils/markdownUtils";
 
+import { logger } from '@/lib/logger';
 interface ProposalContentProps {
   proposal: ProposalDetailResponse;
   commentsCount: number;
@@ -76,7 +77,7 @@ export default function ProposalContent({
         setLikeCount(prev => prev + 1);
       }
     } catch (error) {
-      console.error('点赞失败:', error);
+      logger.error('点赞失败:');
     } finally {
       setIsLiking(false);
     }
@@ -112,7 +113,7 @@ export default function ProposalContent({
       try {
         return markdownToHtml(content);
       } catch (error) {
-        console.warn('Markdown rendering failed, falling back to raw content:', error);
+        logger.warn('Markdown rendering failed, falling back to raw content:');
         return content;
       }
     }

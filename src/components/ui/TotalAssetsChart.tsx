@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import * as echarts from "echarts";
 import { useI18n } from "@/contexts/I18nContext";
 
+import { logger } from '@/lib/logger';
 type TotalAssetsChartProps = {
   height?: number;
   // 单位：亿（Billion）
@@ -90,7 +91,7 @@ function processChartData(csvRows: CSVRow[]): {
 
     const date = new Date(row["date(UTC)"]);
     if (isNaN(date.getTime())) {
-      console.warn("Invalid date:", row["date(UTC)"]);
+      logger.warn("Invalid date found in chart data");
       return;
     }
     
@@ -221,21 +222,21 @@ export default function TotalAssetsChart({
           if (response.ok) {
             csvText = await response.text();
             if (csvText && csvText.trim().length > 0) {
-              console.log(`Successfully loaded chart data from ${path}`);
+              logger.log(`Successfully loaded chart data from ${path}`);
               break; // 成功加载，退出循环
             }
           } else {
-            console.warn(`Failed to load chart data from ${path}: ${response.status} ${response.statusText}`);
+            logger.warn(`Failed to load chart data from ${path}: ${response.status} ${response.statusText}`);
           }
         } catch (err) {
           lastError = err instanceof Error ? err : new Error(String(err));
-          console.warn(`Error loading chart data from ${path}:`, err);
+          logger.warn(`Error loading chart data from ${path}`);
         }
       }
       
       // 如果所有路径都失败
       if (!csvText || csvText.trim().length === 0) {
-        console.error("Failed to load chart data from all attempted paths", lastError);
+        logger.error("Failed to load chart data from all attempted paths", lastError);
         // 保持使用默认数据，不中断组件渲染
         return;
       }
@@ -243,7 +244,7 @@ export default function TotalAssetsChart({
       try {
         const csvRows = parseCSV(csvText);
         if (csvRows.length === 0) {
-          console.warn("CSV file parsed but contains no valid rows");
+          logger.warn("CSV file parsed but contains no valid rows");
           return;
         }
         
@@ -252,12 +253,12 @@ export default function TotalAssetsChart({
         if (processed.labels.length > 0 && processed.data.length > 0) {
           setChartData(processed.data);
           setChartLabels(processed.labels.map(formatMonthLabel));
-          console.log(`Successfully processed ${processed.labels.length} months of chart data`);
+          logger.log(`Successfully processed ${processed.labels.length} months of chart data`);
         } else {
-          console.warn("Processed chart data is empty");
+          logger.warn("Processed chart data is empty");
         }
       } catch (parseError) {
-        console.error("Error parsing chart data:", parseError);
+        logger.error("Error parsing chart data:", parseError);
       }
     };
 

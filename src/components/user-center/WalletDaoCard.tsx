@@ -18,6 +18,7 @@ import { getBindList } from "@/server/proposal";
 import useUserInfoStore from "@/store/userInfo";
 import { validateJsonSignature } from "@/utils/common";
 
+import { logger } from '@/lib/logger';
 interface WalletDaoCardProps {
   className?: string;
 }
@@ -57,7 +58,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const generateBindInfo = useCallback(async () => {
-    console.log(11111111111111)
+    logger.log("Generating bind info");
     const timestamp = Date.now();
     const cccClient = new ccc.ClientPublicTestnet();
     const toAddr =
@@ -70,7 +71,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
 
     const bindInfoBytes = bindInfo.toBytes();
     const bindInfoHex = ccc.hexFrom(bindInfoBytes);
-    console.log("bind info: ", bindInfoHex);
+    logger.log("Bind info generated");
 
     return { bindInfo, bindInfoHex };
   }, [walletAddress]);
@@ -91,7 +92,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
 
     const unbindInfoBytes = unbindInfo.toBytes();
     const unbindInfoHex = ccc.hexFrom(unbindInfoBytes);
-    console.log("unbind info: ", unbindInfoHex);
+    logger.log("Unbind info generated");
 
     return { unbindInfo, unbindInfoHex };
   }, []);
@@ -103,7 +104,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
   // 将签名转换为十六进制（兼容base64和0x格式）
   const convertSignatureToHex = (signature: string): string => {
     if (!signature || !signature.trim()) {
-      console.error(t("wallet.signatureConversionFailed"), "签名为空");
+      logger.error(t("wallet.signatureConversionFailed"), "签名为空");
       return '';
     }
 
@@ -126,7 +127,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
         }
         
         // 如果不是有效的十六进制，尝试按base64处理
-        console.warn("0x格式的签名不是有效的十六进制，尝试base64解码");
+        logger.warn("0x格式的签名不是有效的十六进制，尝试base64解码");
       }
       
       // 检查是否为纯十六进制字符串（没有0x前缀）
@@ -154,7 +155,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(t('wallet.signatureConversionFailed'), errorMessage, {
+      logger.error(t('wallet.signatureConversionFailed'), errorMessage, {
         signatureLength: trimmedSignature.length,
         signaturePrefix: trimmedSignature.substring(0, 20)
       });
@@ -252,23 +253,22 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
       const encoder = new TextEncoder();
       const sigBytes = encoder.encode(signature); // 使用原始 signature，保留可能的格式
       sigHex = hexFrom(sigBytes);
-      console.log("sig: ", sigHex);
+      logger.log("Signature hex generated for JSON signature");
       
     } 
     // 如果 signature 以 0x 开头且长度是 132，说明是 neuron 签名
     // 使用 trim() 后的长度检查，确保一致性
   
     else if (trimmedSignature.startsWith('0x') && trimmedSignature.length === 132) {
-      console.log("for neuron: 0x开头的132字符签名");
+      logger.log("Processing Neuron signature (0x prefix, 132 chars)");
       // 将签名转换为十六进制（兼容base64和0x格式）
-      console.log("trimmedSignature: ", trimmedSignature);
       const signatureHex = convertSignatureToHex(trimmedSignature);
       if (!signatureHex) {
         toast.error(t("wallet.signatureConversionFailed"));
         return;
       }
       sigHex = signatureHex;
-      console.log("sig: ", sigHex);
+      logger.log("Signature hex generated for Neuron signature");
     }
     // 如果 signature 不是以 { 开头，且不是 0x 开头的 132 字符，尝试解析为 JSON
     else {
@@ -296,7 +296,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
     await signer.signTransaction(tx);
 
     const txHash = await signer.sendTransaction(tx);
-    console.log("The transaction hash is", txHash);
+    logger.log("Bind transaction sent successfully");
     setShowSignatureModal(false);
     setSuccessMessage(t("wallet.bindSuccessMessage"));
     setShowSuccessModal(true);
@@ -324,7 +324,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
       // 显示成功提示
       toast.success(t("wallet.refreshSuccessMessage"));
     } catch (error) {
-      console.error("刷新失败:", error);
+      logger.error("刷新失败:");
       toast.error(t("wallet.refreshFailed") || "刷新失败");
     } finally {
       setIsRefreshing(false);
@@ -376,7 +376,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
       // 签名并发送交易
       await signer.signTransaction(tx);
       const txHash = await signer.sendTransaction(tx);
-      console.log("Unbind transaction hash:", txHash);
+      logger.log("Unbind transaction sent successfully");
 
       // 关闭确认弹窗
       setShowUnbindConfirmModal(false);
@@ -387,7 +387,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
       setSuccessMessage(t("wallet.unbindSuccessMessage"));
       setShowSuccessModal(true);
     } catch (error) {
-      console.error("Unbind failed:", error);
+      logger.error("Unbind failed:");
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(errorMessage || t("wallet.unbindInfoNotGenerated"));
     } finally {

@@ -9,6 +9,7 @@ import { createMeeting } from "@/server/task";
 import CustomDatePicker from "@/components/ui/DatePicker";
 import { generateSignature } from "@/lib/signature";
 
+import { logger } from '@/lib/logger';
 export interface CreateMeetingModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -114,7 +115,7 @@ export default function CreateMeetingModal({
         throw new Error(t("createMeeting.errors.submitFailed") || "提交失败");
       }
     } catch (error) {
-      console.error("创建会议失败:", error);
+      logger.error("创建会议失败:");
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(errorMessage || t("createMeeting.errors.submitFailed") || "提交失败，请重试");
     } finally {

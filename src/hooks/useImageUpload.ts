@@ -3,6 +3,7 @@ import { uploadImage } from "@/server/pds";
 import toast from "react-hot-toast";
 import { useTranslation } from "@/utils/i18n";
 
+import { logger } from '@/lib/logger';
 /**
  * Quill Toolbar Handler 上下文类型
  */
@@ -85,7 +86,7 @@ export function useImageUpload(did?: string) {
 
           toast.success(t("editor.uploadSuccess") || "Upload success");
         } catch (error) {
-          console.error("图片上传错误:", error);
+          logger.error("图片上传错误:");
           const errorMessage =
             error instanceof Error
               ? error.message

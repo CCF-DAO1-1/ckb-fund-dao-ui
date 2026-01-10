@@ -8,6 +8,7 @@ import { RepliedItem } from '@/server/proposal';
 import { postUriToHref } from '@/lib/postUriHref';
 import { isMarkdown, markdownToHtml } from '@/utils/markdownUtils';
 
+import { logger } from '@/lib/logger';
 // Markdown 渲染工具函数
 
 const renderContent = (content: string): string => {
@@ -21,7 +22,7 @@ const renderContent = (content: string): string => {
     try {
       return markdownToHtml(content);
     } catch (error) {
-      console.warn('Markdown rendering failed, falling back to raw content:', error);
+      logger.warn('Markdown rendering failed, falling back to raw content:');
       return content;
     }
   }

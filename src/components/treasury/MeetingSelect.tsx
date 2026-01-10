@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "@/utils/i18n";
 import { getMeetingList, MeetingItem } from "@/server/task";
 
+import { logger } from '@/lib/logger';
 // 重新导出 MeetingItem 供外部使用
 export type { MeetingItem };
 
@@ -41,7 +42,7 @@ export default function MeetingSelect({
                     setMeetings([]);
                 }
             } catch (error) {
-                console.error("获取会议列表失败:", error);
+                logger.error("获取会议列表失败:");
                 // 不显示错误提示，因为可能没有会议数据
                 setMeetings([]);
             } finally {

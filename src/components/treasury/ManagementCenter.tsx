@@ -16,6 +16,7 @@ import SubmitMeetingReportModal from "./SubmitMeetingReportModal";
 import SubmitDelayReportModal from "./SubmitDelayReportModal";
 import { getTaskTypeText, TaskType as TaskTypeEnum } from "@/utils/taskUtils";
 
+import { logger } from '@/lib/logger';
 interface ProposalItem {
   id: string;
   name: string;
@@ -47,7 +48,7 @@ const formatDeadline = (deadline: string, locale: 'en' | 'zh' = 'en'): string =>
       timeZone: 'Asia/Shanghai'
     }) + ' (UTC+8)';
   } catch (error) {
-    console.error('格式化截止日期失败:', error);
+    logger.error('格式化截止日期失败:');
     return deadline;
   }
 };
@@ -268,7 +269,7 @@ export default function ManagementCenter() {
   };
 
   const handleTaskComplete = (data: unknown) => {
-    console.log("任务完成数据:", data);
+    logger.log("任务完成数据已收到");
     if (selectedProposal?.taskType === t("taskTypes.createVote")) {
       refetch();
     }

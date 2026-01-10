@@ -19,6 +19,7 @@ import { hexToUint8Array, uint8ArrayToHex } from "@/lib/dag-cbor";
 import server from "@/server";
 import { UserProfileType } from "@/store/userInfo";
 
+import { logger } from '@/lib/logger';
 export enum CREATE_STATUS {
   INIT,
   SUCCESS,
@@ -76,7 +77,7 @@ export async function userLogin(localStorage: TokenStorageType): Promise<FansWeb
       await deleteErrUser(did, walletAddress, signKey)
       return
     } else {
-      console.error('preIndexAction 发生未知错误:', err)
+      logger.error('preIndexAction 发生未知错误:', err)
       return
     }
   }
@@ -86,7 +87,7 @@ export async function userLogin(localStorage: TokenStorageType): Promise<FansWeb
   // 确保私钥格式正确
   const signKeyStr = typeof signKey === 'string' ? signKey : String(signKey);
   const cleanSignKey = signKeyStr.startsWith('0x') ? signKeyStr.slice(2) : signKeyStr;
-  
+
   const keyPair = await Secp256k1Keypair.import(cleanSignKey)
   const loginSig = await keyPair.sign(
     bytesFrom(preLogin.data.message, 'utf8'),
@@ -106,22 +107,22 @@ export async function userLogin(localStorage: TokenStorageType): Promise<FansWeb
       ckbAddr: walletAddress,
       index: loginIndex,
     })
-    
+
     const result = loginInfo.data.result as FansWeb5CkbIndexAction.CreateSessionResult
-    
+
     // 🔧 关键修复：通过 sessionManager 设置 session，这样后续请求才能带上 accessJwt
     pdsClient.sessionManager.session = {
       ...result,
       active: result.active ?? true
     }
-    
-    console.log('✅ Session 已设置:', pdsClient.sessionManager.session)
-    
+
+    logger.log('✅ Session 已设置:', { session: pdsClient.sessionManager.session })
+
     return result
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    console.error('登录失败:', err);
+    logger.error('登录失败:', err);
     // alert('登录失败')
   }
 }
@@ -140,7 +141,7 @@ export async function deleteErrUser(did: string, address: string, signKey: strin
   // 确保私钥格式正确
   const signKeyStr = typeof signKey === 'string' ? signKey : String(signKey);
   const cleanSignKey = signKeyStr.startsWith('0x') ? signKeyStr.slice(2) : signKeyStr;
-  
+
   const keyPair = await Secp256k1Keypair.import(cleanSignKey)
   const signingKey = keyPair.did()
   const deleteSig = await keyPair.sign(
@@ -187,16 +188,16 @@ export default function useCreateAccount({ createSuccess }: {
   })
 
   const changeParams = (obj: CreateUserParamsType) => {
-    createUserParamsRef.current = {...createUserParamsRef.current, ...obj}
+    createUserParamsRef.current = { ...createUserParamsRef.current, ...obj }
   }
 
   // 判断CKB是否足够
   const validateIsEnough = async (userHandle: string) => {
     if (!signer) return false
-    
+
     // 将 userHandle 转换为全小写
     const normalizedHandle = userHandle.toLowerCase()
-    
+
     try {
       const fromAddress = await signer.getAddresses()
 
@@ -204,7 +205,7 @@ export default function useCreateAccount({ createSuccess }: {
         exportable: true
       })
       const signKeyPriv = await keyPair.export()
-      
+
       // 确保私钥是Uint8Array格式
       let privateKeyBytes: Uint8Array;
       if (signKeyPriv instanceof Uint8Array) {
@@ -217,7 +218,7 @@ export default function useCreateAccount({ createSuccess }: {
       } else {
         throw new Error('私钥格式不正确');
       }
-      
+
       const strSignKeyPriv = ccc.hexFrom(privateKeyBytes)
       const signingKey = keyPair.did()
 
@@ -234,7 +235,7 @@ export default function useCreateAccount({ createSuccess }: {
         },
       }
 
-      
+
       const cborEncoded = cbor.encode(diDoc);
       const didWeb5Data0 = DidWeb5Data.from({
         type: "DidWeb5DataV1",
@@ -263,7 +264,7 @@ export default function useCreateAccount({ createSuccess }: {
       )) {
         cell = c
       }
-      
+
       if (!cell) {
         startPolling(normalizedHandle)
         return false
@@ -277,14 +278,14 @@ export default function useCreateAccount({ createSuccess }: {
 
       const type = new Script(tokenConfig.codeHash, tokenConfig.hashType, args)
 
-      
+
 
       const tx = ccc.Transaction.from({
         inputs: [{ previousOutput: input.previousOutput }],
         outputs: [{ lock, type }],
         outputsData: [didWeb5Data0Str],
       })
-      
+
       await tx.addCellDepInfos(signer.client as unknown as never, tokenConfig.cellDeps as never)
 
       try {
@@ -306,10 +307,10 @@ export default function useCreateAccount({ createSuccess }: {
         did: `did:ckb:${preDid}`,
         createdSignKeyPriv: strSignKeyPriv
       })
-      
+
       return true
     } catch (error) {
-      console.error('验证余额时发生错误:', error)
+      logger.error('验证余额时发生错误:')
       return false
     }
   }
@@ -346,10 +347,10 @@ export default function useCreateAccount({ createSuccess }: {
 
     // 确保私钥是字符串格式
     const signKeyStr = typeof signKey === 'string' ? signKey : String(signKey);
-    
+
     // 移除0x前缀并确保是有效的十六进制字符串
     const cleanSignKey = signKeyStr.startsWith('0x') ? signKeyStr.slice(2) : signKeyStr;
-    
+
 
     const keyPair = await Secp256k1Keypair.import(cleanSignKey)
 
@@ -364,13 +365,13 @@ export default function useCreateAccount({ createSuccess }: {
     const preCreateResult = res.data
 
     // 直接使用服务器提供的unSignBytes，不进行任何计算
-    
+
     // 将十六进制字符串转换为Uint8Array用于签名
     const encoded = hexToUint8Array(preCreateResult.unSignBytes);
 
     // 手动签名commit
     const sig = await keyPair.sign(encoded)
-    const commit =  {
+    const commit = {
       did: preCreateResult.did,
       version: 3,
       rev: preCreateResult.rev,
@@ -400,30 +401,30 @@ export default function useCreateAccount({ createSuccess }: {
     try {
       txHash = await signer?.sendTransaction(createdTx! as unknown as never)
     } catch (error) {
-      console.error('发送交易失败:', error);
+      logger.error('发送交易失败:');
       throw new Error(SEND_TRANSACTION_ERR_MESSAGE);
     }
 
     if (!txHash) return
-    
+
     const txRes = await walletClient?.waitTransaction(txHash, 0, 60000 * 2)
-    
+
     if (txRes?.status !== 'committed') {
       await deleteErrUser(preCreateResult.did, address, signKey!)
     }
 
     setCreateLoading(false)
-    
+
     // 注册成功 - 交易已确认上链
-    console.log('🎉 注册成功！交易已确认上链');
-    console.log('📊 交易详情:', {
+    logger.log('🎉 注册成功！交易已确认上链');
+    logger.log('📊 交易详情:', {
       txHash,
       txRes,
       userHandle: normalizedHandle,
       address,
       did: preCreateResult.did
     });
-    
+
     createSuccess?.()
     setCreateStatus({
       status: CREATE_STATUS.SUCCESS,
@@ -432,9 +433,9 @@ export default function useCreateAccount({ createSuccess }: {
   }
 
   const createAccount = async (
-    signer: ccc.Signer, 
-    walletClient: ccc.Client, 
-    userHandle: string, 
+    signer: ccc.Signer,
+    walletClient: ccc.Client,
+    userHandle: string,
     address: string
   ) => {
     stopPolling()
@@ -449,11 +450,11 @@ export default function useCreateAccount({ createSuccess }: {
           return
         }
       }
-      
+
       await prepareAccount(userHandle, address)
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err)
-      console.error('创建账户过程中发生错误:', err)
+      logger.error('创建账户过程中发生错误:', err)
 
       if (errorMessage === SEND_TRANSACTION_ERR_MESSAGE) {
         const params = createUserParamsRef.current

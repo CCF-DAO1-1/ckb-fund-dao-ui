@@ -12,6 +12,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { ccc } from "@ckb-ccc/connector-react";
 import "./ImportDidModal.css";
 
+import { logger } from '@/lib/logger';
 enum ImportStep {
   UPLOAD = "upload",
   SELECT_FILE = "select_file",
@@ -120,7 +121,7 @@ export default function ImportDidModal({
           setFileContent(decodedText.trim());
           setCurrentStep(ImportStep.ENTER_PASSWORD);
         } catch (scanErr: unknown) {
-          console.error('扫描二维码失败:', scanErr);
+          logger.error('扫描二维码失败:', scanErr);
           setError(t("importDid.qrCodeScanFailed"));
         } finally {
           setIsVerifying(false);
@@ -128,7 +129,7 @@ export default function ImportDidModal({
       }
     } catch (err) {
       setError(t("importDid.fileReadError"));
-      console.error("读取文件失败:", err);
+      logger.error("读取文件失败:", err);
       setIsVerifying(false);
     }
   };
@@ -229,7 +230,7 @@ export default function ImportDidModal({
             }
           }
         } catch (err) {
-          console.error('AES解密失败:', err);
+          logger.error('AES解密失败:', err);
           // 继续尝试其他方式
         }
       }
@@ -252,7 +253,7 @@ export default function ImportDidModal({
       if (errorMessage === t("importDid.decryptionFailed")) {
         throw err;
       }
-      console.error('解密过程出错:', err);
+      logger.error('解密过程出错:', err);
       throw new Error(t("importDid.decryptionFailed"));
     }
   };
@@ -264,7 +265,7 @@ export default function ImportDidModal({
       setError("");
       await open();
     } catch (err) {
-      console.error("连接钱包失败:", err);
+      logger.error("连接钱包失败:", err);
       setError(t("importDid.walletConnectFailed"));
       setIsConnecting(false);
     }
@@ -287,7 +288,7 @@ export default function ImportDidModal({
             try {
               await disconnect();
             } catch (err) {
-              console.error("断开连接失败:", err);
+              logger.error("断开连接失败:", err);
             }
           } else {
             // 地址一致，显示成功弹窗
@@ -295,7 +296,7 @@ export default function ImportDidModal({
             setShowSuccessModal(true);
           }
         } catch (err) {
-          console.error("获取钱包地址失败:", err);
+          logger.error("获取钱包地址失败:", err);
           setError(t("importDid.getWalletAddressFailed"));
           setIsConnecting(false);
         }
@@ -328,7 +329,7 @@ export default function ImportDidModal({
     try {
       await disconnect();
     } catch (err) {
-      console.error("断开连接失败:", err);
+      logger.error("断开连接失败:", err);
     }
     // 重置连接状态，允许重新连接
     setIsConnecting(false);

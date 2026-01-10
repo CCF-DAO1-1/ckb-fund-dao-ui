@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import getPDSClient from "@/lib/pdsClient";
 
+import { logger } from '@/lib/logger';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
         }
       } catch (error) {
         // 如果无法获取 token，继续执行（后端 API 可能会处理未认证的请求）
-        console.warn("Could not get token from session:", error);
+        logger.warn("Could not get token from session");
       }
     }
 
@@ -47,7 +48,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching meeting list:", error);
+    logger.error("Error fetching meeting list:");
     
     if (axios.isAxiosError(error)) {
       const status = error.response?.status || 500;

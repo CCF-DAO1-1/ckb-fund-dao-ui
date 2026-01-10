@@ -8,6 +8,7 @@ import { useTranslation } from '@/utils/i18n';
 import storage from '@/lib/storage';
 import './KeyQRCodeModal.css';
 
+import { logger } from '@/lib/logger';
 interface KeyQRCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -27,7 +28,7 @@ export default function KeyQRCodeModal({ isOpen, onClose }: KeyQRCodeModalProps)
   const generateQRCodeData = () => {
     const tokenData = storage.getToken();
     if (!tokenData) {
-      console.error('未找到用户信息');
+      logger.error('未找到用户信息');
       return;
     }
 

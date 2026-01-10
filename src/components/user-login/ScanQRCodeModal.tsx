@@ -10,6 +10,7 @@ import { decryptData } from '@/lib/encrypt';
 import { MdClose, MdPhotoCamera, MdImage, MdCheckCircle } from 'react-icons/md';
 import './ScanQRCodeModal.css';
 
+import { logger } from '@/lib/logger';
 interface ScanQRCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -71,7 +72,7 @@ export default function ScanQRCodeModal({ isOpen, onClose, onSuccess }: ScanQRCo
               }
             }
           } catch (err) {
-            console.error('解密失败:', err);
+            logger.error('解密失败:', err);
           }
         }
       }
@@ -144,7 +145,7 @@ export default function ScanQRCodeModal({ isOpen, onClose, onSuccess }: ScanQRCo
         }
       );
     } catch (err: unknown) {
-      console.error('启动摄像头失败:', err);
+      logger.error('启动摄像头失败:', err);
       setError(t('web5.scanQRCode.cameraError') || '无法访问摄像头，请检查权限设置');
       setIsScanning(false);
     }
@@ -157,7 +158,7 @@ export default function ScanQRCodeModal({ isOpen, onClose, onSuccess }: ScanQRCo
         await scannerRef.current.stop();
         scannerRef.current.clear();
       } catch (err) {
-        console.error('停止扫描失败:', err);
+        logger.error('停止扫描失败:', err);
       }
       scannerRef.current = null;
     }
@@ -200,7 +201,7 @@ export default function ScanQRCodeModal({ isOpen, onClose, onSuccess }: ScanQRCo
       setIsScanning(false);
       parseAndImportQRData(decodedText);
     } catch (err: unknown) {
-      console.error('扫描文件失败:', err);
+      logger.error('扫描文件失败:', err);
       setError(t('web5.scanQRCode.scanFailed') || '无法识别二维码，请确保图片清晰');
       setIsScanning(false);
     }

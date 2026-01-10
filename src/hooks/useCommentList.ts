@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getCommentList, CommentItem } from '@/server/comment';
 import useUserInfoStore from '@/store/userInfo';
 
+import { logger } from '@/lib/logger';
 interface UseCommentListResult {
   comments: CommentItem[];
   loading: boolean;
@@ -45,7 +46,7 @@ export function useCommentList(
   const [error, setError] = useState<string>('');
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState<boolean>(true);
-  
+
   // 从 store 中获取用户的 did 作为 viewer
   const { userInfo } = useUserInfoStore();
   const viewer = userInfo?.did || null;
@@ -53,37 +54,37 @@ export function useCommentList(
   // 获取评论列表
   const fetchComments = useCallback(async (reset: boolean = false, currentCursor: string | null = null, currentHasMore: boolean = true) => {
     if (!proposalUri) {
-      console.warn('提案URI为空，无法获取评论');
+      logger.warn('提案URI为空，无法获取评论');
       setError('提案URI不能为空');
       return;
     }
 
     // 如果没有更多数据且不是重置操作，直接返回
     if (!currentHasMore && !reset) {
-      console.log('没有更多评论数据');
+      logger.log('没有更多评论数据');
       return;
     }
 
     try {
       setLoading(true);
       setError('');
-      
-      const params = { 
+
+      const params = {
         proposal: proposalUri,
         cursor: reset ? null : currentCursor,
         limit,
         viewer,
       };
-      
-      console.log('获取评论列表请求参数:', params);
-      
+
+      logger.log('获取评论列表请求参数:', params);
+
       const data = await getCommentList(params);
-      
-      console.log('获取评论列表响应:', data);
-      
+
+      logger.log('获取评论列表响应:', { data });
+
       if (data) {
         const newComments = data.replies || [];
-        
+
         // 如果是重置操作，使用智能合并；否则追加数据
         setComments(prev => {
           if (reset) {
@@ -101,7 +102,7 @@ export function useCommentList(
             return [...prev, ...uniqueNew];
           }
         });
-        
+
         const newCursor = data.cursor;
         const newHasMore = !!newCursor;
         setCursor(newCursor);
@@ -110,17 +111,17 @@ export function useCommentList(
         setError('获取评论列表失败');
       }
     } catch (err) {
-      console.error('获取评论列表异常:', err);
-      console.error('错误详情:', JSON.stringify(err, null, 2));
-      
+      logger.error('获取评论列表异常:', err);
+      logger.error('错误详情:', JSON.stringify(err, null, 2));
+
       const error = err as { response?: { status?: number; data?: unknown }; message?: string };
-      
+
       // 打印更详细的错误信息
       if (error.response) {
-        console.error('HTTP状态码:', error.response.status);
-        console.error('响应数据:', error.response.data);
+        logger.error('HTTP状态码:', error.response.status);
+        logger.error('响应数据:', error.response.data);
       }
-      
+
       // 根据不同的错误类型设置错误信息
       if (error.response?.status === 404) {
         setError('评论不存在');
@@ -155,11 +156,11 @@ export function useCommentList(
     if (!proposalUri) {
       return;
     }
-    
+
     // 重置状态
     setCursor(null);
     setHasMore(true);
-    
+
     // 调用请求逻辑
     fetchComments(true, null, true);
   }, [proposalUri, viewer, limit, fetchComments]);

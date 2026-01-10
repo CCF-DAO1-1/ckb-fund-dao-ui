@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { logger } from "@/lib/logger";
 const ACCESS_TOKEN_STORE_KEY = '@dao:client';
 const USER_INFO_CACHE_KEY = '@dao:userInfo';
 const USER_PROFILE_CACHE_KEY = '@dao:userProfile';
@@ -26,7 +27,7 @@ const clientRun = <T extends (...args: any[]) => any>(f: T) => {
   if (typeof window !== 'undefined') {
     return f;
   }
-  return (() => {}) as unknown as T;
+  return (() => { }) as unknown as T;
 }
 
 const storage = {
@@ -46,13 +47,13 @@ const storage = {
     window.localStorage.setItem(ACCESS_TOKEN_STORE_KEY, JSON.stringify(accTokenVal));
   }),
   getToken: clientRun(() => {
-    const res =  window.localStorage.getItem(ACCESS_TOKEN_STORE_KEY)
+    const res = window.localStorage.getItem(ACCESS_TOKEN_STORE_KEY)
     return res ? JSON.parse(res) as TokenStorageType : null;
   }),
   removeToken: clientRun(() => {
     return window.localStorage.removeItem(ACCESS_TOKEN_STORE_KEY);
   }),
-  
+
   // 用户信息缓存
   setUserInfoCache: clientRun((userInfo: any) => {
     const cacheItem: CacheItem<any> = {
@@ -62,11 +63,11 @@ const storage = {
     };
     window.localStorage.setItem(USER_INFO_CACHE_KEY, JSON.stringify(cacheItem));
   }),
-  
+
   getUserInfoCache: clientRun(() => {
     const cached = window.localStorage.getItem(USER_INFO_CACHE_KEY);
     if (!cached) return null;
-    
+
     try {
       const cacheItem: CacheItem<any> = JSON.parse(cached);
       // 检查是否过期
@@ -76,16 +77,16 @@ const storage = {
       }
       return cacheItem.data;
     } catch (e) {
-      console.error('解析用户信息缓存失败:', e);
+      logger.error('解析用户信息缓存失败:', e);
       window.localStorage.removeItem(USER_INFO_CACHE_KEY);
       return null;
     }
   }),
-  
+
   removeUserInfoCache: clientRun(() => {
     return window.localStorage.removeItem(USER_INFO_CACHE_KEY);
   }),
-  
+
   // 用户资料缓存
   setUserProfileCache: clientRun((userProfile: any) => {
     const cacheItem: CacheItem<any> = {
@@ -95,11 +96,11 @@ const storage = {
     };
     window.localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(cacheItem));
   }),
-  
+
   getUserProfileCache: clientRun(() => {
     const cached = window.localStorage.getItem(USER_PROFILE_CACHE_KEY);
     if (!cached) return null;
-    
+
     try {
       const cacheItem: CacheItem<any> = JSON.parse(cached);
       // 检查是否过期
@@ -109,16 +110,16 @@ const storage = {
       }
       return cacheItem.data;
     } catch (e) {
-      console.error('解析用户资料缓存失败:', e);
+      logger.error('解析用户资料缓存失败:', e);
       window.localStorage.removeItem(USER_PROFILE_CACHE_KEY);
       return null;
     }
   }),
-  
+
   removeUserProfileCache: clientRun(() => {
     return window.localStorage.removeItem(USER_PROFILE_CACHE_KEY);
   }),
-  
+
   // 清除所有用户相关缓存
   clearUserCache: clientRun(() => {
     window.localStorage.removeItem(USER_INFO_CACHE_KEY);
@@ -141,25 +142,25 @@ const storage = {
       window.localStorage.setItem(draftKey, JSON.stringify(cacheItem));
     } catch (e) {
       // localStorage 可能已满，尝试清理旧草稿
-      console.warn('保存草稿失败，可能是存储空间不足:', e);
+      logger.warn('保存草稿失败，可能是存储空间不足:', { error: e });
       // 清理过期的草稿
       storage.clearExpiredDrafts();
       // 重试一次
       try {
         window.localStorage.setItem(draftKey, JSON.stringify(cacheItem));
       } catch (retryError) {
-        console.error('重试保存草稿仍然失败:', retryError);
+        logger.error('重试保存草稿仍然失败:', retryError);
       }
     }
   }),
 
   getProposalDraft: clientRun((did: string) => {
     if (!did) return null;
-    
+
     const draftKey = `${PROPOSAL_DRAFT_KEY_PREFIX}${did}`;
     const cached = window.localStorage.getItem(draftKey);
     if (!cached) return null;
-    
+
     try {
       const cacheItem: CacheItem<any> = JSON.parse(cached);
       // 检查是否过期
@@ -175,7 +176,7 @@ const storage = {
         version: version || 1,
       };
     } catch (e) {
-      console.error('解析提案草稿缓存失败:', e);
+      logger.error('解析提案草稿缓存失败:', e);
       window.localStorage.removeItem(draftKey);
       return null;
     }
@@ -210,10 +211,10 @@ const storage = {
       }
       keysToRemove.forEach(key => window.localStorage.removeItem(key));
       if (keysToRemove.length > 0) {
-        console.log(`清理了 ${keysToRemove.length} 个过期草稿`);
+        logger.log(`清理了 ${keysToRemove.length} 个过期草稿`);
       }
     } catch (e) {
-      console.error('清理过期草稿失败:', e);
+      logger.error('清理过期草稿失败:', e);
     }
   }),
 
@@ -229,7 +230,7 @@ const storage = {
       }
       keysToRemove.forEach(key => window.localStorage.removeItem(key));
     } catch (e) {
-      console.error('清除所有草稿失败:', e);
+      logger.error('清除所有草稿失败:', e);
     }
   }),
 }

@@ -14,6 +14,7 @@ import { useCheckCkb } from "@/hooks/checkCkb";
 import useCreateAccount, { CREATE_STATUS } from "@/hooks/createAccount";
 import { USER_DOMAIN } from "@/constant/Network";
 import { useTranslation } from "@/utils/i18n";
+import { logger } from '@/lib/logger';
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -86,7 +87,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       connectTimeoutRef.current = setTimeout(() => {
         // 检查当前是否仍未连接（使用 ref 获取最新值，避免闭包问题）
         if (!walletRef.current || !signerInfoRef.current) {
-          console.error(t("loginModal.connectWalletFailed"), "连接超时");
+          logger.error(t("loginModal.connectWalletFailed"), "连接超时");
           resetConnectionState();
         }
       }, 10000); // 10秒超时
@@ -95,7 +96,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       // 注意：open() 可能不会抛出错误，连接成功会通过 useEffect 监听状态变化来处理
       
     } catch (error) {
-      console.error(t("loginModal.connectWalletFailed"), error);
+      logger.error(t("loginModal.connectWalletFailed"), error);
       resetConnectionState();
     }
   };
@@ -109,7 +110,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
      
       setIsConnecting(false);
     } catch (error) {
-      console.error(t("loginModal.disconnectWalletFailed"), error);
+      logger.error(t("loginModal.disconnectWalletFailed"), error);
     }
   };
 
@@ -208,7 +209,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         if (balanceResult.isEnough) {
           // 余额充足，开始创建账户
           setShowInsufficientFunds(false);
-          console.log(t("loginModal.balanceCheckPassed"));
+          logger.log(t("loginModal.balanceCheckPassed"));
           
           // 直接调用创建账户方法，它会自动处理余额验证和私钥生成
           if (signerInfo?.signer && wallet) {
@@ -228,14 +229,14 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         } else {
           // 余额不足，显示警告
           setShowInsufficientFunds(true);
-          console.log(t("loginModal.insufficientBalance"), balanceResult.error);
+          logger.log(t("loginModal.insufficientBalance"));
         }
       } catch (error) {
-        console.error(t("loginModal.balanceCheckError"), error);
+        logger.error(t("loginModal.balanceCheckError"));
         setShowInsufficientFunds(true);
       }
     } else {
-      console.error(t("loginModal.signerNotFound"));
+      logger.error(t("loginModal.signerNotFound"));
       setShowInsufficientFunds(true);
     }
   };
@@ -245,10 +246,10 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     if (signerInfo) {
       try {
         const balanceResult = await checkSimpleBalance(signerInfo, BigInt(355 * 10**8));
-        console.log("balanceResult", balanceResult);
+        logger.log("Balance check result received");
         if (balanceResult.isEnough) {
           setShowInsufficientFunds(false);
-          console.log(t("loginModal.recheckBalancePassed"));
+          logger.log(t("loginModal.recheckBalancePassed"));
           
           // 调用创建账户方法
           if (signerInfo?.signer && wallet) {
@@ -267,10 +268,10 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
           }
         } else {
           setShowInsufficientFunds(true);
-          console.log(t("loginModal.stillInsufficientBalance"), balanceResult.error);
+          logger.log(t("loginModal.stillInsufficientBalance"));
         }
       } catch (error) {
-        console.error(t("loginModal.recheckBalanceError"), error);
+        logger.error(t("loginModal.recheckBalanceError"));
         setShowInsufficientFunds(true);
       }
     }

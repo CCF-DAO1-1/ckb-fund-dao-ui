@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { ccc } from "@ckb-ccc/connector-react";
 
+import { logger } from '@/lib/logger';
 /**
  * 获取钱包地址的 Hook
  * 提供多种方法尝试获取用户的钱包地址
@@ -59,12 +60,12 @@ export function useWalletAddress() {
           setWalletAddress(address);
         } else {
           setError("无法获取钱包地址");
-          console.warn("无法获取钱包地址");
+          logger.warn("无法获取钱包地址");
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "获取钱包地址失败";
         setError(errorMessage);
-        console.error("获取钱包地址失败:", error);
+        logger.error("获取钱包地址失败:");
       } finally {
         setIsLoadingAddress(false);
       }
@@ -80,7 +81,7 @@ export function useWalletAddress() {
         await navigator.clipboard.writeText(walletAddress);
         return true;
       } catch (error) {
-        console.error("复制失败:", error);
+        logger.error("复制失败:");
         return false;
       }
     }

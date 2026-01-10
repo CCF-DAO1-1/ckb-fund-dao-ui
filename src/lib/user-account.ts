@@ -8,6 +8,7 @@ import { FansWeb5CkbIndexAction, FansWeb5CkbPreIndexAction } from "web5-api";
 import server from "@/server";
 import { UserProfileType } from "@/store/userInfo";
 
+import { logger } from '@/lib/logger';
 export async function fetchUserProfile(did: string): Promise<UserProfileType> {
   const result = await server<UserProfileType>('/repo/profile', 'GET', {
     repo: did
@@ -17,7 +18,7 @@ export async function fetchUserProfile(did: string): Promise<UserProfileType> {
 
 export async function userLogin(localStorage: TokenStorageType): Promise<FansWeb5CkbIndexAction.CreateSessionResult | undefined> {
 
-  
+
   const pdsClient = getPDSClient()
   const { did, signKey, walletAddress } = localStorage
 
@@ -36,11 +37,11 @@ export async function userLogin(localStorage: TokenStorageType): Promise<FansWeb
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     if (err && err.error === 'CkbDidocCellNotFound') {
-      console.log('CkbDidocCellNotFound')
+      logger.log('CkbDidocCellNotFound', { did, walletAddress })
       await deleteErrUser(did, walletAddress, signKey)
       return
     } else {
-      console.error('preIndexAction 发生未知错误:', err)
+      logger.error('preIndexAction 发生未知错误:', err)
       return
     }
   }
@@ -52,8 +53,8 @@ export async function userLogin(localStorage: TokenStorageType): Promise<FansWeb
   const loginSig = await keyPair.sign(
     bytesFrom(preLogin.data.message, 'utf8'),
   )
-  
- 
+
+
 
   const loginIndex = {
     $type: 'fans.web5.ckb.indexAction#createSession',
@@ -70,21 +71,21 @@ export async function userLogin(localStorage: TokenStorageType): Promise<FansWeb
       ckbAddr: walletAddress,
       index: loginIndex,
     })
-    
+
     const result = loginInfo.data.result as FansWeb5CkbIndexAction.CreateSessionResult
-    
+
     // 🔧 关键修复：通过 sessionManager 设置 session，这样后续请求才能带上 accessJwt
     pdsClient.sessionManager.session = {
       ...result,
       active: result.active ?? true
     }
-    
-    console.log('✅ Session 已设置:', pdsClient.sessionManager.session)
-    
+
+    logger.log('✅ Session 已设置:', { session: pdsClient.sessionManager.session })
+
     return result
 
   } catch (err) {
-    console.error('登录失败:', err);
+    logger.error('登录失败:', err);
     // alert("登录失败")
     // showGlobalToast({
     //   title: '登录失败',
@@ -126,5 +127,5 @@ export async function deleteErrUser(did: string, address: string, signKey: strin
   })
 
   storage.removeToken()
-  console.log('web5 delete account finish')
+  logger.log('web5 delete account finish', { did, address })
 }

@@ -10,6 +10,7 @@ import { generateSignature } from "@/lib/signature";
 import VditorRichTextEditor from "@/components/common/VditorRichTextEditor";
 import MeetingSelect, { MeetingItem } from "./MeetingSelect";
 
+import { logger } from '@/lib/logger';
 export interface SubmitMeetingReportModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -91,7 +92,7 @@ export default function SubmitMeetingReportModal({
         throw new Error(t("submitMeetingReport.errors.submitFailed") || "提交失败");
       }
     } catch (error) {
-      console.error("提交AMA报告失败:", error);
+      logger.error("提交AMA报告失败:");
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(errorMessage || t("submitMeetingReport.errors.submitFailed") || "提交失败，请重试");
     } finally {

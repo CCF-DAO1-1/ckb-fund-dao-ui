@@ -8,6 +8,7 @@ import useUserInfoStore from "@/store/userInfo";
 import { sendFunds } from "@/server/task";
 import { generateSignature } from "@/lib/signature";
 
+import { logger } from '@/lib/logger';
 export interface SendFundsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -75,7 +76,7 @@ export default function SendFundsModal({
         throw new Error(t("sendFunds.errors.submitFailed") || "提交失败");
       }
     } catch (error) {
-      console.error("拨款失败:", error);
+      logger.error("拨款失败:");
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(errorMessage || t("sendFunds.errors.submitFailed") || "提交失败，请重试");
     } finally {

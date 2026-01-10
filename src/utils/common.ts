@@ -1,6 +1,7 @@
 import copy from "copy-to-clipboard";
 import { toast } from "react-hot-toast";
 
+import { logger } from '@/lib/logger';
 /**
  * 通用的复制到剪贴板方法
  * @param {string} text - 要复制的文本
@@ -11,7 +12,7 @@ export const handleCopy = (text: string, successMessage: string) => {
     copy(text);
     toast.success(successMessage);
   } catch (error) {
-    console.error("Copy failed:", error);
+    logger.error("Copy failed:");
     toast.error("Copy failed, please try again");
   }
 };

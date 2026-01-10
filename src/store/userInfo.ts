@@ -8,6 +8,7 @@ import { createPDSRecord } from "@/server/pds";
 import { handleToNickName } from "@/lib/handleToNickName";
 import { fetchUserProfile, userLogin } from "@/lib/user-account";
 
+import { logger } from '@/lib/logger';
 export type UserProfileType = {
   did: string
   displayName?: string
@@ -79,12 +80,12 @@ const useUserInfoStore = createSelectors(
         ...userInfo,
         active: true
       }
-      
-      console.log('✅ Session 已设置:', pdsClient.sessionManager.session)
-  
+
+      logger.log('✅ Session 已设置:', { session: pdsClient.sessionManager.session })
+
       // 保存 userInfo 到缓存
       storage.setUserInfoCache(userInfo);
-      
+
       set(() => ({ userInfo, userProfile: { did: userInfo.did, handle: userInfo.handle } }))
     },
 
@@ -104,7 +105,7 @@ const useUserInfoStore = createSelectors(
         })
         return 'SUCCESS'
       } catch (e) {
-        console.log('write profile err', e)
+        logger.log('write profile err', { error: e })
         return 'FAIL'
       }
     },
@@ -112,21 +113,21 @@ const useUserInfoStore = createSelectors(
     web5Login: async () => {
       // 防止并发登录请求
       if (isLoggingIn) {
-        console.log('登录请求正在进行中，跳过重复请求');
+        logger.log('登录请求正在进行中，跳过重复请求');
         return;
       }
-      
+
       const localStorage = storage.getToken()
       if (!localStorage) return
-      
+
       try {
         isLoggingIn = true;
         const userInfoRes = await userLogin(localStorage)  // ← 调用登录函数
         if (!userInfoRes) return
-        
+
         // 保存 userInfo 到缓存
         storage.setUserInfoCache(userInfoRes);
-        
+
         set(() => ({ userInfo: userInfoRes }))
         await get().getUserProfile()
       } finally {
@@ -151,13 +152,13 @@ const useUserInfoStore = createSelectors(
     getUserProfile: async () => {
       const userInfo = get().userInfo
       if (!userInfo) return
-      
+
       // 防止并发请求
       if (isFetchingProfile) {
-        console.log('用户资料正在获取中，跳过重复请求');
+        logger.log('用户资料正在获取中，跳过重复请求');
         return;
       }
-      
+
       // 优先从缓存读取
       const cachedProfile = storage.getUserProfileCache()
       if (cachedProfile && cachedProfile.did === userInfo.did) {
@@ -168,10 +169,10 @@ const useUserInfoStore = createSelectors(
         }))
         return cachedProfile
       }
-      
+
       try {
         isFetchingProfile = true;
-        
+
         const result = await fetchUserProfile(userInfo.did)
 
         // 保存到缓存
@@ -204,12 +205,12 @@ const useUserInfoStore = createSelectors(
 
     initialize: async () => {
       const token = storage.getToken()
-      
+
       // 如果 token 存在，尝试从缓存恢复 userInfo 和 userProfile
       if (token) {
         const cachedUserInfo = storage.getUserInfoCache()
         const cachedUserProfile = storage.getUserProfileCache()
-        
+
         // 检查缓存的 did 是否与 token 的 did 匹配
         if (cachedUserInfo && cachedUserInfo.did === token.did) {
           // 恢复 session（如果缓存中有 userInfo，说明之前已经登录过）
@@ -218,9 +219,9 @@ const useUserInfoStore = createSelectors(
             ...cachedUserInfo,
             active: cachedUserInfo.active ?? true
           }
-          
+
           set(() => ({ userInfo: cachedUserInfo }))
-          
+
           // 如果有缓存的 userProfile 且 did 匹配，恢复 userProfile
           if (cachedUserProfile && cachedUserProfile.did === cachedUserInfo.did) {
             set(() => ({
@@ -232,11 +233,11 @@ const useUserInfoStore = createSelectors(
             // 使用 setTimeout 异步获取，不阻塞初始化流程
             setTimeout(() => {
               get().getUserProfile().catch(err => {
-                console.error('从缓存恢复后获取用户资料失败:', err)
+                logger.error('从缓存恢复后获取用户资料失败:', err)
               })
             }, 0)
           }
-          
+
           // 设置 visitorId
           let visitor = localStorage.getItem(STORAGE_VISITOR)
           if (!visitor) {
@@ -254,10 +255,10 @@ const useUserInfoStore = createSelectors(
         // token 不存在，清除缓存
         storage.clearUserCache()
       }
-      
+
       // 缓存中没有有效的 userInfo 或 token 不存在，尝试登录
       await get().web5Login()
-      
+
       let visitor = localStorage.getItem(STORAGE_VISITOR)
       if (!visitor) {
         const random4Digit = Math.floor(Math.random() * 9000) + 1000;
@@ -276,11 +277,11 @@ const useUserInfoStore = createSelectors(
     updateUserInfoFromSession: () => {
       const pdsClient = getPDSClient()
       const session = pdsClient.sessionManager.session
-      
+
       if (session && session.did) {
         // 更新缓存
         storage.setUserInfoCache(session)
-        
+
         // 更新 store
         set(() => ({ userInfo: session }))
       }

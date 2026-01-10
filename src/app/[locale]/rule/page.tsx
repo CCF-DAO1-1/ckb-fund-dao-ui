@@ -11,6 +11,7 @@ import "react-notion-x/src/styles.css";
 import type { ExtendedRecordMap } from "notion-types";
 
 
+import { logger } from '@/lib/logger';
 const NotionRenderer = dynamic(
   () => import("react-notion-x").then((m) => m.NotionRenderer),
   { ssr: false }
@@ -36,22 +37,22 @@ export default function Rule() {
           const errJson = await res.json().catch(() => ({}));
           const msg = errJson?.error || `request failed: ${res.status}`;
           setError(msg);
-          console.error("/api/notion error:", msg);
+          logger.error("/api/notion error:", msg);
           return;
         }
         const json = await res.json();
         const map = json.recordMap as ExtendedRecordMap | undefined;
         if (!map) {
           setError("recordMap is empty");
-          console.error("recordMap is empty");
+          logger.error("recordMap is empty");
           return;
         }
         setRecordMap(map);
-        console.log("recordMap loaded", map);
+        logger.log("recordMap loaded");
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         setError(msg);
-        console.error(e);
+        logger.error(msg, e);
       }
     };
     load();
@@ -75,7 +76,7 @@ export default function Rule() {
         list.push({ id, text, indentLevel });
       });
       setToc(list);
-console.log(list,'list')
+      logger.log('TOC list generated');
       const targets = list.map((i) => document.getElementById(i.id)).filter(Boolean) as Element[];
       if (!targets.length) return;
       const io = new IntersectionObserver(

@@ -8,6 +8,7 @@ import useUserInfoStore from '@/store/userInfo';
 import { prepareVote } from '@/server/proposal';
 import './milestone.css';
 
+import { logger } from '@/lib/logger';
 export default function MilestoneTracking({
   milestones,
   currentMilestone, // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -21,7 +22,7 @@ export default function MilestoneTracking({
   const handleMilestoneVote = async (milestoneId: string, option: MilestoneVoteOption) => {
     if (!userInfo?.did) {
       const errorMsg = messages.voting?.errors?.userNotLoggedIn || '投票失败: 用户未登录';
-      console.error(errorMsg);
+      logger.error(errorMsg);
       return;
     }
 
@@ -38,10 +39,10 @@ export default function MilestoneTracking({
       const rejectText = messages.voting?.options?.reject || '反对';
       const optionText = option === MilestoneVoteOption.APPROVE ? approveText : rejectText;
       const logMsg = messages.voting?.logs?.milestoneVotePrepareSuccess || '里程碑投票准备成功';
-      console.log(`${logMsg}: 里程碑 ${milestoneId}, vote_meta_id=${voteMetaId}, option=${optionText}`, response);
+      logger.log(`${logMsg}: 里程碑 ${milestoneId}, vote_meta_id=${voteMetaId}, option=${optionText}`);
     } catch (error) {
       const errorLogMsg = messages.voting?.logs?.milestoneVotePrepareFailed || '里程碑投票准备失败';
-      console.error(errorLogMsg + ':', error);
+      logger.error(errorLogMsg + ':', error);
     }
   };
 

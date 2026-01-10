@@ -4,6 +4,7 @@
 // 修正下面带有todo注释的代码
 import { requestAPI as request, RequestConfig } from "@/lib/request";
 
+import { logger } from '@/lib/logger';
 type RequestPartOptions = RequestConfig;
 
 type RequestInterceptor = <T>(params: T, cfg?: RequestPartOptions) => [T, RequestPartOptions?];
@@ -46,11 +47,11 @@ export class Interceptors<Group extends Record<string, [unknown, unknown]>> {
     responseInterceptor?: ResponseInterceptor,
   ) {
     if(this.requestObserverMap.has(key)) {
-      console.warn(`Request Interceptors: ${key as string} is exist`);
+      logger.warn(`Request Interceptors: ${key as string} is exist`);
     }
     requestInterceptor && this.requestObserverMap.set(key, requestInterceptor);
     if(this.responseObserverMap.has(key)) {
-      console.warn(`Response Interceptors: ${key as string} is exist`);
+      logger.warn(`Response Interceptors: ${key as string} is exist`);
     }
     responseInterceptor && this.responseObserverMap.set(key, responseInterceptor);
     return this;

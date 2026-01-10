@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { ccc } from "@ckb-ccc/connector-react";
+import { logger } from '@/lib/logger';
 // import { Secp256k1Keypair } from "@atproto/crypto";
 // import * as cbor from "@ipld/dag-cbor";
 // import { base32 } from "@scure/base";
@@ -274,7 +275,7 @@ export function useCheckCkb() {
         throw new Error("无法获取钱包地址");
       }
 
-      console.log("CKB Balance Check (Testnet):", {
+      logger.log("CKB Balance Check (Testnet):", {
         address: fromAddress,
         requiredCapacity: requiredCapacity.toString(),
         requiredCKB: Number(requiredCapacity) / 10**8,
@@ -290,11 +291,11 @@ export function useCheckCkb() {
         balance = await signerInfo.getBalance(fromAddress);
       } else {
         // 如果没有 getBalance 方法，尝试通过其他方式获取余额
-        console.warn("无法直接获取余额，使用默认值 0");
+        logger.warn("无法直接获取余额，使用默认值 0");
         balance = BigInt(0);
       }
       
-      console.log("Balance Check Result:", {
+      logger.log("Balance Check Result:", {
         currentBalance: balance.toString(),
         currentCKB: Number(balance) / 10**8,
         requiredCapacity: requiredCapacity.toString(),

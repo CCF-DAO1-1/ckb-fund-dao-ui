@@ -6,6 +6,7 @@ import { USER_DOMAIN } from "@/constant/Network";
 import { Secp256k1Keypair } from "@atproto/crypto";
 import { useTranslation } from "@/utils/i18n";
 
+import { logger } from '@/lib/logger';
 interface ValidationResult {
   valid: boolean;
   error: string | null;
@@ -35,7 +36,7 @@ export function useAccountNameValidation() {
     if (name.length < 4 || name.length > 18) {
       return { valid: false, error: t("validation.lengthRequirement") };
     }
-    
+
     try {
       const keyPair = await Secp256k1Keypair.create();
       const signingKey = keyPair.did();
@@ -48,10 +49,10 @@ export function useAccountNameValidation() {
         signingKey,
         did: 'did:ckb:n5d3aggygtfxs56gbjkcajxw', // 临时 DID，仅用于验证账户名可用性
       });
-      console.log(res, 'res');
+      logger.log('Account name validation response:', { res })
       return { valid: true, error: null };
     } catch (error) {
-      console.error('Validation error:', error);
+      logger.error('Validation error:');
       return { valid: false, error: t("validation.accountNameUnavailable") };
     }
   }, [t]);

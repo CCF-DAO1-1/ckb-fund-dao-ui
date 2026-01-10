@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { listSelfProposal, ListSelfProposalResponse, SelfProposalItem } from "@/server/proposal";
 import useUserInfoStore from "@/store/userInfo";
 
+import { logger } from '@/lib/logger';
 export interface UseSelfProposalListResult {
   proposals: SelfProposalItem[];
   loading: boolean;
@@ -79,7 +80,7 @@ export function useSelfProposalList(
           currentTotalPages = undefined;
         } else {
           // 调试：打印响应数据以便排查问题
-          console.log("个人提案列表响应数据:", response);
+          logger.log("个人提案列表响应数据:", response);
           setProposals([]);
           currentTotal = 0;
           currentTotalPages = 0;
@@ -102,7 +103,7 @@ export function useSelfProposalList(
         setTotalPages(0);
       }
     } catch (err) {
-      console.error("获取个人提案列表失败:", err);
+      logger.error("获取个人提案列表失败:", err);
 
       const error = err as { response?: { status?: number }; message?: string };
       const statusCode = error.response?.status;

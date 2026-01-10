@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { NotionAPI } from "notion-client";
 
+import { logger } from '@/lib/logger';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const runtime = "nodejs";
@@ -8,7 +9,7 @@ export const maxDuration = 30;
 
 export async function GET(req: NextRequest) {
   const rawId = req.nextUrl.searchParams.get("pageId");
-  console.log("/api/notion pageId:", rawId);
+  logger.log("/api/notion pageId:", { pageId: rawId || 'undefined' });
   if (!rawId) {
     return NextResponse.json({ error: "pageId required" }, { status: 400 });
   }
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest) {
           fetchRelationPages: false,
           signFileUrls: false,
         });
-        console.log(recordMap,'recordMap')
+        logger.log("recordMap fetched successfully");
         if (recordMap && recordMap.block && Object.keys(recordMap.block).length > 0) {
           return NextResponse.json(
             { recordMap },
@@ -38,21 +39,21 @@ export async function GET(req: NextRequest) {
         lastErr = new Error("empty recordMap");
       } catch (e) {
         lastErr = e;
-        console.log(e,'e')
+        logger.error("Notion API fetch error", e);
       }
       const backoff = 500 * Math.pow(2, attempt); // 500ms, 1000ms, 2000ms
       await new Promise((r) => setTimeout(r, backoff));
     }
 
     const message = lastErr instanceof Error ? lastErr.message : "notion error";
-    console.error("Notion API error after retries:", lastErr);
+    logger.error("Notion API error after retries:", { error: message });
     return NextResponse.json(
       { error: message },
       { status: 502, headers: { "Cache-Control": "no-store" } }
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "notion error";
-    console.error("Notion API error:", err);
+    logger.error("Notion API error:", err);
     return NextResponse.json(
       { error: message },
       { status: 500, headers: { "Cache-Control": "no-store" } }

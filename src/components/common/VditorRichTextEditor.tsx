@@ -7,6 +7,7 @@ import { uploadImage } from "@/server/pds";
 import toast from "react-hot-toast";
 import { useTranslation } from "@/utils/i18n";
 import "@/components/common/vditor-editor.css";
+import { logger } from "@/lib/logger";
 
 export type ToolbarPreset = "simple" | "full" | "custom";
 
@@ -214,7 +215,7 @@ export default function VditorRichTextEditor({
             throw new Error("File size cannot exceed 5MB");
           }
           // 如果压缩失败但文件不大，继续使用原文件
-          console.warn("Image compression failed, using original file:", error);
+          logger.warn("Image compression failed, using original file:");
         }
       }
 
@@ -225,7 +226,7 @@ export default function VditorRichTextEditor({
         }
         return imageUrl;
       } catch (error) {
-        console.error("图片上传错误:", error);
+        logger.error("图片上传错误:");
         const errorMessage =
           error instanceof Error
             ? error.message
@@ -239,7 +240,7 @@ export default function VditorRichTextEditor({
            errorMessage.includes("timeout") ||
            errorMessage.includes("fetch"))
         ) {
-          console.log(`Retrying upload (${retryCount + 1}/${MAX_RETRIES})...`);
+          logger.log(`Retrying upload (${retryCount + 1}/${MAX_RETRIES})...`);
           // 等待一段时间后重试
           await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
           return uploadSingleImage(file, retryCount + 1);
@@ -354,7 +355,7 @@ export default function VditorRichTextEditor({
             successCount++;
           } catch (error) {
             failCount++;
-            console.error(`上传文件 ${file.name} 失败:`, error);
+            logger.error(`上传文件 ${file.name} 失败:`, error);
           }
 
           // 如果还有文件，继续处理
@@ -425,7 +426,7 @@ export default function VditorRichTextEditor({
       try {
         vditorRef.current.destroy();
       } catch (error) {
-        console.warn('Error destroying Vditor instance:', error);
+        logger.warn('Error destroying Vditor instance:');
       }
       vditorRef.current = null;
     }
@@ -578,7 +579,7 @@ export default function VditorRichTextEditor({
             // 支持多文件上传
             // 使用 ref 获取最新的函数版本，避免依赖项变化导致重新初始化
             if (!handleImageUploadRef.current) {
-              console.error("handleImageUpload not initialized");
+              logger.error("handleImageUpload not initialized");
               return "";
             }
             const markdown = await handleImageUploadRef.current(files);
@@ -594,7 +595,7 @@ export default function VditorRichTextEditor({
             
             return "";
           } catch (error) {
-            console.error("Upload failed:", error);
+            logger.error("Upload failed:");
             return "";
           }
         },
@@ -609,13 +610,13 @@ export default function VditorRichTextEditor({
           try {
             // 使用 ref 获取最新的函数版本，避免依赖项变化导致重新初始化
             if (!handleLinkToImageRef.current) {
-              console.error("handleLinkToImage not initialized");
+              logger.error("handleLinkToImage not initialized");
               return "";
             }
             const markdown = await handleLinkToImageRef.current(url);
             return markdown;
           } catch (error) {
-            console.error("Link to image failed:", error);
+            logger.error("Link to image failed:");
             toast.error(t("editor.uploadError") || "Failed to convert link to image");
             return "";
           }
@@ -630,7 +631,7 @@ export default function VditorRichTextEditor({
               vditorRef.current.setValue(value);
             }
           } catch (error) {
-            console.warn('Failed to set initial value:', error);
+            logger.warn('Failed to set initial value:');
           }
         }
 
@@ -694,7 +695,7 @@ export default function VditorRichTextEditor({
                 e.preventDefault();
                 try {
                   if (!handleImageUploadRef.current) {
-                    console.error("handleImageUpload not initialized");
+                    logger.error("handleImageUpload not initialized");
                     return;
                   }
                   const markdown = await handleImageUploadRef.current(imageFiles);
@@ -716,7 +717,7 @@ export default function VditorRichTextEditor({
                     }
                   }
                 } catch (error) {
-                  console.error("粘贴图片上传失败:", error);
+                  logger.error("粘贴图片上传失败:");
                 }
               }
             });
@@ -737,7 +738,7 @@ export default function VditorRichTextEditor({
               if (imageFiles.length > 0 && didRef.current) {
                 try {
                   if (!handleImageUploadRef.current) {
-                    console.error("handleImageUpload not initialized");
+                    logger.error("handleImageUpload not initialized");
                     return;
                   }
                   const markdown = await handleImageUploadRef.current(imageFiles);
@@ -759,7 +760,7 @@ export default function VditorRichTextEditor({
                     }
                   }
                 } catch (error) {
-                  console.error("拖拽图片上传失败:", error);
+                  logger.error("拖拽图片上传失败:");
                 }
               }
             });
@@ -818,7 +819,7 @@ export default function VditorRichTextEditor({
             vditorRef.current.destroy();
           }
         } catch (error) {
-          console.warn('Error destroying Vditor instance:', error);
+          logger.warn('Error destroying Vditor instance:');
         } finally {
           vditorRef.current = null;
           isInitializedRef.current = false;
@@ -892,7 +893,7 @@ export default function VditorRichTextEditor({
         // 如果 Vditor 实例还未完全初始化，静默忽略错误
         // 避免在组件卸载或实例未完全初始化时输出错误
         if (process.env.NODE_ENV === 'development') {
-          console.warn('Vditor instance not ready yet:', error);
+          logger.warn('Vditor instance not ready yet:');
         }
       }
     }

@@ -9,6 +9,7 @@ import { ExtraIsEnoughState } from "@/hooks/checkCkb";
 import CopyButton from "../ui/copy/CopyButton";
 import { useTranslation } from "@/utils/i18n";
 
+import { logger } from '@/lib/logger';
 interface LoginStep3Props {
   accountName: string;
   isDragging: boolean;
@@ -154,7 +155,7 @@ export default function LoginStep3({
           }
         } catch {
           // 跨域限制时忽略错误
-          console.log('SVG animation may not work due to CORS restrictions');
+          logger.log('SVG animation may not work due to CORS restrictions');
         }
       };
 

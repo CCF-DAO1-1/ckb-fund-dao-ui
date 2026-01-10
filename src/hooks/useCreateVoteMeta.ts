@@ -10,6 +10,7 @@ import { Secp256k1Keypair } from "@atproto/crypto";
 import { useTranslation } from "@/utils/i18n";
 import { ccc } from "@ckb-ccc/core";
 
+import { logger } from '@/lib/logger';
 /**
  * 发起立项投票的 Hook
  * 提供提交立项投票到 /api/proposal/initiation_vote 接口的功能
@@ -44,7 +45,7 @@ export function useCreateVoteMeta() {
 
       return signedBytes;
     } catch (error) {
-      console.error("生成立项投票签名字节失败:", error);
+      logger.error("生成立项投票签名字节失败:");
       throw new Error(t("taskModal.errors.signatureFailed"));
     }
   }, [t]);
@@ -74,7 +75,7 @@ export function useCreateVoteMeta() {
 
       return signedBytes;
     } catch (error) {
-      console.error("生成更新交易哈希签名字节失败:", error);
+      logger.error("生成更新交易哈希签名字节失败:");
       throw new Error(t("taskModal.errors.signatureFailed"));
     }
   }, [t]);
@@ -149,7 +150,7 @@ export function useCreateVoteMeta() {
       }
 
       setError(displayMessage);
-      console.error(t("voteMeta.createVoteMetaError"), error);
+      logger.error(t("voteMeta.createVoteMetaError"), error);
       return { success: false, error: displayMessage };
     } finally {
       setIsLoading(false);
@@ -249,7 +250,7 @@ export function useCreateVoteMeta() {
         await typedSigner.signTransaction(newTx);
         const txHash = await typedSigner.sendTransaction(newTx);
 
-        console.log("投票交易已发送:", txHash);
+        logger.log("投票交易已发送:", { txHash });
 
         // 发送交易后，调用更新交易哈希接口
         const voteMeta = (response as InitiationVoteResponse).vote_meta;
@@ -280,9 +281,9 @@ export function useCreateVoteMeta() {
               signed_bytes: signedBytes,
               signing_key_did: signingKeyDid,
             });
-            console.log("交易哈希已更新到服务器");
+            logger.log("交易哈希已更新到服务器");
           } catch (updateError) {
-            console.error("更新交易哈希失败:", updateError);
+            logger.error("更新交易哈希失败:", updateError);
             // 即使更新失败，也返回成功，因为交易已经发送
           }
         }
@@ -328,9 +329,9 @@ export function useCreateVoteMeta() {
               signed_bytes: signedBytes,
               signing_key_did: signingKeyDid,
             });
-            console.log("交易哈希已更新到服务器");
+            logger.log("交易哈希已更新到服务器");
           } catch (updateError) {
-            console.error("更新交易哈希失败:", updateError);
+            logger.error("更新交易哈希失败:", updateError);
             // 即使更新失败，也返回成功，因为交易已经发送
           }
         }
@@ -342,7 +343,7 @@ export function useCreateVoteMeta() {
         };
       }
     } catch (error) {
-      console.error("构建或发送交易失败:", error);
+      logger.error("构建或发送交易失败:");
       const errorMessage = error instanceof Error ? error.message : String(error);
       throw new Error(`交易构建失败: ${errorMessage}`);
     }

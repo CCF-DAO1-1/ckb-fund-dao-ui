@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast';
 import './ExportDIDInfoModal.css';
 import useUserInfoStore from '@/store/userInfo';
 
+import { logger } from '@/lib/logger';
 const regex = /^[A-Za-z0-9]{8}$/;
 
 interface ExportDIDInfoModalProps {
@@ -50,7 +51,7 @@ export default function ExportDIDInfoModal({ isOpen, onClose }: ExportDIDInfoMod
   const handleExport = async () => {
     const tokenData = storage.getToken();
     if (!tokenData) {
-      console.error('未找到用户信息');
+      logger.error('未找到用户信息');
       toast.error(t('web5.exportDIDInfo.exportFailed') || '导出失败');
       return;
     }
@@ -82,7 +83,7 @@ export default function ExportDIDInfoModal({ isOpen, onClose }: ExportDIDInfoMod
       toast.success(t('web5.exportDIDInfo.exportSuccess') || '导出成功');
       handleClose();
     } catch (error) {
-      console.error('导出失败:', error);
+      logger.error('导出失败:');
       setExporting(false);
       toast.error(t('web5.exportDIDInfo.exportFailed') || '导出失败');
     }

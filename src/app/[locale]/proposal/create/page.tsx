@@ -19,6 +19,7 @@ import { postUriToHref } from "@/lib/postUriHref";
 import toast from "react-hot-toast";
 import storage from "@/lib/storage";
 
+import { logger } from '@/lib/logger';
 export default function CreateProposal() {
   const { t } = useTranslation();
 
@@ -128,7 +129,7 @@ export default function CreateProposal() {
       window.localStorage.setItem(draftKey, JSON.stringify(cacheItem));
       lastSavedDataRef.current = JSON.stringify(data);
     } catch (error) {
-      console.error("保存草稿失败:", error);
+      logger.error("保存草稿失败:");
     }
   }, [userInfo?.did, hasContent]);
 
@@ -152,7 +153,7 @@ export default function CreateProposal() {
           lastSavedDataRef.current = JSON.stringify(formDataFromDraft);
         }
       } catch (error) {
-        console.error(t("proposalCreate.errors.loadDraftFailed"), error);
+        logger.error(t("proposalCreate.errors.loadDraftFailed"), error);
       }
     }
 
@@ -424,7 +425,7 @@ export default function CreateProposal() {
     setError("");
 
     try {
-      console.log("提交提案:", formData);
+      logger.log("提交提案:", formData);
 
       // 调用 createPDSRecord 发布提案到 PDS
       const result = await createPDSRecord({
@@ -455,7 +456,7 @@ export default function CreateProposal() {
     } catch (err) {
       toast.error(t("proposalCreate.errors.submitFailed"));
       setError(t("proposalCreate.errors.submitFailed"));
-      console.error(t("proposalCreate.errors.submitProposalFailed"), err);
+      logger.error(t("proposalCreate.errors.submitProposalFailed"), err);
     } finally {
       setSubmitting(false);
     }

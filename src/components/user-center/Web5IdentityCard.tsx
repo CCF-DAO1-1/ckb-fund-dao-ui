@@ -11,6 +11,7 @@ import { useTranslation } from '@/utils/i18n';
 import KeyQRCodeModal from './KeyQRCodeModal';
 import ExportDIDInfoModal from './ExportDIDInfoModal';
 
+import { logger } from '@/lib/logger';
 interface Web5IdentityCardProps {
   className?: string;
 }
@@ -43,7 +44,7 @@ export default function Web5IdentityCard({ className = '' }: Web5IdentityCardPro
         setPds(pdsClient.serviceUrl.origin);
       }
     } catch (error) {
-      console.error(t('web5.getPDSFailed'), error);
+      logger.error(t('web5.getPDSFailed'), error);
     }
   }, [userInfo]);
 

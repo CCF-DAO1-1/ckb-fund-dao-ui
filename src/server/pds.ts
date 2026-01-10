@@ -15,6 +15,7 @@ import * as cbor from '@ipld/dag-cbor'
 import { TID } from '@atproto/common-web'
 import dayjs from "dayjs";
 
+import { logger } from '@/lib/logger';
 // PDS 记录类型
 export type PDSRecordType = 
   | {
@@ -119,7 +120,7 @@ export async function uploadImage(file: File, did: string): Promise<string> {
     
     return imageUrl;
   } catch (error) {
-    console.error('图片上传错误:', error);
+    logger.error('图片上传错误:');
     
     // 提供更详细的错误信息
     if (error instanceof Error) {

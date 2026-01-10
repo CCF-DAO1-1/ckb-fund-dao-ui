@@ -19,6 +19,7 @@ import { postUriToHref, getPostUriHref } from "@/lib/postUriHref";
 import { getProposalDetail } from "@/server/proposal";
 import toast from "react-hot-toast";
 
+import { logger } from '@/lib/logger';
 interface EditProposalProps {
     params: Promise<{
         uri: string;
@@ -125,7 +126,7 @@ export default function EditProposal({ params }: EditProposalProps) {
                     });
                 }
             } catch (err) {
-                console.error("Failed to fetch proposal details:", err);
+                logger.error("Failed to fetch proposal details:", err);
                 toast.error(t("errors.fetchFailed"));
             } finally {
                 setIsLoading(false);
@@ -371,7 +372,7 @@ export default function EditProposal({ params }: EditProposalProps) {
             router.push(`/${locale}/proposal/${uri}`);
         } catch (err) {
             toast.error(t("proposalCreate.errors.submitFailed"));
-            console.error(t("proposalCreate.errors.submitProposalFailed"), err);
+            logger.error(t("proposalCreate.errors.submitProposalFailed"), err);
         } finally {
             setSubmitting(false);
         }

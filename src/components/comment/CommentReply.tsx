@@ -9,6 +9,7 @@ import Avatar from "@/components/common/Avatar";
 import { getUserDisplayNameFromInfo } from "@/utils/userDisplayUtils";
 import { isMarkdown, markdownToHtml } from "@/utils/markdownUtils";
 
+import { logger } from '@/lib/logger';
 const renderContent = (content: string): string => {
   if (!content) return '';
   
@@ -20,7 +21,7 @@ const renderContent = (content: string): string => {
     try {
       return markdownToHtml(content);
     } catch (error) {
-      console.warn('Markdown rendering failed, falling back to raw content:', error);
+      logger.warn('Markdown rendering failed, falling back to raw content:');
       return content;
     }
   }

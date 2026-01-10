@@ -1,9 +1,10 @@
 // 由于找不到 'next-runtime-env'，改用 process.env 读取环境变量
+import { logger } from '@/lib/logger';
 export type NETWORK_ENUM = 'testnet' | 'mainnet'
 
 export const NETWORK = (process.env.NEXT_PUBLIC_CHAIN_NETWORK as NETWORK_ENUM) || 'testnet'
 if (!NETWORK) {
-  console.error('env network not detected:', NETWORK);
+  logger.error('env network not detected:', NETWORK);
 }
 
 export function withNetwork<T>(config: Record<NETWORK_ENUM, T>) {

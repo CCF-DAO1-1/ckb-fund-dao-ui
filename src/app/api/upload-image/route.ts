@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { logger } from '@/lib/logger';
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('图片上传错误:', error);
+    logger.error('图片上传错误:');
     return NextResponse.json({ error: '上传失败' }, { status: 500 });
   }
 }

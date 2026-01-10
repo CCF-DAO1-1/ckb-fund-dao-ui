@@ -7,6 +7,7 @@ import { useI18n } from '@/contexts/I18nContext';
 import { getTimeline, TimelineEventRaw } from '@/server/timeline';
 import './timeline.css';
 
+import { logger } from '@/lib/logger';
 // 将 timeline_type 直接映射到 TimelineEventType（后端返回的值就是枚举值）
 const mapTimelineTypeToEventType = (timelineType: number): TimelineEventType => {
   // 确保值在有效范围内
@@ -102,7 +103,7 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
           setEvents([]);
         }
       } catch (error) {
-        console.error('获取时间线失败:', error);
+        logger.error('获取时间线失败:');
         // 如果获取失败，设置为空数组，不显示时间线
         setEvents([]);
       }

@@ -8,6 +8,7 @@ import CommentItem from "./CommentItem";
 import CommentQuote from "./CommentQuote";
 import { CommentSectionProps } from "@/types/comment";
 
+import { logger } from '@/lib/logger';
 export default function CommentSection({
   comments = [],
   onAddComment,
@@ -20,7 +21,7 @@ export default function CommentSection({
   quotedText = ""
 }: CommentSectionProps) {
   const { messages } = useI18n();
-  console.log('CommentSection rendered with quotedText:', quotedText);
+  logger.log('CommentSection rendered');
   const handleAddComment = (content: string, parentId?: string) => {
     onAddComment(content, parentId);
   };

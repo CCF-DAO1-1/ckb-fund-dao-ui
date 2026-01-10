@@ -1,6 +1,7 @@
 import getPDSClient from "./pdsClient";
 import storage from "./storage";
 
+import { logger } from '@/lib/logger';
 // 自定义错误类型，用于标识 session 过期错误
 export interface SessionExpiredError extends Error {
   isSessionExpired: true;
@@ -43,16 +44,16 @@ async function refreshToken() {
   refreshPDSTokenPromise = (async () => {
     try {
       const { data } = await pdsClient.com.atproto.server.refreshSession()
-      
+
       // 更新 sessionManager
       pdsClient.sessionManager.session = {
         ...data,
         active: data.active ?? true
       }
-      
+
       // 更新缓存中的 userInfo（包含新的 accessJwt 和 refreshJwt）
       storage.setUserInfoCache(data)
-      
+
       // 如果 Zustand store 已经初始化，也需要更新 store 中的 userInfo
       // 使用动态导入避免循环依赖，并且只在客户端执行
       if (typeof window !== 'undefined') {
@@ -64,30 +65,30 @@ async function refreshToken() {
           }
         } catch (importError) {
           // 如果导入失败（比如 SSR），忽略错误
-          console.warn('无法更新 Zustand store 中的 userInfo:', importError);
+          logger.warn('无法更新 Zustand store 中的 userInfo:', { error: importError });
         }
       }
-      
+
       const newToken = data.accessJwt;
-      
+
       // 通知队列中的所有请求
       requestQueue.forEach(({ resolve }) => resolve(newToken));
       requestQueue = [];
-      
+
       return newToken;
     } catch (error: unknown) {
-      console.error('Failed to refresh token:', error)
-      
+      logger.error('Failed to refresh token:', { error })
+
       // 检查是否是 refresh token 也过期了
       const err = error as { error?: string; message?: string; status?: number };
       const errorMessage = err?.message || String(error);
-      const isRefreshTokenExpired = 
+      const isRefreshTokenExpired =
         err?.status === 400 ||
         err?.error === 'BadJwt' ||
         err?.error === 'ExpiredToken' ||
         errorMessage.includes('Token has expired') ||
         errorMessage.includes('BadJwt')
-      
+
       // 如果 refresh token 也过期了，清除 session 并提示用户重新登录
       if (isRefreshTokenExpired && typeof window !== 'undefined') {
         try {
@@ -99,31 +100,31 @@ async function refreshToken() {
             // @ts-expect-error - sessionManager.session 可能允许设置为 null
             pdsClient.sessionManager.session = null;
           }
-          
+
           // 清除本地存储的 token
           storage.removeToken();
-          
+
           // 清除 userInfo cache
           storage.removeUserInfoCache();
-          
+
           // 更新 Zustand store
           const { default: useUserInfoStore } = await import('../store/userInfo');
           const { logout } = useUserInfoStore.getState();
           if (logout) {
             logout();
           }
-          
-          console.warn('Refresh token 已过期，已清除 session，请重新登录');
+
+          logger.warn('Refresh token 已过期，已清除 session，请重新登录');
         } catch (clearError) {
-          console.error('清除 session 失败:', clearError);
+          logger.error('清除 session 失败:', clearError);
         }
       }
-      
+
       // 通知队列中的所有请求失败
       const errorObj = error instanceof Error ? error : new Error(String(error));
       requestQueue.forEach(({ reject }) => reject(errorObj));
       requestQueue = [];
-      
+
       // 抛出错误，由调用者处理
       throw errorObj
     } finally {
@@ -167,14 +168,14 @@ export default async function sessionWrapApi<T>(apiCall: () => Promise<T>, retry
     // 这里假设错误码或错误信息包含特定标识，需根据实际 PDS 响应调整
     const err = error as ApiError;
     const errorMessage = err?.message || String(error);
-    const isTokenExpired = 
-      err?.status === 401 || 
-      err?.error === 'ExpiredToken' || 
+    const isTokenExpired =
+      err?.status === 401 ||
+      err?.error === 'ExpiredToken' ||
       err?.error === 'BadJwt' ||
       errorMessage.includes('Token has expired') ||
       errorMessage.includes('token') ||
       errorMessage.includes('BadJwt')
-    
+
     if (isTokenExpired && retryCount > 0) {
       try {
         // 如果正在刷新，等待刷新完成
@@ -184,32 +185,32 @@ export default async function sessionWrapApi<T>(apiCall: () => Promise<T>, retry
         } else {
           newAccessToken = await refreshToken();
         }
-        
+
         // 刷新成功后重试 API 调用
         return await sessionWrapApi(apiCall, retryCount - 1)
       } catch (refreshError: unknown) {
         // 检查 refresh token 是否也过期了
         const refreshErr = refreshError as { error?: string; message?: string; status?: number };
         const refreshErrorMessage = refreshErr?.message || String(refreshError);
-        const isRefreshTokenExpired = 
+        const isRefreshTokenExpired =
           refreshErr?.status === 400 ||
           refreshErr?.error === 'BadJwt' ||
           refreshErr?.error === 'ExpiredToken' ||
           refreshErrorMessage.includes('Token has expired') ||
           refreshErrorMessage.includes('BadJwt')
-        
+
         // 如果 refresh token 也过期了，抛出更明确的错误
         if (isRefreshTokenExpired) {
           const expiredError = new Error('Session expired, please login again') as SessionExpiredError;
           expiredError.isSessionExpired = true;
           throw expiredError;
         }
-        
+
         // 其他刷新错误，抛出原始错误
         throw refreshError
       }
     }
-    
+
     throw error
   }
 }

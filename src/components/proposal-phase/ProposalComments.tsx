@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import { useTranslation } from "@/utils/i18n";
 import { SessionExpiredError } from "@/lib/wrapApiAutoSession";
 
+import { logger } from '@/lib/logger';
 interface ProposalCommentsProps {
   proposal: ProposalDetailResponse | null;
   apiComments: CommentItem[];
@@ -178,7 +179,7 @@ export default function ProposalComments({
   // 评论处理函数
   const handleAddComment = async (content: string, parentId?: string) => {
     if (!proposal?.uri || !userInfo?.did) {
-      console.error('缺少必要的参数：proposal.uri 或 userInfo.did');
+      logger.error('缺少必要的参数：proposal.uri 或 userInfo.did');
       return;
     }
 
@@ -243,7 +244,7 @@ export default function ProposalComments({
         toast.success(t('proposalComments.success') || '评论发布成功');
       }
     } catch (error) {
-      console.error('发布评论失败:', error);
+      logger.error('发布评论失败:');
       
       // 检查是否是 session 过期错误
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -259,18 +260,18 @@ export default function ProposalComments({
 
   const handleLikeComment = async (commentId: string) => {
     if (!userInfo?.did) {
-      console.error('用户未登录');
+      logger.error('用户未登录');
       return;
     }
 
     const targetComment = apiComments?.find(c => c.cid === commentId);
     if (!targetComment) {
-      console.error('找不到评论:', commentId);
+      logger.error('找不到评论:', commentId);
       return;
     }
 
     if (targetComment.liked) {
-      console.log('已经点赞过该评论');
+      logger.log('已经点赞过该评论');
       return;
     }
 
@@ -295,7 +296,7 @@ export default function ProposalComments({
         did: userInfo.did,
       });
     } catch (error) {
-      console.error('评论点赞失败:', error);
+      logger.error('评论点赞失败:');
       
       setComments(comments.map(comment => {
         if (comment.id === commentId) {

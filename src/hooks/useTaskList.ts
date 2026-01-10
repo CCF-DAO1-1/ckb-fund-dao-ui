@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getTaskList, TaskListParams, TaskItem } from '@/server/task';
 import useUserInfoStore from '@/store/userInfo';
 
+import { logger } from '@/lib/logger';
 export interface UseTaskListResult {
   tasks: TaskItem[];
   loading: boolean;
@@ -104,7 +105,7 @@ export function useTaskList(
         setTotalPages(0);
       }
     } catch (err) {
-      console.error('获取任务列表失败:', err);
+      logger.error('获取任务列表失败:', err);
       
       const error = err as { response?: { status?: number }; message?: string };
       const statusCode = error.response?.status;

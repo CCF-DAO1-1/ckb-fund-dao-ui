@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import { join } from "path";
 
+import { logger } from '@/lib/logger';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -19,7 +20,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error reading chart.csv:", error);
+    logger.error("Error reading chart.csv:");
     return NextResponse.json(
       { error: "Failed to load chart data" },
       { status: 500 }

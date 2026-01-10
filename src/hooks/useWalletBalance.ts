@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ccc } from "@ckb-ccc/connector-react";
 
+import { logger } from '@/lib/logger';
 /**
  * 获取钱包余额的 Hook
  * 提供多种方法尝试获取用户的钱包余额
@@ -88,7 +89,7 @@ export function useWalletBalance() {
           balance = await (wallet as any).getBalance(address);
         }
         else {
-          console.warn("无法直接获取余额，使用默认值 0");
+          logger.warn("无法直接获取余额，使用默认值 0");
           balance = BigInt(0);
         }
 
@@ -96,7 +97,7 @@ export function useWalletBalance() {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "获取钱包余额失败";
         setError(errorMessage);
-        console.error("获取钱包余额失败:", error);
+        logger.error("获取钱包余额失败:");
         setWalletBalance(BigInt(0));
       } finally {
         setIsLoadingBalance(false);

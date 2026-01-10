@@ -11,6 +11,7 @@ import { getUserDisplayNameFromStore } from "@/utils/userDisplayUtils";
 import storage from "@/lib/storage";
 import { useWallet } from "@/provider/WalletProvider";
 
+import { logger } from '@/lib/logger';
 interface UserProfileCardProps {
   className?: string;
 }
@@ -113,13 +114,13 @@ export default function UserProfileCard({ className = '' }: UserProfileCardProps
   };
 
   const handleConnect = (connectionId: string) => {
-    console.log(t('userProfile.connectLog', { connectionId }));
+    logger.log(t('userProfile.connectLog', { connectionId }));
     // 这里可以添加实际的连接逻辑
     setExpandedConnection(null);
   };
 
   const handleUnbind = (connectionId: string) => {
-    console.log(t('userProfile.unbindLog', { connectionId }));
+    logger.log(t('userProfile.unbindLog', { connectionId }));
     // 这里可以添加实际的解绑逻辑
     setExpandedConnection(null);
   };
@@ -139,7 +140,7 @@ export default function UserProfileCard({ className = '' }: UserProfileCardProps
         try {
           await disconnect();
         } catch (err) {
-          console.error("断开连接失败:", err);
+          logger.error("断开连接失败:", err);
         }
       }
       // 调用 store 的 logout 方法（清除 store 状态）
@@ -149,7 +150,7 @@ export default function UserProfileCard({ className = '' }: UserProfileCardProps
       // 刷新页面
       window.location.reload();
     } catch (err) {
-      console.error("登出失败:", err);
+      logger.error("登出失败:", err);
     }
   };
 

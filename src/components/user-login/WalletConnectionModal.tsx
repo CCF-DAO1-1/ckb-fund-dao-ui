@@ -9,6 +9,7 @@ import { ccc } from "@ckb-ccc/connector-react";
 import storage from "@/lib/storage";
 import "./ImportDidModal.css";
 
+import { logger } from '@/lib/logger';
 export default function WalletConnectionModal() {
   const { t } = useTranslation();
   const { userInfo, initialized, logout } = useUserInfoStore();
@@ -47,14 +48,14 @@ export default function WalletConnectionModal() {
         try {
           await disconnect();
         } catch (err) {
-          console.error("断开连接失败:", err);
+          logger.error("断开连接失败:", err);
         }
       } else {
         // 地址一致，关闭弹窗
         setShowModal(false);
       }
     } catch (err) {
-      console.error("获取钱包地址失败:", err);
+      logger.error("获取钱包地址失败:", err);
       setError(t("importDid.getWalletAddressFailed") || "获取钱包地址失败");
     } finally {
       setIsVerifying(false);
@@ -91,7 +92,7 @@ export default function WalletConnectionModal() {
       setError("");
       await open();
     } catch (err) {
-      console.error("连接钱包失败:", err);
+      logger.error("连接钱包失败:", err);
       setError(t("importDid.walletConnectFailed") || "连接钱包失败");
       setIsConnecting(false);
     }
@@ -111,7 +112,7 @@ export default function WalletConnectionModal() {
     try {
       await disconnect();
     } catch (err) {
-      console.error("断开连接失败:", err);
+      logger.error("断开连接失败:", err);
     }
     // 重置连接状态，允许重新连接
     setIsConnecting(false);
@@ -125,7 +126,7 @@ export default function WalletConnectionModal() {
         try {
           await disconnect();
         } catch (err) {
-          console.error("断开连接失败:", err);
+          logger.error("断开连接失败:", err);
         }
       }
       // 调用 store 的 logout 方法（清除 store 状态）
@@ -135,7 +136,7 @@ export default function WalletConnectionModal() {
       // 刷新页面
       window.location.reload();
     } catch (err) {
-      console.error("登出失败:", err);
+      logger.error("登出失败:", err);
     }
   };
 

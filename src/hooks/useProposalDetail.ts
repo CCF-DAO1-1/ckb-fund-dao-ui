@@ -6,6 +6,7 @@ import { getProposalDetail, ProposalDetailResponse } from '@/server/proposal';
 import { getPostUriHref } from "@/lib/postUriHref";
 import useUserInfoStore from '@/store/userInfo';
 
+import { logger } from '@/lib/logger';
 interface UseProposalDetailResult {
   proposal: ProposalDetailResponse | null;
   loading: boolean;
@@ -56,7 +57,7 @@ export function useProposalDetail(uri: string | null): UseProposalDetailResult {
       
       setProposal(data);
     } catch (err) {
-      console.error('获取提案详情失败:', err);
+      logger.error('获取提案详情失败:', err);
       
       const error = err as { response?: { status?: number }; message?: string };
       
