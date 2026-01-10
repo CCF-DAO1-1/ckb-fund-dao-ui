@@ -7,7 +7,8 @@ import {
   ProposalListParams,
   ProposalListItem,
 } from '@/server/proposal';
-// import { ProposalMilestone } from '@/types/milestone'; // 已移除无效导入
+import { APIError, getUserFriendlyErrorMessage } from '@/types/errors';
+import { logger } from '@/lib/logger';
 interface UseProposalListResult {
   proposals: ProposalListItem[];
   cursor: string;
@@ -92,20 +93,14 @@ export function useProposalList(
         setParams(finalParams);
       }
     } catch (err) {
-      console.error('获取提案列表失败:', err);
-      const error = err as { response?: { status?: number }; message?: string };
-      
-      // 根据不同的错误类型设置错误信息
-      if (error.response?.status === 401) {
-        setError('需要登录才能查看提案列表');
-      } else if (error.response?.status === 403) {
-        setError('没有权限查看提案列表');
-      } else if (error.response?.status === 500) {
-        setError('服务器错误，请稍后重试');
-      } else {
-        setError(error.message || '获取提案列表失败，请稍后重试');
-      }
-      
+      // 使用统一的错误处理
+      const apiError = err instanceof APIError ? err : APIError.fromError(err, '获取提案列表失败');
+
+      logger.error('获取提案列表失败', apiError);
+
+      // 设置用户友好的错误消息
+      setError(getUserFriendlyErrorMessage(apiError, 'zh'));
+
       setProposals([]);
       setCursor('');
       setHasMore(false);
@@ -156,7 +151,7 @@ export function useProposalList(
         setHasMore(false);
       }
     } catch (err) {
-      console.error('加载更多提案失败:', err);
+      logger.error('加载更多提案失败', err);
       setHasMore(false);
     } finally {
       setLoading(false);
