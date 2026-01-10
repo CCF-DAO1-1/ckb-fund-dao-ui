@@ -6,16 +6,8 @@ import { formatNumber } from "@/utils/proposalUtils";
 import { useCreateVoteMeta } from "@/hooks/useCreateVoteMeta";
 import { useWallet } from "@/provider/WalletProvider";
 import { useTranslation } from "@/utils/i18n";
-import CustomDatePicker from '@/components/ui/DatePicker';
-import dynamic from 'next/dynamic';
 import { InitiationVoteResponse } from "@/server/proposal";
 import { ccc } from "@ckb-ccc/core";
-import 'react-quill-new/dist/quill.snow.css';
-
-// 动态导入ReactQuill，禁用SSR
-const ReactQuill = dynamic(() => import("react-quill-new"), {
-  ssr: false,
-});
 
 interface ProposalItem {
   id: string;
@@ -103,9 +95,9 @@ const getStatusText = (status: ProposalStatus, t: (key: string) => string): stri
   }
 };
 
-export default function TaskProcessingModal({ 
-  isOpen, 
-  onClose, 
+export default function TaskProcessingModal({
+  isOpen,
+  onClose,
   onComplete,
   taskType = "",
   proposal
@@ -118,7 +110,7 @@ export default function TaskProcessingModal({
     proposal_uri: proposal?.uri || "",
     startTime: Math.floor(Date.now() / 1000), // 默认当前时间
     endTime: Math.floor(Date.now() / 1000) + (3 * 24 * 60 * 60), // 默认3天后
-    candidates: ["yes","no"]
+    candidates: ["yes", "no"]
   });
 
 
@@ -136,21 +128,7 @@ export default function TaskProcessingModal({
     }
   }, [proposal?.uri]);
 
-  
 
-  const handleVoteStartDateChange = (date: Date | null) => {
-    setFormData(prev => ({
-      ...prev,
-      startTime: date ? Math.floor(date.getTime() / 1000) : prev.startTime
-    }));
-  };
-
-  const handleVoteEndDateChange = (date: Date | null) => {
-    setFormData(prev => ({
-      ...prev,
-      endTime: date ? Math.floor(date.getTime() / 1000) : prev.endTime
-    }));
-  };
 
   const handleComplete = async () => {
     if (isTaskType(taskType, "taskTypes.createVote", t) && proposal) {
@@ -255,9 +233,9 @@ export default function TaskProcessingModal({
           </div>
 
           {/* 任务信息 */}
-          <div className="task-info-section" style={{ display: 'none'}}>
+          <div className="task-info-section" style={{ display: 'none' }}>
             {/* <h3 className="section-title">{t("taskModal.taskInfo")}</h3> */}
-            
+
             <div className="form-grid">
               {/* 任务类型和截止时间 - 两列布局 */}
               {/* <div className="form-row">
@@ -319,13 +297,13 @@ export default function TaskProcessingModal({
 
         {/* Modal底部按钮 */}
         <div className="modal-footer">
-          <button 
+          <button
             className="btn-complete"
             onClick={handleComplete}
           >
             {t("taskModal.buttons.complete")}
           </button>
-          <button 
+          <button
             className="btn-close"
             onClick={handleClose}
           >

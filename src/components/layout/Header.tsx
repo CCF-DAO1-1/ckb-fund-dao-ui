@@ -13,7 +13,7 @@ import useUserInfoStore from "@/store/userInfo";
 import Avatar from "@/components/common/Avatar";
 import { IoMenu, IoClose } from "react-icons/io5";
 import isMobile from "is-mobile";
-import "@/styles/LoginModal.css";
+import "@/components/user-login/LoginModal.css";
 import { getUserDisplayNameFromStore } from "@/utils/userDisplayUtils";
 
 export default function Header() {

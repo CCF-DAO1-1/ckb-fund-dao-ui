@@ -33,15 +33,15 @@ export function useCreateVoteMeta() {
       if (!storageInfo?.signKey) {
         throw new Error(t("taskModal.errors.userNotLoggedIn"));
       }
-      
+
       const keyPair = await Secp256k1Keypair.import(storageInfo?.signKey?.slice(2));
 
       // 3. 用keyPair.sign签名
       const signature = await keyPair.sign(unsignedCommit);
-      
+
       // 4. 转换为hex字符串
       const signedBytes = uint8ArrayToHex(signature);
-      
+
       return signedBytes;
     } catch (error) {
       console.error("生成立项投票签名字节失败:", error);
@@ -63,15 +63,15 @@ export function useCreateVoteMeta() {
       if (!storageInfo?.signKey) {
         throw new Error(t("taskModal.errors.userNotLoggedIn"));
       }
-      
+
       const keyPair = await Secp256k1Keypair.import(storageInfo?.signKey?.slice(2));
 
       // 3. 用keyPair.sign签名
       const signature = await keyPair.sign(unsignedCommit);
-      
+
       // 4. 转换为hex字符串
       const signedBytes = uint8ArrayToHex(signature);
-      
+
       return signedBytes;
     } catch (error) {
       console.error("生成更新交易哈希签名字节失败:", error);
@@ -103,7 +103,7 @@ export function useCreateVoteMeta() {
 
       // 生成signed_bytes
       const signedBytes = params.signedBytes || await generateInitiationVoteSignedBytes(voteParams);
-      
+
       // 获取signing_key_did
       const storageInfo = storage.getToken();
       if (!storageInfo?.signKey) {
@@ -122,12 +122,12 @@ export function useCreateVoteMeta() {
       };
 
       const response = await initiationVote(initiationVoteParams);
-      
+
       // API 返回格式: {code: 200, data: {...}, message: "OK"}
       // requestAPI 会自动提取 data 字段
       if (response) {
-        return { 
-          success: true, 
+        return {
+          success: true,
           data: response,
         };
       } else {
@@ -135,7 +135,7 @@ export function useCreateVoteMeta() {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : t("taskModal.errors.createVoteFailed");
-      
+
       // 处理特定的错误类型
       let displayMessage = errorMessage;
       if (errorMessage.includes("not administrator")) {
@@ -147,7 +147,7 @@ export function useCreateVoteMeta() {
       } else if (errorMessage.includes(t("voteMeta.signatureGenerationFailed"))) {
         displayMessage = t("taskModal.errors.signatureFailed");
       }
-      
+
       setError(displayMessage);
       console.error(t("voteMeta.createVoteMetaError"), error);
       return { success: false, error: displayMessage };
@@ -186,7 +186,7 @@ export function useCreateVoteMeta() {
       }
 
       const fromAddress = addresses[0];
-      
+
       // 获取锁定脚本和客户端
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cccClient = (typedSigner as any).client_ || new ccc.ClientPublicTestnet();
@@ -204,7 +204,7 @@ export function useCreateVoteMeta() {
         return hex;
       });
 
-    
+
       const tx = ccc.Transaction.default();
 
       // 完成输入（至少需要一个输入来支付费用）
@@ -229,7 +229,7 @@ export function useCreateVoteMeta() {
         // 注意：Transaction API 可能不支持直接设置 outputs，需要重新构建
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const currentInputs = (tx as any).inputs || [];
-        
+
         // 重新创建交易，包含完整的结构
         const newTx = ccc.Transaction.from({
           inputs: currentInputs,
@@ -248,9 +248,9 @@ export function useCreateVoteMeta() {
         // 签名并发送
         await typedSigner.signTransaction(newTx);
         const txHash = await typedSigner.sendTransaction(newTx);
-        
+
         console.log("投票交易已发送:", txHash);
-        
+
         // 发送交易后，调用更新交易哈希接口
         const voteMeta = (response as InitiationVoteResponse).vote_meta;
         if (voteMeta?.id && userInfo?.did) {
@@ -261,10 +261,10 @@ export function useCreateVoteMeta() {
               tx_hash: txHash,
               timestamp: Math.floor(Date.now() / 1000), // UTC 时间戳（秒）
             };
-            
+
             // 生成 signed_bytes
             const signedBytes = await generateUpdateMetaTxHashSignedBytes(updateParams);
-            
+
             // 获取 signing_key_did
             const storageInfo = storage.getToken();
             if (!storageInfo?.signKey) {
@@ -272,7 +272,7 @@ export function useCreateVoteMeta() {
             }
             const keyPair = await Secp256k1Keypair.import(storageInfo.signKey.slice(2));
             const signingKeyDid = keyPair.did();
-            
+
             // 调用更新接口
             await updateMetaTxHash({
               did: userInfo.did,
@@ -286,7 +286,7 @@ export function useCreateVoteMeta() {
             // 即使更新失败，也返回成功，因为交易已经发送
           }
         }
-        
+
         return {
           success: true,
           txHash,
@@ -298,7 +298,7 @@ export function useCreateVoteMeta() {
         await tx.completeFeeBy(typedSigner as any);
         await typedSigner.signTransaction(tx);
         const txHash = await typedSigner.sendTransaction(tx);
-        
+
         // 发送交易后，调用更新交易哈希接口
         const voteMeta = (response as InitiationVoteResponse).vote_meta;
         if (voteMeta?.id && userInfo?.did) {
@@ -309,10 +309,10 @@ export function useCreateVoteMeta() {
               tx_hash: txHash,
               timestamp: Math.floor(Date.now() / 1000), // UTC 时间戳（秒）
             };
-            
+
             // 生成 signed_bytes
             const signedBytes = await generateUpdateMetaTxHashSignedBytes(updateParams);
-            
+
             // 获取 signing_key_did
             const storageInfo = storage.getToken();
             if (!storageInfo?.signKey) {
@@ -320,7 +320,7 @@ export function useCreateVoteMeta() {
             }
             const keyPair = await Secp256k1Keypair.import(storageInfo.signKey.slice(2));
             const signingKeyDid = keyPair.did();
-            
+
             // 调用更新接口
             await updateMetaTxHash({
               did: userInfo.did,
@@ -334,7 +334,7 @@ export function useCreateVoteMeta() {
             // 即使更新失败，也返回成功，因为交易已经发送
           }
         }
-        
+
         return {
           success: true,
           txHash,

@@ -7,81 +7,63 @@ import { useI18n } from '@/contexts/I18nContext';
 import { getTimeline, TimelineEventRaw } from '@/server/timeline';
 import './timeline.css';
 
-// 将 timeline_type 映射到 TimelineEventType
-const mapTimelineTypeToEventType = (timelineType: number, message: string): TimelineEventType => {
-  // 根据 timeline_type 和 message 映射到对应的事件类型
-  // 这里需要根据实际的 timeline_type 值来映射
-  switch (timelineType) {
-    case 1: // 提案创建
-      return TimelineEventType.PROPOSAL_PUBLISHED;
-    case 2: // 审议开始
-      return TimelineEventType.REVIEW_START;
-    case 3: // 投票开始
-      return TimelineEventType.VOTE_START;
-    case 4: // 投票结束
-      return TimelineEventType.VOTE_END;
-    case 5: // 提案通过
-      return TimelineEventType.PROPOSAL_APPROVED;
-    case 6: // 提案拒绝
-      return TimelineEventType.PROPOSAL_REJECTED;
-    case 7: // 里程碑追踪
-      return TimelineEventType.MILESTONE_TRACKING;
-    case 8: // 项目完成
-      return TimelineEventType.PROJECT_COMPLETED;
-    default:
-      // 根据 message 推断类型
-      if (message.includes('created') || message.includes('发布')) {
-        return TimelineEventType.PROPOSAL_PUBLISHED;
-      }
-      if (message.includes('vote') || message.includes('投票')) {
-        return TimelineEventType.VOTE_START;
-      }
-      if (message.includes('approved') || message.includes('通过')) {
-        return TimelineEventType.PROPOSAL_APPROVED;
-      }
-      if (message.includes('rejected') || message.includes('拒绝')) {
-        return TimelineEventType.PROPOSAL_REJECTED;
-      }
-      return TimelineEventType.PROPOSAL_PUBLISHED;
+// 将 timeline_type 直接映射到 TimelineEventType（后端返回的值就是枚举值）
+const mapTimelineTypeToEventType = (timelineType: number): TimelineEventType => {
+  // 确保值在有效范围内
+  if (timelineType >= 0 && timelineType <= 13) {
+    return timelineType as TimelineEventType;
   }
+  return TimelineEventType.DEFAULT;
 };
 
-// 根据事件类型和消息生成标题
-const generateEventTitle = (eventType: TimelineEventType, message: string): string => {
+// 根据事件类型生成标题
+const generateEventTitle = (eventType: TimelineEventType): string => {
   switch (eventType) {
-    case TimelineEventType.PROPOSAL_PUBLISHED:
-      return '提案发布';
-    case TimelineEventType.REVIEW_START:
-      return '审议开始';
-    case TimelineEventType.VOTE_START:
-      return '投票开始';
-    case TimelineEventType.VOTE_END:
-      return '投票结束';
-    case TimelineEventType.PROPOSAL_APPROVED:
-      return '提案通过';
-    case TimelineEventType.PROPOSAL_REJECTED:
-      return '提案拒绝';
-    case TimelineEventType.MILESTONE_TRACKING:
-      return '里程碑追踪';
-    case TimelineEventType.PROJECT_COMPLETED:
-      return '项目完成';
+    case TimelineEventType.DEFAULT:
+      return '默认事件';
+    case TimelineEventType.CREATE_AMA:
+      return '创建 AMA 会议';
+    case TimelineEventType.SUBMIT_AMA_REPORT:
+      return '提交 AMA 报告';
+    case TimelineEventType.INITIATION_VOTE:
+      return '立项投票';
+    case TimelineEventType.UPDATE_RECEIVER_ADDR:
+      return '更新收款地址';
+    case TimelineEventType.SEND_INITIAL_FUND:
+      return '发送启动资金';
+    case TimelineEventType.SUBMIT_MILESTONE_REPORT:
+      return '提交里程碑报告';
+    case TimelineEventType.SUBMIT_DELAY_REPORT:
+      return '提交延期报告';
+    case TimelineEventType.SEND_MILESTONE_FUND:
+      return '发送里程碑资金';
+    case TimelineEventType.SUBMIT_ACCEPTANCE_REPORT:
+      return '提交验收报告';
+    case TimelineEventType.CREATE_REEXAMINE_MEETING:
+      return '创建复审会议';
+    case TimelineEventType.REEXAMINE_VOTE:
+      return '复审投票';
+    case TimelineEventType.RECTIFICATION_VOTE:
+      return '整改投票';
+    case TimelineEventType.SUBMIT_RECTIFICATION_REPORT:
+      return '提交整改报告';
     default:
-      return message || '时间线事件';
+      return '时间线事件';
   }
 };
 
 // 转换 API 返回的数据格式为组件期望的格式
 const convertTimelineEvents = (rawEvents: TimelineEventRaw[]): TimelineEvent[] => {
   return rawEvents.map((raw) => {
-    const eventType = mapTimelineTypeToEventType(raw.timeline_type, raw.message);
-    const title = generateEventTitle(eventType, raw.message);
-    
+    const eventType = mapTimelineTypeToEventType(raw.timeline_type);
+    const title = generateEventTitle(eventType);
+
     // 根据时间戳判断状态（简化处理，实际可能需要更复杂的逻辑）
     const now = new Date();
     const eventDate = new Date(raw.timestamp);
     const isPast = eventDate < now;
     const status = isPast ? TimelineEventStatus.COMPLETED : TimelineEventStatus.IN_PROGRESS;
-    
+
     return {
       id: String(raw.id),
       type: eventType,
@@ -89,10 +71,10 @@ const convertTimelineEvents = (rawEvents: TimelineEventRaw[]): TimelineEvent[] =
       title,
       description: raw.operator?.displayName ? `操作者: ${raw.operator.displayName}` : undefined,
       date: raw.timestamp,
-      isImportant: eventType === TimelineEventType.PROPOSAL_PUBLISHED || 
-                   eventType === TimelineEventType.VOTE_START ||
-                   eventType === TimelineEventType.PROPOSAL_APPROVED ||
-                   eventType === TimelineEventType.PROJECT_COMPLETED,
+      // 重要事件：立项投票、发送启动资金、提交验收报告
+      isImportant: eventType === TimelineEventType.INITIATION_VOTE ||
+        eventType === TimelineEventType.SEND_INITIAL_FUND ||
+        eventType === TimelineEventType.SUBMIT_ACCEPTANCE_REPORT,
     };
   });
 };
@@ -111,7 +93,7 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
     const fetchTimeline = async () => {
       try {
         const response = await getTimeline({ uri: proposalUri });
-        
+
         if (response && Array.isArray(response)) {
           // 转换 API 返回的数据格式
           const convertedEvents = convertTimelineEvents(response);

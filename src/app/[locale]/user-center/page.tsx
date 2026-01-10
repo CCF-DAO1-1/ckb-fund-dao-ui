@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import UserProfileCard from '../../../components/user-center/UserProfileCard';
-import '@/styles/UserCenter.css';
-import '@/styles/task-modal.css';
+import '@/components/user-center/UserCenter.css';
+import '@/components/treasury/task-modal.css';
 import Web5IdentityCard from '@/components/user-center/Web5IdentityCard';
 import WalletDaoCard from '@/components/user-center/WalletDaoCard';
 import RecordsTable from '@/components/user-center/RecordsTable';

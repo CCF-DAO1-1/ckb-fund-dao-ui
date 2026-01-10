@@ -25,11 +25,11 @@ export const generateTimelineEvents = (
 ): TimelineEvent[] => {
   const events: TimelineEvent[] = [];
   const createdAt = new Date(proposal.createdAt);
-  
-  // 基础事件：提案发布
+
+  // 基础事件：默认事件（提案创建）
   events.push({
     id: `${proposal.id}-published`,
-    type: TimelineEventType.PROPOSAL_PUBLISHED,
+    type: TimelineEventType.DEFAULT,
     status: TimelineEventStatus.COMPLETED,
     title: messages.proposalPublished,
     description: messages.proposalPublishedDesc.replace('{title}', proposal.title),
@@ -40,10 +40,10 @@ export const generateTimelineEvents = (
   // 根据提案状态添加相应事件
   switch (proposal.state) {
     case ProposalStatus.REVIEW:
-      // 审议阶段 - 只显示当前阶段的事件
+      // 审议阶段 - 创建 AMA 会议
       events.push({
         id: `${proposal.id}-review-start`,
-        type: TimelineEventType.REVIEW_START,
+        type: TimelineEventType.CREATE_AMA,
         status: TimelineEventStatus.IN_PROGRESS,
         title: messages.communityReview,
         description: messages.communityReviewDesc,
@@ -53,10 +53,10 @@ export const generateTimelineEvents = (
       break;
 
     case ProposalStatus.VOTE:
-      // 投票阶段 - 只显示当前阶段的事件
+      // 投票阶段 - 立项投票
       events.push({
         id: `${proposal.id}-vote-start`,
-        type: TimelineEventType.VOTE_START,
+        type: TimelineEventType.INITIATION_VOTE,
         status: TimelineEventStatus.IN_PROGRESS,
         title: messages.proposalVoting,
         description: messages.proposalVotingDesc,
@@ -66,10 +66,10 @@ export const generateTimelineEvents = (
       break;
 
     case ProposalStatus.APPROVED:
-      // 执行阶段 - 只显示当前阶段的事件
+      // 执行阶段 - 发送启动资金
       events.push({
         id: `${proposal.id}-approved`,
-        type: TimelineEventType.PROPOSAL_APPROVED,
+        type: TimelineEventType.SEND_INITIAL_FUND,
         status: TimelineEventStatus.COMPLETED,
         title: messages.proposalApproved,
         description: messages.proposalApprovedDesc,
@@ -79,10 +79,10 @@ export const generateTimelineEvents = (
       break;
 
     case ProposalStatus.REJECTED:
-      // 已拒绝 - 只显示结果
+      // 已拒绝 - 使用默认事件类型
       events.push({
         id: `${proposal.id}-rejected`,
-        type: TimelineEventType.PROPOSAL_REJECTED,
+        type: TimelineEventType.DEFAULT,
         status: TimelineEventStatus.COMPLETED,
         title: messages.proposalRejected,
         description: messages.proposalRejectedDesc,
@@ -92,12 +92,12 @@ export const generateTimelineEvents = (
       break;
 
     case ProposalStatus.MILESTONE:
-      // 执行阶段 - 只显示当前里程碑
+      // 执行阶段 - 提交里程碑报告
       if (proposal.milestones) {
         const currentMilestone = proposal.milestones.current;
         events.push({
           id: `${proposal.id}-milestone-${currentMilestone}`,
-          type: TimelineEventType.MILESTONE_TRACKING,
+          type: TimelineEventType.SUBMIT_MILESTONE_REPORT,
           status: TimelineEventStatus.IN_PROGRESS,
           title: messages.milestoneInProgress.replace('{number}', currentMilestone.toString()),
           description: messages.milestoneInProgressDesc.replace('{number}', currentMilestone.toString()),
@@ -108,10 +108,10 @@ export const generateTimelineEvents = (
       break;
 
     case ProposalStatus.ENDED:
-      // 项目完成 - 只显示最终结果
+      // 项目完成 - 提交验收报告
       events.push({
         id: `${proposal.id}-completed`,
-        type: TimelineEventType.PROJECT_COMPLETED,
+        type: TimelineEventType.SUBMIT_ACCEPTANCE_REPORT,
         status: TimelineEventStatus.COMPLETED,
         title: messages.projectCompleted,
         description: messages.projectCompletedDesc,
@@ -123,3 +123,4 @@ export const generateTimelineEvents = (
 
   return events;
 };
+

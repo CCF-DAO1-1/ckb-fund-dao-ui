@@ -4,9 +4,8 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from 'next/navigation';
 import { useTranslation } from "../../../../utils/i18n";
 import { useI18n } from "@/contexts/I18nContext";
-import "@/styles/proposal.css";
+import "@/components/proposal-phase/proposal.css";
 
-import "@/styles/quill-editor.css";
 import { ProposalContent, ProposalComments, ProposalSidebar } from "@/components/proposal-phase";
 import { useProposalDetail } from "@/hooks/useProposalDetail";
 import { useCommentList } from "@/hooks/useCommentList";

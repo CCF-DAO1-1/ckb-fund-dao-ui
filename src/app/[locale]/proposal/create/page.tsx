@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "../../../../utils/i18n";
-import "@/styles/proposal.css";
+import "@/components/proposal-phase/proposal.css";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import PreviewModal from "@/components/proposal/PreviewModal";
 import ProposalSettings from "@/components/proposal-steps/ProposalSettings";

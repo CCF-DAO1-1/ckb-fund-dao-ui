@@ -4,7 +4,7 @@ import { useI18n } from "@/contexts/I18nContext";
 import { useTranslation } from "@/utils/i18n";
 import { useVoteWeight } from "@/hooks/useVoteWeight";
 import { AiOutlineExport } from "react-icons/ai";
-import "@/styles/UserCenter.css";
+import "@/components/user-center/UserCenter.css";
 
 export default function UserGovernance() {
   const { userInfo } = useUserInfoStore();

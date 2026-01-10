@@ -1,25 +1,33 @@
-// 时间线事件类型
+// 时间线事件类型（与后端接口一致，基于数组下标）
+// 0: Default
+// 1: CreateAMA
+// 2: SubmitAMAReport
+// 3: InitiationVote
+// 4: UpdateReceiverAddr
+// 5: SendInitialFund
+// 6: SubmitMilestoneReport
+// 7: SubmitDelayReport
+// 8: SendMilestoneFund
+// 9: SubmitAcceptanceReport
+// 10: CreateReexamineMeeting
+// 11: ReexamineVote
+// 12: RectificationVote
+// 13: SubmitRectificationReport
 export enum TimelineEventType {
-  // 1. 审议阶段
-  REVIEW_START = 'review_start',           // 审议开始
-  REVIEW_END = 'review_end',               // 审议结束
-  COMMUNITY_INQUIRY_1 = 'community_inquiry_1', // 第一次社区质询会
-  COMMUNITY_INQUIRY_2 = 'community_inquiry_2', // 第二次社区质询会
-  COMMUNITY_DISCUSSION = 'community_discussion', // 社区讨论
-  PROPOSAL_PUBLISHED = 'proposal_published', // 提案发布
-  
-  // 2. 投票阶段
-  VOTE_START = 'vote_start',               // 提案投票开始
-  VOTE_END = 'vote_end',                   // 提案投票结束
-  VOTE_REMINDER = 'vote_reminder',         // 投票提醒
-  PROPOSAL_APPROVED = 'proposal_approved', // 提案通过
-  PROPOSAL_REJECTED = 'proposal_rejected', // 提案拒绝
-  
-  // 3. 执行阶段
-  MILESTONE_TRACKING = 'milestone_tracking', // 里程碑追踪
-  PROJECT_REVIEW = 'project_review',       // 项目复核
-  PROJECT_COMPLETED = 'project_completed', // 项目完成
-  PROJECT_CANCELLED = 'project_cancelled'  // 项目取消
+  DEFAULT = 0,                      // 默认
+  CREATE_AMA = 1,                   // 创建 AMA 会议
+  SUBMIT_AMA_REPORT = 2,            // 提交 AMA 报告
+  INITIATION_VOTE = 3,              // 立项投票
+  UPDATE_RECEIVER_ADDR = 4,         // 更新收款地址
+  SEND_INITIAL_FUND = 5,            // 发送启动资金
+  SUBMIT_MILESTONE_REPORT = 6,      // 提交里程碑报告
+  SUBMIT_DELAY_REPORT = 7,          // 提交延期报告
+  SEND_MILESTONE_FUND = 8,          // 发送里程碑资金
+  SUBMIT_ACCEPTANCE_REPORT = 9,     // 提交验收报告
+  CREATE_REEXAMINE_MEETING = 10,    // 创建复审会议
+  REEXAMINE_VOTE = 11,              // 复审投票
+  RECTIFICATION_VOTE = 12,          // 整改投票
+  SUBMIT_RECTIFICATION_REPORT = 13, // 提交整改报告
 }
 
 // 时间线事件状态

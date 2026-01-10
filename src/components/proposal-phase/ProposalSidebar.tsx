@@ -23,7 +23,7 @@ const adaptProposalDetail = (detail: ProposalDetailResponse): Proposal => {
     total: proposalData.milestones.length,
     progress: 0,
   } : undefined;
-  
+
   return {
     id: detail.cid,
     title: proposalData.title,
@@ -49,7 +49,7 @@ const adaptProposalDetail = (detail: ProposalDetailResponse): Proposal => {
 
 export default function ProposalSidebar({ proposal }: ProposalSidebarProps) {
   const { voteWeight } = useVoteWeight();
-  
+
   const [milestones, setMilestones] = useState<Milestone[]>([]);
 
   // 使用 useMemo 稳定 voteMetaId 的值，避免因 proposal 对象引用变化导致的重复调用
@@ -67,16 +67,16 @@ export default function ProposalSidebar({ proposal }: ProposalSidebarProps) {
   // 生成里程碑信息
   useEffect(() => {
     if (!proposal) return;
-    
+
     const adaptedProposal = adaptProposalDetail(proposal);
-    
+
     // 如果是执行阶段，生成里程碑信息
     // MILESTONE 是 IN_PROGRESS 的别名 (3)
     // APPROVED 和 ENDED 都是 COMPLETED 的别名 (9)
     const state = adaptedProposal.state;
     const stateValue = typeof state === 'number' ? state : Number(state);
-    if (stateValue === ProposalStatus.IN_PROGRESS || 
-        stateValue === ProposalStatus.COMPLETED) {
+    if (stateValue === ProposalStatus.IN_PROGRESS ||
+      stateValue === ProposalStatus.COMPLETED) {
       const milestoneData = generateMilestones(adaptedProposal);
       setMilestones(milestoneData);
     } else {
@@ -89,37 +89,31 @@ export default function ProposalSidebar({ proposal }: ProposalSidebarProps) {
   }
 
   // 判断是否显示投票组件
-  const adaptedProposal = adaptProposalDetail(proposal);
-  // 支持立项投票和里程碑验收投票状态显示投票组件
-  const stateValue = typeof adaptedProposal.state === 'number' ? adaptedProposal.state : Number(adaptedProposal.state);
-  const showVoting = (
-    stateValue === ProposalStatus.VOTE || 
-    stateValue === ProposalStatus.MILESTONE_VOTE ||
-    stateValue === ProposalStatus.INITIATION_VOTE
-  ) && proposal.vote_meta;
+  // 根据 vote_meta.state 判断：只要投票还在进行中（state === 1）就显示投票组件
+  const showVoting = proposal.vote_meta && proposal.vote_meta.state === 1;
 
   return (
     <div className="proposal-sidebar">
       {/* 投票组件 - 仅在投票阶段显示 */}
       {showVoting && (
-        <ProposalVoting 
+        <ProposalVoting
           proposal={proposal}
           voteMetaId={voteMetaId}
           voteWeight={voteWeight}
         />
       )}
-      
+
       {/* 里程碑追踪组件 - 仅在执行阶段显示 */}
       {milestones.length > 0 && (
-        <MilestoneTracking 
+        <MilestoneTracking
           milestones={milestones}
           currentMilestone={proposal.state - 1000 || 1}
           totalMilestones={proposal.record.data.milestones?.length || 3}
         />
       )}
-      
-      <ProposalTimeline 
-        proposalUri={proposalUri} 
+
+      <ProposalTimeline
+        proposalUri={proposalUri}
       />
     </div>
   );

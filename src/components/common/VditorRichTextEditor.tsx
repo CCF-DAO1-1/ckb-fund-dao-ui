@@ -6,7 +6,7 @@ import "vditor/dist/index.css";
 import { uploadImage } from "@/server/pds";
 import toast from "react-hot-toast";
 import { useTranslation } from "@/utils/i18n";
-import "@/styles/vditor-editor.css";
+import "@/components/common/vditor-editor.css";
 
 export type ToolbarPreset = "simple" | "full" | "custom";
 
