@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   ProposalVotingProps,
   VoteOption,
@@ -8,7 +8,7 @@ import {
   VotingInfo,
   UserVoteInfo,
 } from "../../types/voting";
-import { formatNumber } from "../../utils/proposalUtils";
+import { formatNumber, parseEpoch } from "../../utils/proposalUtils";
 import { useI18n } from "@/contexts/I18nContext";
 import { useWallet } from "@/provider/WalletProvider";
 import useUserInfoStore from "@/store/userInfo";
@@ -25,38 +25,7 @@ import "./voting.css";
 import ProposalVotingConditions from "./ProposalVotingConditions";
 
 import { logger } from '@/lib/logger';
-// 适配器函数：将API返回的ProposalDetailResponse转换为工具函数期望的Proposal类型
-const adaptProposalDetail = (detail: ProposalDetailResponse): Proposal => {
-  const proposalData = detail.record.data;
 
-  const milestonesInfo = proposalData.milestones && proposalData.milestones.length > 0 ? {
-    current: 1,
-    total: proposalData.milestones.length,
-    progress: 0,
-  } : undefined;
-
-  return {
-    id: detail.cid,
-    title: proposalData.title,
-    state: (detail.state ?? proposalData.state) as ProposalStatus,
-    type: proposalData.proposalType as Proposal["type"],
-    proposer: {
-      name: getUserDisplayNameFromInfo({
-        displayName: detail.author.displayName,
-        handle: detail.author.handle,
-        did: detail.author.did,
-      }),
-      avatar: getAvatarByDid(detail.author.did),
-      did: detail.author.did,
-    },
-    budget: parseFloat(proposalData.budget) || 0,
-    createdAt: detail.record.created,
-    description: proposalData.background || '',
-    milestones: milestonesInfo,
-    category: proposalData.proposalType,
-    tags: [],
-  };
-};
 
 export default function ProposalVoting({
   proposal,
@@ -80,6 +49,9 @@ export default function ProposalVoting({
   const userDid = useMemo(() => {
     return userInfo?.did || null;
   }, [userInfo?.did]);
+
+  // 用于防止短时间内重复请求的 ref
+  const lastFetchParamsRef = useRef<{ voteMetaId: number | null; userDid: string | null } | null>(null);
 
   // 获取投票详情的函数（用于投票后刷新）
   const refreshVoteDetail = useCallback(async () => {
@@ -138,11 +110,9 @@ export default function ProposalVoting({
       return;
     }
 
-    const adaptedProposal = adaptProposalDetail(proposal as ProposalDetailResponse);
-
-    if (adaptedProposal.state === ProposalStatus.VOTE && proposal.vote_meta) {
+    if ((proposal.state === ProposalStatus.VOTE || ('vote_meta' in proposal && proposal.vote_meta && proposal.vote_meta.state === 1)) && proposal.vote_meta) {
       const userVotingPower = voteWeight * 100000000;
-      const voting = generateVotingInfo(adaptedProposal, proposal.vote_meta, userVotingPower);
+      const voting = generateVotingInfo(proposal, proposal.vote_meta, userVotingPower);
       setVotingInfo(voting);
     } else {
       setVotingInfo(null);
@@ -152,6 +122,18 @@ export default function ProposalVoting({
   // 进入页面时，如果存在 voteMetaId，先调用 getVoteDetail，然后调用 getVoteStatus
   useEffect(() => {
     if (!voteMetaId) return;
+
+    // 检查参数是否真的变化了，避免重复请求
+    const currentParams = { voteMetaId, userDid };
+    const lastParams = lastFetchParamsRef.current;
+
+    if (lastParams &&
+        lastParams.voteMetaId === currentParams.voteMetaId &&
+        lastParams.userDid === currentParams.userDid) {
+      return; // 参数未变化，跳过请求
+    }
+
+    lastFetchParamsRef.current = currentParams;
 
     // 先调用 getVoteDetail
     (async () => {
@@ -387,6 +369,16 @@ export default function ProposalVoting({
     if (!votingInfo) return;
 
     const calculateTimeLeft = () => {
+      // 检查是否为 Epoch
+      const epoch = parseEpoch(votingInfo.endTime);
+      // 简单的启发式检查：如果解析出的 epoch number 大于 0 且 endTime 看起来像一个非常大的整数 (远大于现在的毫秒时间戳)
+      // 当前毫秒时间戳约为 1.7e12
+      // Epoch u64 (1979123480145992) 约为 1.9e15
+      if (epoch && Number(votingInfo.endTime) > 100000000000000) {
+        setTimeLeft(`Epoch: ${formatNumber(epoch.number)} (${epoch.index}/${epoch.length})`);
+        return;
+      }
+
       const now = new Date().getTime();
       const endTime = new Date(votingInfo.endTime).getTime();
       const difference = endTime - now;

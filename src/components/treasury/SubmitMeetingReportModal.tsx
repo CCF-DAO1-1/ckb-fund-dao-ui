@@ -51,27 +51,32 @@ export default function SubmitMeetingReportModal({
 
     setIsSubmitting(true);
 
+    // 校验必填项
+    if (!selectedMeetingId) {
+      toast.error(t("submitMeetingReport.errors.meetingRequired") || "请选择会议");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!reportContent || !reportContent.trim()) {
+      toast.error(t("submitMeetingReport.errors.reportRequired") || "请填写报告内容");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       // 1. 构建参数对象（用于签名）
       const params: {
         proposal_uri: string;
-        meeting_id?: number;
-        report?: string;
+        meeting_id: number;
+        report: string;
         timestamp: number;
       } = {
         proposal_uri: proposalUri || "",
+        meeting_id: parseInt(selectedMeetingId, 10),
+        report: reportContent,
         timestamp: Math.floor(Date.now() / 1000), // UTC 时间戳（秒）
       };
-
-      // 如果选择了会议，添加 meeting_id
-      if (selectedMeetingId) {
-        params.meeting_id = parseInt(selectedMeetingId, 10);
-      }
-
-      // 如果有报告内容，添加 report
-      if (reportContent.trim()) {
-        params.report = reportContent.trim();
-      }
 
       // 2. 生成签名
       const { signed_bytes: signedBytes, signing_key_did: signingKeyDid } = await generateSignature(params);
@@ -150,15 +155,27 @@ export default function SubmitMeetingReportModal({
               fontWeight: 500,
             }}
           >
-            {t("submitMeetingReport.contentLabel") || "报告内容（可选）"}
+            {t("submitMeetingReport.contentLabel") || "报告内容"}
           </label>
-          <div style={{ minHeight: "200px" }}>
-            <VditorRichTextEditor
+          <div >
+            <input
+              type="text"
+              id="report-content"
               value={reportContent}
-              onChange={setReportContent}
-              mode="ir"
-              toolbarPreset="simple"
-              placeholder={t("submitMeetingReport.contentPlaceholder") || "请输入报告内容..."}
+              onChange={(e) => setReportContent(e.target.value)}
+              className="form-input"
+              placeholder={t("submitMeetingReport.contentPlaceholder") || "请输入报告链接地址..."}
+              style={{
+                width: "100%",
+                padding: "12px",
+                backgroundColor: "#1A1D23",
+                border: "1px solid #4C525C",
+                borderRadius: "6px",
+                color: "#FFFFFF",
+                fontSize: "14px",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
             />
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { VotingInfo, VoteOption, VotingStatus } from '../types/voting';
 import { Proposal, ProposalStatus } from './proposalUtils';
-import { VoteMetaItem, PrepareVoteResponse } from '@/server/proposal';
+import { VoteMetaItem, PrepareVoteResponse, ProposalDetailResponse } from '@/server/proposal';
 import enMessages from '../locales/en.json';
 import zhMessages from '../locales/zh.json';
 import { logger } from '@/lib/logger';
@@ -80,8 +80,27 @@ function formatTranslation(text: string, values?: Record<string, string | number
 // 根据提案类型：
 // - 对于「资金申请」类提案，最低投票权重总数为：申请资金数量的3倍
 // - 对于「元规则」类提案，则为固定的 1.85亿CKB
-const calculateMinTotalVotes = (proposal: Proposal): number => {
-  const proposalType = typeof proposal.type === 'string' ? proposal.type : proposal.category;
+// Helper to extract proposal type safely
+const getProposalType = (proposal: Proposal | ProposalDetailResponse): string => {
+  if ('type' in proposal) return proposal.type;
+  if ('record' in proposal) return proposal.record.data.proposalType;
+  // Fallback for types where category might be used (though Protocol type Proposal uses 'category' for filters, 'type' for logic)
+  return (proposal as Proposal).category || '';
+};
+
+// Helper to extract budget safely
+const getProposalBudget = (proposal: Proposal | ProposalDetailResponse): number => {
+  if ('budget' in proposal) return proposal.budget;
+  if ('record' in proposal) return parseFloat(proposal.record.data.budget) || 0;
+  return 0;
+};
+
+// 计算最低投票权重总数（shannon单位）
+// 根据提案类型：
+// - 对于「资金申请」类提案，最低投票权重总数为：申请资金数量的3倍
+// - 对于「元规则」类提案，则为固定的 1.85亿CKB
+const calculateMinTotalVotes = (proposal: Proposal | ProposalDetailResponse): number => {
+  const proposalType = getProposalType(proposal);
 
   // 元规则类提案：固定的 1.85亿CKB
   if (proposalType === 'governance') {
@@ -90,8 +109,8 @@ const calculateMinTotalVotes = (proposal: Proposal): number => {
   }
 
   // 资金申请类提案：申请资金数量的3倍
-  if (proposalType === 'funding' && proposal.budget) {
-    const budgetAmount = typeof proposal.budget === 'string' ? parseFloat(proposal.budget) : proposal.budget;
+  if (proposalType === 'funding') {
+    const budgetAmount = getProposalBudget(proposal);
     if (!isNaN(budgetAmount) && budgetAmount > 0) {
       // 转换为shannon单位后乘以3
       return budgetAmount * 3;
@@ -104,10 +123,15 @@ const calculateMinTotalVotes = (proposal: Proposal): number => {
 
 // 生成投票信息（使用真实数据）
 export const generateVotingInfo = (
-  proposal: Proposal,
+  proposal: Proposal | ProposalDetailResponse,
   voteMeta?: VoteMetaItem | null,
   userVotingPower: number = 0
 ): VotingInfo => {
+  // Extract common fields
+  const proposalId = 'cid' in proposal ? proposal.cid : proposal.id;
+  const proposalTitle = 'record' in proposal ? proposal.record.data.title : proposal.title;
+  const proposalState = proposal.state;
+
   // 计算最低投票权重总数
   const minTotalVotes = calculateMinTotalVotes(proposal);
 
@@ -119,7 +143,7 @@ export const generateVotingInfo = (
     const endTime = new Date(voteMeta.end_time).getTime();
 
     // 使用数值比较，因为枚举别名可能无法正确识别
-    const stateValue = typeof proposal.state === 'number' ? proposal.state : Number(proposal.state);
+    const stateValue = typeof proposalState === 'number' ? proposalState : Number(proposalState);
     if (now > endTime || stateValue === ProposalStatus.COMPLETED) {
       status = VotingStatus.ENDED;
     } else {
@@ -133,8 +157,8 @@ export const generateVotingInfo = (
     const approvalRate = 0;
 
     return {
-      proposalId: proposal.id,
-      title: proposal.title,
+      proposalId: proposalId,
+      title: proposalTitle,
       endTime: voteMeta.end_time,
       totalVotes,
       approveVotes,
@@ -151,19 +175,21 @@ export const generateVotingInfo = (
   }
 
   // 如果没有投票元数据，使用提案创建时间计算结束时间（7天后）
-  const createdAt = new Date(proposal.createdAt);
+  const createdAtStr = 'record' in proposal ? proposal.record.created : proposal.createdAt;
+  const createdAt = new Date(createdAtStr);
   const endTime = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   // 使用提案中的投票数据，如果没有则使用默认值0
-  const totalVotes = proposal.voting?.totalVotes || 0;
-  const approveRate = proposal.voting?.approve || 0;
+  const votingData = 'voting' in proposal ? proposal.voting : undefined;
+  const totalVotes = votingData?.totalVotes || 0;
+  const approveRate = votingData?.approve || 0;
   const approveVotes = Math.floor(totalVotes * approveRate / 100);
   const rejectVotes = totalVotes - approveVotes;
 
   // 确定投票状态
   let status: VotingStatus;
   // 使用数值比较，因为枚举别名可能无法正确识别
-  const stateValue = typeof proposal.state === 'number' ? proposal.state : Number(proposal.state);
+  const stateValue = typeof proposalState === 'number' ? proposalState : Number(proposalState);
   if (stateValue === ProposalStatus.INITIATION_VOTE) {
     status = VotingStatus.PENDING;
   } else if (stateValue === ProposalStatus.COMPLETED) {
@@ -175,8 +201,8 @@ export const generateVotingInfo = (
   const approvalRate = totalVotes > 0 ? (approveVotes / totalVotes) * 100 : 0;
 
   return {
-    proposalId: proposal.id,
-    title: proposal.title,
+    proposalId: proposalId,
+    title: proposalTitle,
     endTime: endTime.toISOString(),
     totalVotes,
     approveVotes,

@@ -8,7 +8,8 @@
     "examples": "Examples",
     "goToNextjs": "Go to nextjs.org →",
     "backToHome": "Back to Home",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "viewDetails": "View Details"
   },
   "errors": {
     "noPermission": "No permission to view this page!",
@@ -130,6 +131,8 @@
     "title": "Send Funds",
     "amountLabel": "Amount",
     "amountPlaceholder": "Please enter funding amount",
+    "txHashLabel": "Trigger Transaction Hash",
+    "txHashPlaceholder": "Please enter transaction hash (0x...)",
     "proposalUri": "Proposal URI",
     "submit": "Submit",
     "button": "Send Funds",
@@ -137,6 +140,7 @@
     "errors": {
       "userNotLoggedIn": "Please login first",
       "amountRequired": "Please enter funding amount",
+      "txHashRequired": "Please enter transaction hash",
       "invalidAmount": "Please enter a valid amount (number greater than 0)",
       "submitFailed": "Failed to submit, please try again"
     }
@@ -849,6 +853,28 @@
         "milestoneInProgressDesc": "Project milestone {number} is being executed",
         "projectCompleted": "Project Completed",
         "projectCompletedDesc": "Project has successfully completed all milestones"
+      },
+      "eventTypes": {
+        "default": "Default Event",
+        "proposalCreated": "Proposal Created",
+        "proposalEdited": "Proposal Edited",
+        "initiationVote": "Initiation Vote",
+        "updateReceiverAddr": "Update Receiver Address",
+        "voteFinished": "Vote Finished",
+        "sendInitialFund": "Send Initial Fund",
+        "submitMilestoneReport": "Submit Milestone Report",
+        "submitDelayReport": "Submit Delay Report",
+        "milestoneVote": "Milestone Vote",
+        "delayVote": "Delay Vote",
+        "sendMilestoneFund": "Send Milestone Fund",
+        "reviewVote": "Review Vote",
+        "reexamineVote": "Reexamine Vote",
+        "acceptanceVote": "Acceptance Vote",
+        "rectificationVote": "Rectification Vote",
+        "submitAcceptanceReport": "Submit Acceptance Report",
+        "createAMA": "Create AMA",
+        "submitAMAReport": "Submit AMA Report",
+        "timelineEvent": "Timeline Event"
       }
     }
   },
@@ -953,7 +979,20 @@
       },
       "options": {
         "approve": "Approve",
-        "reject": "Reject"
+        "reject": "Reject",
+        "abstain": "Abstain"
+      },
+      "details": {
+        "title": "Voting Details",
+        "summary": "Summary",
+        "breakdown": "Breakdown",
+        "option": "Option",
+        "votes": "Votes",
+        "progress": "Progress",
+        "totalVotes": "Total Votes",
+        "validVotes": "Valid Votes",
+        "totalWeight": "Total Weight",
+        "validWeight": "Valid Weight"
       }
     }
   },
@@ -1021,7 +1060,8 @@
       "edit": "Edit",
       "startVoting": "Start Voting",
       "milestoneDelivery": "Milestone Delivery",
-      "rectificationComplete": "Rectification Complete"
+      "rectificationComplete": "Rectification Complete",
+      "viewVote": "View Vote"
     },
     "sampleData": {
       "proposalName1": "Proposal Name 1",

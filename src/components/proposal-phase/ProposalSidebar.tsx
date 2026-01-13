@@ -27,7 +27,7 @@ const adaptProposalDetail = (detail: ProposalDetailResponse): Proposal => {
   return {
     id: detail.cid,
     title: proposalData.title,
-    state: (detail.state ?? proposalData.state) as ProposalStatus,
+    state: detail.state as ProposalStatus,
     type: proposalData.proposalType as Proposal["type"],
     proposer: {
       name: getUserDisplayNameFromInfo({
@@ -107,7 +107,7 @@ export default function ProposalSidebar({ proposal }: ProposalSidebarProps) {
       {milestones.length > 0 && (
         <MilestoneTracking
           milestones={milestones}
-          currentMilestone={proposal.state - 1000 || 1}
+          currentMilestone={milestones.find(m => m.status === 'in_progress')?.index || 1}
           totalMilestones={proposal.record.data.milestones?.length || 3}
         />
       )}

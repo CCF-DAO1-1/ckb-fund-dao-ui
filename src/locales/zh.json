@@ -8,7 +8,8 @@
     "examples": "示例",
     "goToNextjs": "前往 nextjs.org →",
     "backToHome": "返回主页",
-    "cancel": "取消"
+    "cancel": "取消",
+    "viewDetails": "查看详情"
   },
   "errors": {
     "noPermission": "无权限查看当前页面!",
@@ -54,7 +55,8 @@
       "edit": "编辑",
       "startVoting": "开启投票",
       "deliverMilestone": "里程碑交付",
-      "rectificationCompleted": "整改完成"
+      "rectificationCompleted": "整改完成",
+      "viewVote": "查看投票"
     }
   },
   "taskModal": {
@@ -166,6 +168,8 @@
     "title": "拨款",
     "amountLabel": "拨款金额",
     "amountPlaceholder": "请输入拨款金额",
+    "txHashLabel": "触发交易哈希",
+    "txHashPlaceholder": "请输入交易哈希 (0x...)",
     "proposalUri": "提案 URI",
     "submit": "提交",
     "button": "拨款",
@@ -173,6 +177,7 @@
     "errors": {
       "userNotLoggedIn": "请先登录",
       "amountRequired": "请输入拨款金额",
+      "txHashRequired": "请输入交易哈希",
       "invalidAmount": "请输入有效的金额（大于0的数字）",
       "submitFailed": "提交失败，请重试"
     }
@@ -888,6 +893,28 @@
         "milestoneInProgressDesc": "项目里程碑 {number} 正在执行中",
         "projectCompleted": "项目已完成",
         "projectCompletedDesc": "项目已成功完成所有里程碑"
+      },
+      "eventTypes": {
+        "default": "默认事件",
+        "proposalCreated": "提案创建",
+        "proposalEdited": "提案编辑",
+        "initiationVote": "立项投票",
+        "updateReceiverAddr": "更新收款地址",
+        "voteFinished": "投票结束",
+        "sendInitialFund": "发送启动资金",
+        "submitMilestoneReport": "提交里程碑报告",
+        "submitDelayReport": "提交延期报告",
+        "milestoneVote": "里程碑投票",
+        "delayVote": "延期投票",
+        "sendMilestoneFund": "发送里程碑资金",
+        "reviewVote": "复审投票",
+        "reexamineVote": "复核投票",
+        "acceptanceVote": "验收投票",
+        "rectificationVote": "整改投票",
+        "submitAcceptanceReport": "提交验收报告",
+        "createAMA": "创建 AMA",
+        "submitAMAReport": "提交 AMA 报告",
+        "timelineEvent": "时间线事件"
       }
     }
   },
@@ -992,7 +1019,20 @@
       },
       "options": {
         "approve": "赞成",
-        "reject": "反对"
+        "reject": "反对",
+        "abstain": "弃权"
+      },
+      "details": {
+        "title": "投票详情",
+        "summary": "概览",
+        "breakdown": "票数统计",
+        "option": "选项",
+        "votes": "票数",
+        "progress": "占比",
+        "totalVotes": "总票数",
+        "validVotes": "有效票数",
+        "totalWeight": "总权重",
+        "validWeight": "有效权重"
       }
     }
   },

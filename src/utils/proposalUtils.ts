@@ -17,26 +17,27 @@ export const formatNumber = (num: number, locale: string = 'en-US') => {
 // 10: ReexamineVote (复核投票)
 // 11: RectificationVote (整改投票)
 export enum ProposalStatus {
-  DRAFT = 0,                        // 草稿
-  INITIATION_VOTE = 1,              // 立项投票
-  WAITING_FOR_START_FUND = 2,       // 等待启动金
-  IN_PROGRESS = 3,                  // 项目执行中:里程碑过程
-  MILESTONE_VOTE = 4,               // 里程碑验收投票
-  DELAY_VOTE = 5,                   // 延期投票
-  WAITING_FOR_MILESTONE_FUND = 6,   // 等待启动金
-  REVIEW_VOTE = 7,                  // 进度复核投票
-  WAITING_FOR_ACCEPTANCE_REPORT = 8, // 等待验收报告
-  COMPLETED = 9,                    // 项目完成
-  REEXAMINE_VOTE = 10,              // 复核投票
-  RECTIFICATION_VOTE = 11,          // 整改投票
-  
-  // 向后兼容的别名（保留旧的状态值，映射到新状态）
+  END = 0,                          // 结束
+  DRAFT = 1,                        // 草稿
+  INITIATION_VOTE = 2,              // 立项投票
+  WAITING_FOR_START_FUND = 3,       // 等待启动金
+  IN_PROGRESS = 4,                  // 项目执行中:里程碑过程
+  MILESTONE_VOTE = 5,               // 里程碑验收投票
+  DELAY_VOTE = 6,                   // 延期投票
+  WAITING_FOR_MILESTONE_FUND = 7,   // 等待启动金
+  REVIEW_VOTE = 8,                  // 进度复核投票
+  WAITING_FOR_ACCEPTANCE_REPORT = 9, // 等待验收报告
+  COMPLETED = 10,                   // 项目完成
+  REEXAMINE_VOTE = 11,              // 复核投票
+  RECTIFICATION_VOTE = 12,          // 整改投票
+
+  // 向后兼容的别名（映射到新状态）
   REVIEW = INITIATION_VOTE,          // 社区审议中 -> 立项投票
   VOTE = INITIATION_VOTE,            // 投票中 -> 立项投票
   MILESTONE = IN_PROGRESS,           // 里程碑交付中 -> 项目执行中
   APPROVED = COMPLETED,              // 已通过 -> 项目完成
-  REJECTED = COMPLETED,              // 已拒绝 -> 项目完成（可能需要单独处理）
-  ENDED = COMPLETED,                 // 结束 -> 项目完成
+  REJECTED = END,                    // 已拒绝 -> 结束
+  ENDED = END,                       // 结束 -> 结束
 }
 // 提案接口
 export interface Proposal {
@@ -62,7 +63,7 @@ export interface Proposal {
     oppose: number;  // 反对票百分比
     totalVotes: number; // 总投票数
   };
-  
+
   category: string;
   tags: string[];
 }
@@ -148,4 +149,52 @@ export const formatDate = (dateString: string, locale: 'en' | 'zh' = 'en') => {
   // 将 locale 映射到日期格式化语言代码
   const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
   return new Date(dateString).toLocaleDateString(dateLocale);
+};
+
+// 格式化日期和时间显示（精确到分钟）
+export const formatDateTime = (dateString: string, locale: 'en' | 'zh' = 'en') => {
+  const date = new Date(dateString);
+  const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+
+  // 使用 toLocaleString 来同时显示日期和时间
+  return date.toLocaleString(dateLocale, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false // 使用24小时制
+  });
+};
+
+// 解析 EpochNumberWithFraction
+export const parseEpoch = (epoch: string | number | undefined): { number: number, index: number, length: number } | null => {
+  if (epoch === undefined || epoch === null) return null;
+
+  try {
+    const epochBigInt = typeof epoch === 'string' ? BigInt(epoch) : BigInt(epoch);
+
+    // bit 0-23: number
+    const number = Number(epochBigInt & BigInt(0xffffff));
+    // bit 24-39: index
+    const index = Number((epochBigInt >> BigInt(24)) & BigInt(0xffff));
+    // bit 40-55: length
+    const length = Number((epochBigInt >> BigInt(40)) & BigInt(0xffff));
+
+    // 简单验证：length 应该大于 0，且 index 应该小于 length
+    // 但对于 epoch number 0，可能 index 和 length 都是 0
+    // 如果 epoch 看起来像是一个非常大的数字（大于常规时间戳），则认为它是 epoch
+    // 常规时间戳（毫秒） 2025年大约是 1735689600000 (13位)
+    // EpochNumberWithFraction 通常是 u64，如 1979123480145992 (16位)
+
+    // 我们主要关心它是否被解析为合理的 epoch 格式
+    // 这里的 heuristic 是：如果它是一个非常大的数字，并且我们能够解析出结构
+
+    // 修正：调用者应该决定是否把它当作 epoch 处理，或者我们由于这是 format 工具，
+    // 我们可以依赖输入如果是类似 epoch 的大整数格式。
+
+    return { number, index, length };
+  } catch {
+    return null;
+  }
 };

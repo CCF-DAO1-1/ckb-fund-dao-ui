@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { IoIosArrowDown } from "react-icons/io";
 import CustomDatePicker from '@/components/ui/DatePicker';
 import { useI18n } from '@/contexts/I18nContext';
@@ -15,7 +15,14 @@ interface ProposalSettingsProps {
 
 const ProposalSettings: React.FC<ProposalSettingsProps> = ({ formData, onInputChange, onDateChange }) => {
   const { messages } = useI18n();
-  
+
+  // 初始化默认日期为今天
+  useEffect(() => {
+    if (!formData.releaseDate) {
+      onDateChange(new Date());
+    }
+  }, [formData.releaseDate, onDateChange]);
+
   return (
     <div className="form-fields">
       <div>
@@ -62,10 +69,11 @@ const ProposalSettings: React.FC<ProposalSettingsProps> = ({ formData, onInputCh
           {messages.proposalSteps.proposalSettings.releaseDate}
         </label>
         <CustomDatePicker
-          selected={formData.releaseDate ? new Date(formData.releaseDate + 'T00:00:00') : null}
+          selected={formData.releaseDate ? new Date(formData.releaseDate + 'T00:00:00') : new Date()}
           onChange={onDateChange}
           placeholderText={messages.proposalSteps.proposalSettings.datePlaceholder}
           minDate={new Date()}
+          disabled={true}
         />
       </div>
     </div>

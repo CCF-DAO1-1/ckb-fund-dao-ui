@@ -304,13 +304,7 @@ export default function ProposalContent({
                     return (
                       <div className="form-fields">
                         {proposal.record.data.milestones && proposal.record.data.milestones.length > 0 ? (
-                          <>
-                            {/* <div className="milestone-summary">
-                                <p>{messages.proposalDetail.currentMilestone} {proposal.state-1000} / {proposal.record.data.milestones.length}</p>
-                                <p>{messages.proposalDetail.progress} {Math.round((proposal.state-1000)/proposal.record.data.milestones.length*100)}%</p>
-                              </div> */}
-                            <MilestoneList milestones={proposal.record.data.milestones} />
-                          </>
+                          <MilestoneList milestones={proposal.record.data.milestones} />
                         ) : (
                           <p>{messages.proposalDetail.noMilestoneInfo}</p>
                         )}

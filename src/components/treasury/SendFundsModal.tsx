@@ -16,6 +16,8 @@ export interface SendFundsModalProps {
   proposalUri?: string;
 }
 
+// ... imports
+
 export default function SendFundsModal({
   isOpen,
   onClose,
@@ -25,6 +27,7 @@ export default function SendFundsModal({
   const { t } = useTranslation();
   const { userInfo } = useUserInfoStore();
   const [amount, setAmount] = useState("");
+  const [txHash, setTxHash] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -46,6 +49,11 @@ export default function SendFundsModal({
       return;
     }
 
+    if (!txHash.trim()) {
+      toast.error(t("sendFunds.errors.txHashRequired") || "请输入交易哈希");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -54,6 +62,7 @@ export default function SendFundsModal({
         amount: amount.trim(),
         proposal_uri: proposalUri || "",
         timestamp: Math.floor(Date.now() / 1000), // UTC 时间戳（秒）
+        tx_hash: txHash.trim(),
       };
 
       // 2. 生成签名
@@ -70,13 +79,14 @@ export default function SendFundsModal({
       if (response) {
         toast.success(t("sendFunds.success") || "拨款提交成功");
         setAmount("");
+        setTxHash("");
         onSuccess?.();
         onClose();
       } else {
         throw new Error(t("sendFunds.errors.submitFailed") || "提交失败");
       }
     } catch (error) {
-      logger.error("拨款失败:");
+      logger.error("拨款失败:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       toast.error(errorMessage || t("sendFunds.errors.submitFailed") || "提交失败，请重试");
     } finally {
@@ -87,6 +97,7 @@ export default function SendFundsModal({
   const handleClose = () => {
     if (!isSubmitting) {
       setAmount("");
+      setTxHash("");
       onClose();
     }
   };
@@ -108,7 +119,7 @@ export default function SendFundsModal({
           text: t("sendFunds.submit") || "提交",
           onClick: handleSubmit,
           variant: "primary",
-          disabled: isSubmitting || !amount.trim(),
+          disabled: isSubmitting || !amount.trim() || !txHash.trim(),
         },
       ]}
     >
@@ -147,6 +158,42 @@ export default function SendFundsModal({
             }}
           />
         </div>
+
+        <div style={{ marginBottom: "16px" }}>
+          <label
+            htmlFor="fund-tx-hash"
+            style={{
+              display: "block",
+              marginBottom: "8px",
+              color: "#FFFFFF",
+              fontSize: "14px",
+              fontWeight: 500,
+            }}
+          >
+            {t("sendFunds.txHashLabel") || "触发交易哈希"}
+          </label>
+          <input
+            id="fund-tx-hash"
+            type="text"
+            value={txHash}
+            onChange={(e) => setTxHash(e.target.value)}
+            placeholder={t("sendFunds.txHashPlaceholder") || "请输入交易哈希 (0x...)"}
+            disabled={isSubmitting}
+            style={{
+              width: "100%",
+              maxWidth: "460px",
+              padding: "12px",
+              backgroundColor: "#1A1D23",
+              border: "1px solid #4C525C",
+              borderRadius: "6px",
+              color: "#FFFFFF",
+              fontSize: "14px",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+        </div>
+
         {proposalUri && (
           <div style={{
             marginTop: "12px",

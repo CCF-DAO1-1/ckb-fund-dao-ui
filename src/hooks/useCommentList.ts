@@ -163,7 +163,8 @@ export function useCommentList(
 
     // 调用请求逻辑
     fetchComments(true, null, true);
-  }, [proposalUri, viewer, limit, fetchComments]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proposalUri, viewer, limit]);
 
   return {
     comments,

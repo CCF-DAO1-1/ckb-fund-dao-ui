@@ -51,7 +51,6 @@ export interface ProposalDetailResponse {
     $type: string;
     created: string;
     data: {
-      state: ProposalStatus;
       background: string;
       budget: string;
       goals: string;

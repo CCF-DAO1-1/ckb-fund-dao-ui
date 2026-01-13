@@ -14,20 +14,25 @@
 // 12: RectificationVote
 // 13: SubmitRectificationReport
 export enum TimelineEventType {
-  DEFAULT = 0,                      // 默认
-  CREATE_AMA = 1,                   // 创建 AMA 会议
-  SUBMIT_AMA_REPORT = 2,            // 提交 AMA 报告
-  INITIATION_VOTE = 3,              // 立项投票
-  UPDATE_RECEIVER_ADDR = 4,         // 更新收款地址
-  SEND_INITIAL_FUND = 5,            // 发送启动资金
-  SUBMIT_MILESTONE_REPORT = 6,      // 提交里程碑报告
-  SUBMIT_DELAY_REPORT = 7,          // 提交延期报告
-  SEND_MILESTONE_FUND = 8,          // 发送里程碑资金
-  SUBMIT_ACCEPTANCE_REPORT = 9,     // 提交验收报告
-  CREATE_REEXAMINE_MEETING = 10,    // 创建复审会议
-  REEXAMINE_VOTE = 11,              // 复审投票
-  RECTIFICATION_VOTE = 12,          // 整改投票
-  SUBMIT_RECTIFICATION_REPORT = 13, // 提交整改报告
+  DEFAULT = 0,                        // 默认
+  PROPOSAL_CREATED = 1,               // 提案创建
+  PROPOSAL_EDITED = 2,                // 提案编辑
+  INITIATION_VOTE = 3,                // 立项投票
+  UPDATE_RECEIVER_ADDR = 4,           // 更新收款地址
+  VOTE_FINISHED = 5,                  // 投票结束
+  SEND_INITIAL_FUND = 6,              // 发送启动资金
+  SUBMIT_MILESTONE_REPORT = 7,        // 提交里程碑报告
+  SUBMIT_DELAY_REPORT = 8,            // 提交延期报告
+  MILESTONE_VOTE = 9,                 // 里程碑投票
+  DELAY_VOTE = 10,                    // 延期投票
+  SEND_MILESTONE_FUND = 11,           // 发送里程碑资金
+  REVIEW_VOTE = 12,                   // 复审投票
+  REEXAMINE_VOTE = 13,                // 复核投票 (原 CreateReexamineMeeting 对应位置似乎变了，根据用户列表 ReexamineVote 是 13)
+  ACCEPTANCE_VOTE = 14,               // 验收投票
+  RECTIFICATION_VOTE = 15,            // 整改投票
+  SUBMIT_ACCEPTANCE_REPORT = 16,      // 提交验收报告
+  CREATE_AMA = 17,                    // 创建 AMA
+  SUBMIT_AMA_REPORT = 18              // 提交 AMA 报告
 }
 
 // 时间线事件状态
@@ -48,6 +53,7 @@ export interface TimelineEvent {
   date: string;
   icon?: string;
   isImportant?: boolean; // 是否为重要事件
+  message?: string; // 事件消息
 }
 
 // 时间线组件 Props

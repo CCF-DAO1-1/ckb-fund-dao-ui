@@ -1,8 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Tag from "@/components/ui/tag/Tag";
 import { ProposalStatus } from "@/utils/proposalUtils";
+import { postUriToHref } from "@/lib/postUriHref";
 import VotingRecordsTable from './VotingRecordsTable';
 import DiscussionRecordsTable from './DiscussionRecordsTable';
 import { useI18n } from '@/contexts/I18nContext';
@@ -42,10 +45,11 @@ interface ProposalItemForModal {
 }
 
 export default function RecordsTable({ activeTab, setActiveTab, className = '' }: RecordsTableProps) {
-  const { messages } = useI18n();
+  const router = useRouter();
+  const { messages, locale } = useI18n();
   const { t } = useTranslation();
   const { proposals, loading, error, page, totalPages, setPage, refetch } = useSelfProposalList({ page: 1, per_page: 10 });
-  
+
   // 任务处理 Modal 状态
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedProposal, setSelectedProposal] = useState<ProposalItemForModal | undefined>(undefined);
@@ -103,9 +107,11 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
       const actions: string[] = [];
       if (state === ProposalStatus.DRAFT) {
         actions.push(messages.recordsTable.actions.edit);
-      }
-      if (state === ProposalStatus.REVIEW) {
         actions.push(messages.recordsTable.actions.startVoting);
+      }
+      if (state === ProposalStatus.INITIATION_VOTE) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        actions.push((messages.recordsTable.actions as any).viewVote);
       }
       if (state === ProposalStatus.MILESTONE) {
         actions.push(messages.recordsTable.actions.milestoneDelivery);
@@ -129,11 +135,26 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
     { key: 'discussion', label: messages.recordsTable.tabs.discussion }
   ];
 
-  
+
 
   const handleAction = (action: string, recordId: string) => {
     logger.log(`执行操作: ${action}, 记录ID: ${recordId}`);
-    
+
+    // 如果是编辑操作
+    if (action === messages.recordsTable.actions.edit) {
+      const path = `/${locale}/proposal/edit/${postUriToHref(recordId)}`;
+      router.push(path);
+      return;
+    }
+
+    // 如果是查看投票操作
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (action === (messages.recordsTable.actions as any).viewVote) {
+      const path = `/${locale}/proposal/${postUriToHref(recordId)}`;
+      router.push(path);
+      return;
+    }
+
     // 如果是开启投票操作
     if (action === messages.recordsTable.actions.startVoting) {
       // 从 proposals 中找到对应的提案
@@ -214,7 +235,11 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
                   ) : (
                     proposalRecords.map((record) => (
                       <tr key={record.id}>
-                        <td className="proposal-name">{record.name}</td>
+                        <td className="proposal-name">
+                          <Link href={`/${locale}/proposal/${postUriToHref(record.id)}`} className="hover:text-primary hover:underline">
+                            {record.name}
+                          </Link>
+                        </td>
                         <td className="proposal-type">{record.type}</td>
                         <td className="proposal-budget">{record.budget}</td>
                         <td className="proposal-status">

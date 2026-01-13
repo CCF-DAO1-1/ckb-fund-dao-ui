@@ -99,7 +99,7 @@ export default function MeetingSelect({
                 <option value="">
                     {loading
                         ? (t("createMeeting.loadingMeetings") || "加载中...")
-                        : (t("createMeeting.selectPlaceholder") || "请选择会议（可选）")}
+                        : (t("createMeeting.selectPlaceholder") || "请选择会议")}
                 </option>
                 {meetings.map((meeting) => {
                     // 格式化会议显示文本 - 使用 title 和 start_time

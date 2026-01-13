@@ -19,6 +19,7 @@ interface Messages {
     examples: string;
     goToNextjs: string;
     backToHome: string;
+    viewDetails: string;
   };
   errors: {
     noPermission: string;
@@ -320,6 +321,19 @@ interface Messages {
     options: {
       approve: string;
       reject: string;
+      abstain: string;
+    },
+    details: {
+      title: string;
+      summary: string;
+      breakdown: string;
+      option: string;
+      votes: string;
+      progress: string;
+      totalVotes: string;
+      validVotes: string;
+      totalWeight: string;
+      validWeight: string;
     };
   };
   verificationResults: {

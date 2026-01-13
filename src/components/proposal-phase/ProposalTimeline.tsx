@@ -2,87 +2,124 @@
 
 import { useState, useEffect } from 'react';
 import { TimelineEventStatus, ProposalTimelineProps, TimelineEvent, TimelineEventType } from '../../types/timeline';
-import { formatDate } from '../../utils/proposalUtils';
+import { formatDateTime } from '../../utils/proposalUtils';
 import { useI18n } from '@/contexts/I18nContext';
 import { getTimeline, TimelineEventRaw } from '@/server/timeline';
+import { IoMdDocument } from "react-icons/io";
+import { Tooltip } from 'react-tooltip';
+import VotingDetailsModal from './VotingDetailsModal';
 import './timeline.css';
 
 import { logger } from '@/lib/logger';
+
+// VotingDetailsData 类型定义
+interface VotingDetailsData {
+  candidate_votes: Array<number | number[]>;
+  valid_vote_sum: number;
+  valid_votes: Array<Array<string | number>>;
+  valid_weight_sum: number;
+  vote_sum: number;
+  weight_sum: number;
+}
+
 // 将 timeline_type 直接映射到 TimelineEventType（后端返回的值就是枚举值）
 const mapTimelineTypeToEventType = (timelineType: number): TimelineEventType => {
   // 确保值在有效范围内
-  if (timelineType >= 0 && timelineType <= 13) {
+  if (timelineType >= 0 && timelineType <= 18) {
     return timelineType as TimelineEventType;
   }
   return TimelineEventType.DEFAULT;
 };
 
-// 根据事件类型生成标题
-const generateEventTitle = (eventType: TimelineEventType): string => {
+// 根据事件类型生成标题的国际化key
+const getEventTitleKey = (eventType: TimelineEventType): string => {
   switch (eventType) {
     case TimelineEventType.DEFAULT:
-      return '默认事件';
-    case TimelineEventType.CREATE_AMA:
-      return '创建 AMA 会议';
-    case TimelineEventType.SUBMIT_AMA_REPORT:
-      return '提交 AMA 报告';
+      return 'proposalPhase.proposalTimeline.eventTypes.default';
+    case TimelineEventType.PROPOSAL_CREATED:
+      return 'proposalPhase.proposalTimeline.eventTypes.proposalCreated';
+    case TimelineEventType.PROPOSAL_EDITED:
+      return 'proposalPhase.proposalTimeline.eventTypes.proposalEdited';
     case TimelineEventType.INITIATION_VOTE:
-      return '立项投票';
+      return 'proposalPhase.proposalTimeline.eventTypes.initiationVote';
     case TimelineEventType.UPDATE_RECEIVER_ADDR:
-      return '更新收款地址';
+      return 'proposalPhase.proposalTimeline.eventTypes.updateReceiverAddr';
+    case TimelineEventType.VOTE_FINISHED:
+      return 'proposalPhase.proposalTimeline.eventTypes.voteFinished';
     case TimelineEventType.SEND_INITIAL_FUND:
-      return '发送启动资金';
+      return 'proposalPhase.proposalTimeline.eventTypes.sendInitialFund';
     case TimelineEventType.SUBMIT_MILESTONE_REPORT:
-      return '提交里程碑报告';
+      return 'proposalPhase.proposalTimeline.eventTypes.submitMilestoneReport';
     case TimelineEventType.SUBMIT_DELAY_REPORT:
-      return '提交延期报告';
+      return 'proposalPhase.proposalTimeline.eventTypes.submitDelayReport';
+    case TimelineEventType.MILESTONE_VOTE:
+      return 'proposalPhase.proposalTimeline.eventTypes.milestoneVote';
+    case TimelineEventType.DELAY_VOTE:
+      return 'proposalPhase.proposalTimeline.eventTypes.delayVote';
     case TimelineEventType.SEND_MILESTONE_FUND:
-      return '发送里程碑资金';
-    case TimelineEventType.SUBMIT_ACCEPTANCE_REPORT:
-      return '提交验收报告';
-    case TimelineEventType.CREATE_REEXAMINE_MEETING:
-      return '创建复审会议';
+      return 'proposalPhase.proposalTimeline.eventTypes.sendMilestoneFund';
+    case TimelineEventType.REVIEW_VOTE:
+      return 'proposalPhase.proposalTimeline.eventTypes.reviewVote';
     case TimelineEventType.REEXAMINE_VOTE:
-      return '复审投票';
+      return 'proposalPhase.proposalTimeline.eventTypes.reexamineVote';
+    case TimelineEventType.ACCEPTANCE_VOTE:
+      return 'proposalPhase.proposalTimeline.eventTypes.acceptanceVote';
     case TimelineEventType.RECTIFICATION_VOTE:
-      return '整改投票';
-    case TimelineEventType.SUBMIT_RECTIFICATION_REPORT:
-      return '提交整改报告';
+      return 'proposalPhase.proposalTimeline.eventTypes.rectificationVote';
+    case TimelineEventType.SUBMIT_ACCEPTANCE_REPORT:
+      return 'proposalPhase.proposalTimeline.eventTypes.submitAcceptanceReport';
+    case TimelineEventType.CREATE_AMA:
+      return 'proposalPhase.proposalTimeline.eventTypes.createAMA';
+    case TimelineEventType.SUBMIT_AMA_REPORT:
+      return 'proposalPhase.proposalTimeline.eventTypes.submitAMAReport';
     default:
-      return '时间线事件';
+      return 'proposalPhase.proposalTimeline.eventTypes.timelineEvent';
   }
-};
-
-// 转换 API 返回的数据格式为组件期望的格式
-const convertTimelineEvents = (rawEvents: TimelineEventRaw[]): TimelineEvent[] => {
-  return rawEvents.map((raw) => {
-    const eventType = mapTimelineTypeToEventType(raw.timeline_type);
-    const title = generateEventTitle(eventType);
-
-    // 根据时间戳判断状态（简化处理，实际可能需要更复杂的逻辑）
-    const now = new Date();
-    const eventDate = new Date(raw.timestamp);
-    const isPast = eventDate < now;
-    const status = isPast ? TimelineEventStatus.COMPLETED : TimelineEventStatus.IN_PROGRESS;
-
-    return {
-      id: String(raw.id),
-      type: eventType,
-      status,
-      title,
-      description: raw.operator?.displayName ? `操作者: ${raw.operator.displayName}` : undefined,
-      date: raw.timestamp,
-      // 重要事件：立项投票、发送启动资金、提交验收报告
-      isImportant: eventType === TimelineEventType.INITIATION_VOTE ||
-        eventType === TimelineEventType.SEND_INITIAL_FUND ||
-        eventType === TimelineEventType.SUBMIT_ACCEPTANCE_REPORT,
-    };
-  });
 };
 
 export default function ProposalTimeline({ proposalUri, className = '' }: ProposalTimelineProps) {
   const { messages, locale } = useI18n();
   const [events, setEvents] = useState<TimelineEvent[]>([]);
+
+  // 根据事件类型获取国际化标题
+  const getEventTitle = (eventType: TimelineEventType): string => {
+    const key = getEventTitleKey(eventType);
+    const parts = key.split('.');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let value: any = messages;
+    for (const part of parts) {
+      value = value?.[part];
+    }
+    return typeof value === 'string' ? value : key;
+  };
+
+  // 转换 API 返回的数据格式为组件期望的格式
+  const convertTimelineEvents = (rawEvents: TimelineEventRaw[]): TimelineEvent[] => {
+    return rawEvents.map((raw) => {
+      const eventType = mapTimelineTypeToEventType(raw.timeline_type);
+      const title = getEventTitle(eventType);
+
+      // 根据时间戳判断状态（简化处理，实际可能需要更复杂的逻辑）
+      const now = new Date();
+      const eventDate = new Date(raw.timestamp);
+      const isPast = eventDate < now;
+      const status = isPast ? TimelineEventStatus.COMPLETED : TimelineEventStatus.IN_PROGRESS;
+
+      return {
+        id: String(raw.id),
+        type: eventType,
+        status,
+        title,
+        description: raw.operator?.displayName ? `${raw.operator.displayName}` : undefined,
+        date: raw.timestamp,
+        // 重要事件：立项投票、发送启动资金、提交验收报告
+        isImportant: eventType === TimelineEventType.INITIATION_VOTE ||
+          eventType === TimelineEventType.SEND_INITIAL_FUND ||
+          eventType === TimelineEventType.SUBMIT_ACCEPTANCE_REPORT,
+        message: raw.message,
+      };
+    });
+  };
 
   // 获取时间线数据
   useEffect(() => {
@@ -135,6 +172,21 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
+  // 投票详情Modal状态
+  const [showVotingModal, setShowVotingModal] = useState(false);
+  const [votingData, setVotingData] = useState<VotingDetailsData | null>(null);
+
+  // 处理查看投票详情
+  const handleViewVotingDetails = (message: string) => {
+    try {
+      const data = JSON.parse(message);
+      setVotingData(data);
+      setShowVotingModal(true);
+    } catch (e) {
+      logger.error('解析投票详情失败', e);
+    }
+  };
+
   return (
     <div className={`timeline-card ${className}`}>
       <h3 className="timeline-title">{messages.proposalPhase.proposalTimeline.title}</h3>
@@ -148,15 +200,73 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
             </div>
             <div className="timeline-content">
               <div className="timeline-event">
-                {event.title}
+                {/* 
+                  特殊处理类型 16 (SUBMIT_ACCEPTANCE_REPORT / SUBMIT_AMA_REPORT 混淆点)
+                  用户要求：timeline_type为16时,展示的时间线标题为,提交AMA报告,后面应有一个文档的icon,tooltip展示message中的说明文字
+                  注意：Enum 中 16 目前定义为 SUBMIT_ACCEPTANCE_REPORT，但我们根据 timeline_type (raw type) 来判断
+                */}
+                {event.type === TimelineEventType.SUBMIT_ACCEPTANCE_REPORT ? (
+                  <div className="flex items-center gap-2">
+                    <span>{getEventTitle(TimelineEventType.SUBMIT_AMA_REPORT)}</span>
+                    {event.message && (
+                      <>
+                        <IoMdDocument
+                          className="text-gray-500 cursor-pointer hover:text-primary outline-none"
+                          data-tooltip-id={`tooltip-${event.id}`}
+                          data-tooltip-content={event.message}
+                          size={14}
+                        />
+                        <Tooltip id={`tooltip-${event.id}`} />
+                      </>
+                    )}
+                  </div>
+                ) : event.type === TimelineEventType.CREATE_AMA ? (
+                  <div className="flex items-center gap-2">
+                    <span>AMA 报告</span>
+                    {event.message && (
+                      <>
+                        <IoMdDocument
+                          className="text-gray-500 cursor-pointer hover:text-primary outline-none"
+                          data-tooltip-id={`tooltip-${event.id}`}
+                          data-tooltip-content={event.message}
+                          size={14}
+                          onClick={() => window.open(event.message, '_blank')}
+                        />
+                        <Tooltip id={`tooltip-${event.id}`} />
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span>{event.title}</span>
+                    {event.type === TimelineEventType.VOTE_FINISHED && event.message && (
+                      <div
+                        className="cursor-pointer text-gray-400 hover:text-primary transition-colors"
+                        onClick={() => handleViewVotingDetails(event.message!)}
+                        title={messages.common?.viewDetails || "View Details"}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="timeline-date">
-                {formatDate(event.date, locale)}
+                {formatDateTime(event.date, locale)}
               </div>
             </div>
           </div>
         ))}
       </div>
+
+      <VotingDetailsModal
+        isOpen={showVotingModal}
+        onClose={() => setShowVotingModal(false)}
+        data={votingData}
+      />
     </div>
   );
 }

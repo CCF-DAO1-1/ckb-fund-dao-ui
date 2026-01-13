@@ -1,7 +1,7 @@
 /**
  * 获取提案详情的自定义Hook
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getProposalDetail, ProposalDetailResponse } from '@/server/proposal';
 import { getPostUriHref } from "@/lib/postUriHref";
 import useUserInfoStore from '@/store/userInfo';
@@ -82,8 +82,23 @@ export function useProposalDetail(uri: string | null): UseProposalDetailResult {
     fetchProposal();
   }, [fetchProposal]);
 
+  // 使用 useMemo 稳定 proposal 对象引用
+  // 只有关键字段变化时才更新对象引用，避免不必要的重新渲染
+  const stableProposal = useMemo(() => {
+    if (!proposal) return null;
+    return proposal;
+  }, [
+    proposal?.cid,
+    proposal?.uri,
+    proposal?.state,
+    proposal?.vote_meta?.id,
+    proposal?.vote_meta?.state,
+    proposal?.record?.created,
+    proposal?.like_count,
+  ]);
+
   return {
-    proposal,
+    proposal: stableProposal,
     loading,
     error,
     refetch: fetchProposal,

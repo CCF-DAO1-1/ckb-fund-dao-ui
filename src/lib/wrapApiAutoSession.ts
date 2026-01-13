@@ -86,6 +86,7 @@ async function refreshToken() {
         err?.status === 400 ||
         err?.error === 'BadJwt' ||
         err?.error === 'ExpiredToken' ||
+        err?.error === 'InvalidRequest' ||
         errorMessage.includes('Token has expired') ||
         errorMessage.includes('BadJwt')
 
@@ -121,7 +122,20 @@ async function refreshToken() {
       }
 
       // 通知队列中的所有请求失败
-      const errorObj = error instanceof Error ? error : new Error(String(error));
+      let errorObj: Error;
+      if (error instanceof Error) {
+        errorObj = error;
+      } else if (typeof error === 'object' && error !== null) {
+        // 尝试提取错误消息
+        const err = error as { message?: string; error?: string };
+        const msg = err.message || err.error || JSON.stringify(error);
+        errorObj = new Error(msg);
+        // 保留原始对象的属性
+        Object.assign(errorObj, error);
+      } else {
+        errorObj = new Error(String(error));
+      }
+
       requestQueue.forEach(({ reject }) => reject(errorObj));
       requestQueue = [];
 
@@ -172,6 +186,7 @@ export default async function sessionWrapApi<T>(apiCall: () => Promise<T>, retry
       err?.status === 401 ||
       err?.error === 'ExpiredToken' ||
       err?.error === 'BadJwt' ||
+      err?.error === 'InvalidRequest' ||
       errorMessage.includes('Token has expired') ||
       errorMessage.includes('token') ||
       errorMessage.includes('BadJwt')
@@ -196,6 +211,7 @@ export default async function sessionWrapApi<T>(apiCall: () => Promise<T>, retry
           refreshErr?.status === 400 ||
           refreshErr?.error === 'BadJwt' ||
           refreshErr?.error === 'ExpiredToken' ||
+          refreshErr?.error === 'InvalidRequest' ||
           refreshErrorMessage.includes('Token has expired') ||
           refreshErrorMessage.includes('BadJwt')
 
