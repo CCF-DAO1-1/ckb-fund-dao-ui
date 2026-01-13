@@ -74,7 +74,7 @@ export default function MilestoneVoting({
 
       // 构造 VotingInfo
       const info: VotingInfo = {
-        proposalId: proposal.id,
+        proposalId: 'id' in proposal ? proposal.id : proposal.cid,
         title: milestoneTitle,
         endTime: new Date().toISOString(), // 已结束，时间不重要，或使用 proposal.vote_meta.end_time
         totalVotes,
@@ -83,18 +83,18 @@ export default function MilestoneVoting({
         userVotingPower: voteWeight * 100000000,
         status: VotingStatus.ENDED,
         conditions: {
-           minTotalVotes: 0, // 无法从 result 获取，暂时设为0或需要额外传入
-           minApprovalRate: 0,
-           currentTotalVotes: totalVotes,
-           currentApprovalRate: approvalRate
+          minTotalVotes: 0, // 无法从 result 获取，暂时设为0或需要额外传入
+          minApprovalRate: 0,
+          currentTotalVotes: totalVotes,
+          currentApprovalRate: approvalRate
         }
       };
 
       // 尝试从 proposal.vote_meta 获取更多信息来完善 info
       if (proposal.vote_meta) {
-         info.conditions.minTotalVotes = 0; // TODO: 这里可能需要硬编码或从其他地方获取默认要求
-         info.conditions.minApprovalRate = 51; // 假设默认51%
-         info.endTime = proposal.vote_meta.end_time;
+        info.conditions.minTotalVotes = 0; // TODO: 这里可能需要硬编码或从其他地方获取默认要求
+        info.conditions.minApprovalRate = 51; // 假设默认51%
+        info.endTime = proposal.vote_meta.end_time;
       }
 
       // 默认里程碑投票要求 (硬编码参考 generateMilestoneVotingInfo 中的值)
@@ -110,9 +110,9 @@ export default function MilestoneVoting({
     // We create a temporary VotingInfo based on local data if available
     // This reduces layout shift while fetching real data
     if (proposal.vote_meta && proposal.vote_meta.id === voteMetaId) {
-       const userVotingPower = voteWeight * 100000000;
-       const info = generateVotingInfo(proposal, proposal.vote_meta, userVotingPower);
-       setVotingInfo(info);
+      const userVotingPower = voteWeight * 100000000;
+      const info = generateVotingInfo(proposal, proposal.vote_meta, userVotingPower);
+      setVotingInfo(info);
     }
   }, [proposal, voteMetaId, voteWeight, finishedResult, milestoneTitle]);
 
@@ -175,8 +175,8 @@ export default function MilestoneVoting({
     const lastParams = lastFetchParamsRef.current;
 
     if (lastParams &&
-        lastParams.voteMetaId === currentParams.voteMetaId &&
-        lastParams.userDid === currentParams.userDid) {
+      lastParams.voteMetaId === currentParams.voteMetaId &&
+      lastParams.userDid === currentParams.userDid) {
       return;
     }
 
@@ -195,20 +195,20 @@ export default function MilestoneVoting({
           const latestVoteRecord = voteStatusList && voteStatusList.length > 0 ? voteStatusList[0] : null;
 
           if (latestVoteRecord) {
-             let userVote: VoteOption | undefined;
-             if (latestVoteRecord.candidates_index === 1) {
-               userVote = VoteOption.APPROVE;
-             } else if (latestVoteRecord.candidates_index === 2) {
-               userVote = VoteOption.REJECT;
-             }
+            let userVote: VoteOption | undefined;
+            if (latestVoteRecord.candidates_index === 1) {
+              userVote = VoteOption.APPROVE;
+            } else if (latestVoteRecord.candidates_index === 2) {
+              userVote = VoteOption.REJECT;
+            }
 
-             setUserVoteInfo({
-               userVote: userVote,
-               userVoteIndex: latestVoteRecord.candidates_index,
-               voteState: latestVoteRecord.state // 0 is pending
-             });
+            setUserVoteInfo({
+              userVote: userVote,
+              userVoteIndex: latestVoteRecord.candidates_index,
+              voteState: latestVoteRecord.state // 0 is pending
+            });
           } else {
-             setUserVoteInfo({});
+            setUserVoteInfo({});
           }
         } catch (error) {
           logger.error("Failed to fetch vote status:", error);
@@ -225,8 +225,8 @@ export default function MilestoneVoting({
 
     // 如果是 finishedResult，直接显示已结束
     if (finishedResult || votingInfo.status === VotingStatus.ENDED) {
-       setTimeLeft(messages.proposalPhase.milestoneVoting.timeLeft.ended);
-       return;
+      setTimeLeft(messages.proposalPhase.milestoneVoting.timeLeft.ended);
+      return;
     }
 
     const updateTimeLeft = () => {
@@ -277,14 +277,14 @@ export default function MilestoneVoting({
 
     try {
       const t = (key: string) => {
-         // Simple implementation of t function for utils
-         const keys = key.split('.');
-         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-         let value: any = messages;
-         for (const k of keys) {
-           value = value?.[k];
-         }
-         return typeof value === 'string' ? value : key;
+        // Simple implementation of t function for utils
+        const keys = key.split('.');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let value: any = messages;
+        for (const k of keys) {
+          value = value?.[k];
+        }
+        return typeof value === 'string' ? value : key;
       };
 
       // Map MilestoneVoteOption to VoteOption
@@ -292,7 +292,7 @@ export default function MilestoneVoting({
 
       // voteMetaId 必须存在才能投票
       if (!voteMetaId) {
-         throw new Error("Missing vote meta ID");
+        throw new Error("Missing vote meta ID");
       }
 
       const result = await handleVoteUtil(userInfo.did, voteMetaId, voteOption, t);
@@ -314,58 +314,58 @@ export default function MilestoneVoting({
       );
 
       if (txResult.success && txResult.txHash) {
-         try {
-           const candidates = result.data.vote_meta.candidates || ["Abstain", "Agree", "Against"];
-           let candidatesIndex = 0;
-           if (voteOption === VoteOption.APPROVE) {
-             candidatesIndex = candidates.indexOf("Agree");
-             if (candidatesIndex === -1) candidatesIndex = 1;
-           } else {
-             candidatesIndex = candidates.indexOf("Against");
-             if (candidatesIndex === -1) candidatesIndex = 2;
-           }
+        try {
+          const candidates = result.data.vote_meta.candidates || ["Abstain", "Agree", "Against"];
+          let candidatesIndex = 0;
+          if (voteOption === VoteOption.APPROVE) {
+            candidatesIndex = candidates.indexOf("Agree");
+            if (candidatesIndex === -1) candidatesIndex = 1;
+          } else {
+            candidatesIndex = candidates.indexOf("Against");
+            if (candidatesIndex === -1) candidatesIndex = 2;
+          }
 
-           const updateParams = {
-             id: voteMetaId,
-             tx_hash: txResult.txHash,
-             candidates_index: candidatesIndex,
-             timestamp: Math.floor(Date.now() / 1000),
-           };
+          const updateParams = {
+            id: voteMetaId,
+            tx_hash: txResult.txHash,
+            candidates_index: candidatesIndex,
+            timestamp: Math.floor(Date.now() / 1000),
+          };
 
-           const { signed_bytes, signing_key_did } = await generateSignature(updateParams);
+          const { signed_bytes, signing_key_did } = await generateSignature(updateParams);
 
-           await updateVoteTxHash({
-             did: userInfo.did,
-             params: updateParams,
-             signed_bytes,
-             signing_key_did
-           });
-         } catch (e) {
-           logger.error("Failed to update tx hash", e);
-         }
+          await updateVoteTxHash({
+            did: userInfo.did,
+            params: updateParams,
+            signed_bytes,
+            signing_key_did
+          });
+        } catch (e) {
+          logger.error("Failed to update tx hash", e);
+        }
 
-         const candidatesIndex = voteOption === VoteOption.APPROVE ? 1 : 2;
-         setUserVoteInfo({
-           userVote: voteOption,
-           userVoteIndex: candidatesIndex,
-           voteState: 0
-         });
+        const candidatesIndex = voteOption === VoteOption.APPROVE ? 1 : 2;
+        setUserVoteInfo({
+          userVote: voteOption,
+          userVoteIndex: candidatesIndex,
+          voteState: 0
+        });
 
-         // Poll for status update
-         setTimeout(() => {
-            setUserVoteInfo(prev => {
-              if (prev && prev.voteState === 0) {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { voteState, ...rest } = prev;
-                return rest;
-              }
-              return prev;
-            });
-         }, 30000);
+        // Poll for status update
+        setTimeout(() => {
+          setUserVoteInfo(prev => {
+            if (prev && prev.voteState === 0) {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { voteState, ...rest } = prev;
+              return rest;
+            }
+            return prev;
+          });
+        }, 30000);
 
-         setTimeout(() => refreshVoteDetail(), 2000);
+        setTimeout(() => refreshVoteDetail(), 2000);
 
-         setShowVoteSuccessModal(true);
+        setShowVoteSuccessModal(true);
       } else {
         const errorMsg = txResult.error || messages.modal.voteModal.voteFailedMessage;
         setVoteErrorMessage(errorMsg);
@@ -408,11 +408,11 @@ export default function MilestoneVoting({
     <div className={`milestone-voting-card ${className}`}>
       {/* Loading overlay for voting */}
       {isVoting && (
-         <div className="voting-overlay">
-           <div className="voting-text">
-             {(messages.proposalPhase.proposalVoting as { voting?: string })?.voting || 'Voting...'}
-           </div>
-         </div>
+        <div className="voting-overlay">
+          <div className="voting-text">
+            {(messages.proposalPhase.proposalVoting as { voting?: string })?.voting || 'Voting...'}
+          </div>
+        </div>
       )}
 
       <div className="milestone-voting-header">

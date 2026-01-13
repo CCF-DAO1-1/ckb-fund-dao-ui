@@ -6,7 +6,7 @@ import { VotingDetailsData } from '../../types/voting';
 import { formatDateTime } from '../../utils/proposalUtils';
 import { useI18n } from '@/contexts/I18nContext';
 import { getTimeline, TimelineEventRaw } from '@/server/timeline';
-import { IoMdDocument } from "react-icons/io";
+import { IoMdDocument, IoMdEye } from "react-icons/io";
 import { Tooltip } from 'react-tooltip';
 import VotingDetailsModal from './VotingDetailsModal';
 import './timeline.css';
@@ -213,12 +213,12 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
                   注意：Enum 中 16 目前定义为 SUBMIT_ACCEPTANCE_REPORT，但我们根据 timeline_type (raw type) 来判断
                 */}
                 {event.type === TimelineEventType.SUBMIT_ACCEPTANCE_REPORT ? (
-                  <div className="flex items-center gap-2">
+                  <div className="ama-icon-container">
                     <span>{getEventTitle(TimelineEventType.SUBMIT_AMA_REPORT)}</span>
                     {event.message && (
                       <>
                         <IoMdDocument
-                          className="text-gray-500 cursor-pointer hover:text-primary outline-none"
+                          className="document-icon"
                           data-tooltip-id={`tooltip-${event.id}`}
                           data-tooltip-content={event.message}
                           size={14}
@@ -228,12 +228,12 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
                     )}
                   </div>
                 ) : event.type === TimelineEventType.CREATE_AMA ? (
-                  <div className="flex items-center gap-2">
+                  <div className="ama-icon-container">
                     <span>AMA 报告</span>
                     {event.message && (
                       <>
                         <IoMdDocument
-                          className="text-gray-500 cursor-pointer hover:text-primary outline-none"
+                          className="document-icon"
                           data-tooltip-id={`tooltip-${event.id}`}
                           data-tooltip-content={event.message}
                           size={14}
@@ -244,18 +244,15 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <div className="timeline-event-content">
                     <span>{event.title}</span>
                     {event.type === TimelineEventType.VOTE_FINISHED && event.message && (
                       <span
-                        className="cursor-pointer text-gray-400 hover:text-primary transition-colors"
+                        className="view-details-icon"
                         onClick={() => handleViewVotingDetails(event.message!)}
                         title={messages.common?.viewDetails || "View Details"}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                          <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
+                        <IoMdEye />
                       </span>
                     )}
                   </div>

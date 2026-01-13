@@ -11,8 +11,7 @@ import './milestone.css';
 
 export default function MilestoneTracking({
   milestones,
-  currentMilestone, // eslint-disable-line @typescript-eslint/no-unused-vars
-  totalMilestones, // eslint-disable-line @typescript-eslint/no-unused-vars
+
   className = '',
   voteWeight,
   proposal
@@ -127,7 +126,7 @@ export default function MilestoneTracking({
       </div>
 
       {/* 里程碑投票区域 */}
-      <div className="milestone-voting-section">
+      {/* <div className="milestone-voting-section">
         {milestones
           .filter(milestone => {
             // 只在进行中状态显示
@@ -153,7 +152,7 @@ export default function MilestoneTracking({
               finishedResult={!milestone.voteMetaId ? latestVoteResult || undefined : undefined}
             />
           ))}
-      </div>
+      </div> */}
     </div>
   );
 }

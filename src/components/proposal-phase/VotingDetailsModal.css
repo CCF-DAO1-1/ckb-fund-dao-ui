@@ -1,0 +1,130 @@
+/* Voting Details Modal Styles */
+.voting-details-section {
+  padding-top: 0.5rem;
+  padding-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.voting-summary-card {
+  background-color: #141619;
+  border: 1px solid #2a2e35;
+  border-radius: 0.75rem; /* rounded-xl */
+  padding: 1.25rem; /* p-5 */
+}
+
+.section-title {
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-size: 0.75rem; /* text-xs */
+  color: #8a949e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em; /* tracking-wider */
+}
+
+.voting-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  row-gap: 1.5rem;
+  column-gap: 2rem;
+}
+
+.summary-item-label {
+  color: #8a949e;
+  font-size: 0.875rem; /* text-sm */
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.summary-item-value {
+  font-weight: 700;
+  font-size: 1.25rem; /* text-xl */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; /* font-mono */
+  color: #ffffff;
+}
+
+.summary-item-value.highlight {
+  color: #00cc9b;
+}
+
+.voting-breakdown-card {
+  background-color: #141619;
+  border: 1px solid #2a2e35;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.voting-table {
+  width: 100%;
+  font-size: 0.875rem; /* text-sm */
+  border-collapse: collapse;
+}
+
+.voting-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: #8a949e;
+  font-weight: 600;
+  border-bottom: 1px solid #2a2e35;
+}
+
+.voting-table th.text-right {
+  text-align: right;
+}
+
+.voting-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #2a2e35;
+}
+
+.voting-table tr:last-child td {
+  border-bottom: none;
+}
+
+.voting-table tr:hover {
+  background-color: #1c1f26;
+  transition: background-color 0.2s;
+}
+
+.option-cell {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.votes-cell-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  color: #8a949e;
+}
+
+.percentage-text {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 0.125rem;
+}
+
+/* Option Colors */
+.text-yellow-500 { color: #eab308; }
+.text-green-brand { color: #00cc9b; }
+.text-red-500 { color: #ef4444; }
+
+.bg-yellow-500 { background-color: #eab308; }
+.bg-green-brand { background-color: #00cc9b; }
+.bg-red-500 { background-color: #ef4444; }
+
+.progress-track {
+  width: 100%;
+  background-color: #2a2e35;
+  border-radius: 9999px;
+  height: 0.5rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.5s ease-out;
+}

@@ -89,10 +89,53 @@
 
 /* 脉冲动画 */
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.6;
   }
+}
+
+.timeline-event-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.document-icon {
+  color: #6B7280;
+  /* text-gray-500 */
+  cursor: pointer;
+  outline: none;
+  width: 14px;
+  height: 14px;
+}
+
+.document-icon:hover {
+  color: #00cc9b;
+  /* hover:text-primary */
+}
+
+.view-details-icon {
+  cursor: pointer;
+  color: #9CA3AF;
+  /* text-gray-400 */
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.view-details-icon:hover {
+  color: #00cc9b;
+  /* hover:text-primary */
+}
+
+.ama-icon-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }

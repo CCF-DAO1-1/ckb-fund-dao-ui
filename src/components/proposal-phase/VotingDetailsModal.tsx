@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from "@/utils/i18n";
 import Modal from "@/components/ui/modal/Modal";
 import { formatNumber } from "@/utils/proposalUtils";
+import './VotingDetailsModal.css';
 
 interface VotingDetailsData {
     candidate_votes: Array<number | number[]>;
@@ -66,8 +67,8 @@ export default function VotingDetailsModal({
             label: t("modal.voting.options.approve") || "Agree",
             value: agreeVotes,
             percentage: getPercentage(agreeVotes),
-            color: "bg-[#00cc9b]",
-            textColor: "text-[#00cc9b]"
+            color: "bg-green-brand",
+            textColor: "text-green-brand"
         },
         {
             label: t("modal.voting.options.reject") || "Reject",
@@ -92,45 +93,45 @@ export default function VotingDetailsModal({
                 },
             ]}
         >
-            <div className="space-y-6 pt-2 pb-4">
+            <div className="voting-details-section">
                 {/* Summary Section */}
-                <div className="bg-[#141619] border border-[#2a2e35] p-5 rounded-xl">
-                    <h4 className="font-bold mb-4 text-xs text-[#8a949e] uppercase tracking-wider">
+                <div className="voting-summary-card">
+                    <h4 className="section-title">
                         {t("modal.voting.details.summary") || "Summary"}
                     </h4>
-                    <div className="grid grid-cols-2 gap-y-6 gap-x-8">
+                    <div className="voting-summary-grid">
                         <div>
-                            <span className="text-[#8a949e] text-sm block mb-1">
+                            <span className="summary-item-label">
                                 {t("modal.voting.details.totalVotes") || "Total Votes"}
                             </span>
-                            <span className="font-bold text-xl text-white font-mono">
+                            <span className="summary-item-value">
                                 {data.vote_sum}
                             </span>
                         </div>
                         <div>
-                            <span className="text-[#8a949e] text-sm block mb-1">
+                            <span className="summary-item-label">
                                 {t("modal.voting.details.validVotes") || "Valid Votes"}
                             </span>
-                            <span className="font-bold text-xl text-[#00cc9b] font-mono">
+                            <span className="summary-item-value highlight">
                                 {data.valid_vote_sum}
                             </span>
                         </div>
                         {data.weight_sum > 0 && (
                             <>
                                 <div>
-                                    <span className="text-[#8a949e] text-sm block mb-1">
+                                    <span className="summary-item-label">
                                         {t("modal.voting.details.totalWeight") || "Total Weight"}
                                     </span>
-                                    <span className="font-bold text-xl text-white font-mono">
-                                        {formatNumber(data.weight_sum)}
+                                    <span className="summary-item-value">
+                                        {formatNumber(data.weight_sum / 100000000)}
                                     </span>
                                 </div>
                                 <div>
-                                    <span className="text-[#8a949e] text-sm block mb-1">
+                                    <span className="summary-item-label">
                                         {t("modal.voting.details.validWeight") || "Valid Weight"}
                                     </span>
-                                    <span className="font-bold text-xl text-[#00cc9b] font-mono">
-                                        {formatNumber(data.valid_weight_sum)}
+                                    <span className="summary-item-value highlight">
+                                        {formatNumber(data.valid_weight_sum / 100000000)}
                                     </span>
                                 </div>
                             </>
@@ -139,48 +140,47 @@ export default function VotingDetailsModal({
                 </div>
 
                 {/* Breakdown Section */}
-                {/* Breakdown Section */}
                 <div>
-                    <h4 className="font-bold mb-4 text-xs text-[#8a949e] uppercase tracking-wider px-1">
+                    <h4 className="section-title">
                         {t("modal.voting.details.breakdown") || "Breakdown"}
                     </h4>
-                    <div className="bg-[#141619] border border-[#2a2e35] rounded-xl overflow-hidden">
-                        <table className="w-full text-sm">
+                    <div className="voting-breakdown-card">
+                        <table className="voting-table">
                             <thead>
-                                <tr className="border-b border-[#2a2e35]">
-                                    <th className="text-left py-3 px-4 text-[#8a949e] font-semibold w-1/4">
+                                <tr>
+                                    <th style={{ width: '25%' }}>
                                         {t("modal.voting.details.option") || "Option"}
                                     </th>
-                                    <th className="text-right py-3 px-4 text-[#8a949e] font-semibold w-1/4">
+                                    <th className="text-right" style={{ width: '25%' }}>
                                         {t("modal.voting.details.votes") || "Votes"}
                                     </th>
-                                    <th className="text-left py-3 px-4 text-[#8a949e] font-semibold w-1/2">
+                                    <th style={{ width: '50%' }}>
                                         {t("modal.voting.details.progress") || "Progress"}
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#2a2e35]">
+                            <tbody>
                                 {options.map((option, index) => (
-                                    <tr key={index} className="hover:bg-[#1c1f26] transition-colors">
-                                        <td className="py-3 px-4 text-white font-medium">
+                                    <tr key={index}>
+                                        <td className="option-cell">
                                             {option.label}
                                         </td>
-                                        <td className="py-3 px-4 text-right font-mono text-[#8a949e]">
-                                            <div className="flex flex-col items-end">
+                                        <td className="text-right">
+                                            <div className="votes-cell-content">
                                                 <span>
                                                     {option.value > 1000
                                                         ? formatNumber(option.value)
                                                         : option.value}
                                                 </span>
-                                                <span className={`text-xs ${option.textColor} mt-0.5 font-bold`}>
+                                                <span className={`percentage-text ${option.textColor}`}>
                                                     {option.percentage}%
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="py-3 px-4">
-                                            <div className="w-full bg-[#2a2e35] rounded-full h-2 overflow-hidden">
+                                        <td>
+                                            <div className="progress-track">
                                                 <div
-                                                    className={`h-full rounded-full ${option.color} transition-all duration-500 ease-out`}
+                                                    className={`progress-bar ${option.color}`}
                                                     style={{ width: `${option.percentage}%` }}
                                                 ></div>
                                             </div>
