@@ -36,9 +36,16 @@ export interface MilestoneVotingInfo {
   };
 }
 
+import { ProposalDetailResponse } from '@/server/proposal';
+import { Proposal } from '@/utils/proposalUtils';
+import { VotingDetailsData } from '@/types/voting';
+
 // 里程碑投票组件 Props
 export interface MilestoneVotingProps {
-  votingInfo: MilestoneVotingInfo;
-  onVote: (milestoneId: string, option: MilestoneVoteOption) => void;
+  voteMetaId?: number;
+  voteWeight: number;
+  proposal: Proposal | ProposalDetailResponse;
+  milestoneTitle: string;
   className?: string;
+  finishedResult?: VotingDetailsData; // 结束的投票结果（来自时间线）
 }

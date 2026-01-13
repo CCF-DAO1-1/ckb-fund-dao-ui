@@ -1,50 +1,64 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import { MilestoneTrackingProps, MilestoneStatus } from '../../types/milestone';
+import { VotingDetailsData } from '../../types/voting';
 import MilestoneVoting from './MilestoneVoting';
-import { MilestoneVoteOption } from '../../types/milestoneVoting';
 import { useI18n } from '@/contexts/I18nContext';
-import useUserInfoStore from '@/store/userInfo';
-import { prepareVote } from '@/server/proposal';
+import { getTimeline } from '@/server/timeline';
+import { logger } from '@/lib/logger';
 import './milestone.css';
 
-import { logger } from '@/lib/logger';
 export default function MilestoneTracking({
   milestones,
   currentMilestone, // eslint-disable-line @typescript-eslint/no-unused-vars
   totalMilestones, // eslint-disable-line @typescript-eslint/no-unused-vars
-  className = ''
+  className = '',
+  voteWeight,
+  proposal
 }: MilestoneTrackingProps) {
   const { messages } = useI18n();
-  const { userInfo } = useUserInfoStore();
+  const [latestVoteResult, setLatestVoteResult] = useState<VotingDetailsData | null>(null);
+  const fetchedRef = useRef<string | null>(null);
 
-  // 处理里程碑投票
-  const handleMilestoneVote = async (milestoneId: string, option: MilestoneVoteOption) => {
-    if (!userInfo?.did) {
-      const errorMsg = messages.voting?.errors?.userNotLoggedIn || '投票失败: 用户未登录';
-      logger.error(errorMsg);
-      return;
-    }
+  // 获取提案URI
+  const proposalUri = 'uri' in proposal ? proposal.uri : null;
 
-    try {
-      // 暂时使用 vote_meta_id = 2
-      const voteMetaId = 1;
+  // 获取时间线数据以查找最新的投票结果
+  useEffect(() => {
+    if (!proposalUri) return;
+    if (fetchedRef.current === proposalUri) return;
 
-      const response = await prepareVote({
-        did: userInfo.did,
-        vote_meta_id: voteMetaId,
-      });
+    const fetchTimeline = async () => {
+      fetchedRef.current = proposalUri;
+      try {
+        const response = await getTimeline({ uri: proposalUri });
+        if (response && Array.isArray(response)) {
+          // 查找最近的 VOTE_FINISHED (type 5) 事件
+          // 假设 API 返回的顺序是按时间倒序或需要排序
+          // 我们先按时间戳倒序排序
+          const sortedEvents = [...response].sort((a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          );
 
-      const approveText = messages.voting?.options?.approve || '赞成';
-      const rejectText = messages.voting?.options?.reject || '反对';
-      const optionText = option === MilestoneVoteOption.APPROVE ? approveText : rejectText;
-      const logMsg = messages.voting?.logs?.milestoneVotePrepareSuccess || '里程碑投票准备成功';
-      logger.log(`${logMsg}: 里程碑 ${milestoneId}, vote_meta_id=${voteMetaId}, option=${optionText}`);
-    } catch (error) {
-      const errorLogMsg = messages.voting?.logs?.milestoneVotePrepareFailed || '里程碑投票准备失败';
-      logger.error(errorLogMsg + ':', error);
-    }
-  };
+          const voteFinishedEvent = sortedEvents.find(e => e.timeline_type === 5);
+
+          if (voteFinishedEvent && voteFinishedEvent.message) {
+            try {
+              const result = JSON.parse(voteFinishedEvent.message) as VotingDetailsData;
+              setLatestVoteResult(result);
+            } catch (e) {
+              logger.error('Failed to parse voting result from timeline:', e);
+            }
+          }
+        }
+      } catch (err) {
+        logger.error('Failed to fetch timeline for milestone tracking:', err);
+      }
+    };
+
+    fetchTimeline();
+  }, [proposalUri]);
 
   // 获取里程碑状态样式
   const getMilestoneStatusClass = (status: MilestoneStatus) => {
@@ -107,21 +121,6 @@ export default function MilestoneTracking({
                   {getMilestoneStatusText(milestone.status)}
                 </span>
               </div>
-
-              {/* 进度条 - 仅在进行中状态显示 */}
-              {/* {milestone.status === MilestoneStatus.IN_PROGRESS && (
-                <div className="milestone-progress">
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${milestone.progress}%` }}
-                    />
-                  </div>
-                  <span className="progress-text">{milestone.progress}%</span>
-                </div>
-              )} */}
-
-
             </div>
           </div>
         ))}
@@ -130,13 +129,28 @@ export default function MilestoneTracking({
       {/* 里程碑投票区域 */}
       <div className="milestone-voting-section">
         {milestones
-          .filter(milestone => milestone.votingInfo && milestone.status === MilestoneStatus.IN_PROGRESS)
+          .filter(milestone => {
+            // 只在进行中状态显示
+            if (milestone.status !== MilestoneStatus.IN_PROGRESS) return false;
+
+            // 如果有 voteMetaId，说明正在投票，显示
+            if (milestone.voteMetaId) return true;
+
+            // 如果没有 voteMetaId（投票结束），但有最新的投票结果，也显示
+            if (latestVoteResult) return true;
+
+            return false;
+          })
           .map((milestone) => (
             <MilestoneVoting
               key={`voting-${milestone.id}`}
-              votingInfo={milestone.votingInfo!}
-              onVote={handleMilestoneVote}
+              voteMetaId={milestone.voteMetaId || 0} // 如果没有ID但有结果，传0或其他占位符
+              voteWeight={voteWeight}
+              proposal={proposal}
+              milestoneTitle={milestone.title}
               className="milestone-voting-item"
+              // 如果没有正在进行的投票ID，则传入结束的结果
+              finishedResult={!milestone.voteMetaId ? latestVoteResult || undefined : undefined}
             />
           ))}
       </div>

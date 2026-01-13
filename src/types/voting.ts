@@ -39,6 +39,16 @@ export interface UserVoteInfo {
   voteState?: number;      // 投票状态（0: 上链中, 其他: 已确认）
 }
 
+// 投票详情数据（来自时间线事件消息）
+export interface VotingDetailsData {
+  candidate_votes: Array<number | number[]>;
+  valid_vote_sum: number;
+  valid_votes: Array<Array<string | number>>;
+  valid_weight_sum: number;
+  vote_sum: number;
+  weight_sum: number;
+}
+
 import { ProposalDetailResponse } from '@/server/proposal';
 
 // 投票组件 Props

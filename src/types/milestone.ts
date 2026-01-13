@@ -1,4 +1,6 @@
 import { MilestoneVotingInfo } from './milestoneVoting';
+import { Proposal } from '@/utils/proposalUtils';
+import { ProposalDetailResponse } from '@/server/proposal';
 
 // 里程碑状态枚举
 export enum MilestoneStatus {
@@ -19,7 +21,9 @@ export interface Milestone {
   endDate: string;
   progress: number; // 0-100 百分比
   deliverables?: string[]; // 交付物列表
+  /** @deprecated Use voteMetaId instead */
   votingInfo?: MilestoneVotingInfo;
+  voteMetaId?: number;
 }
 
 // 里程碑追踪组件 Props
@@ -28,4 +32,6 @@ export interface MilestoneTrackingProps {
   currentMilestone: number;
   totalMilestones: number;
   className?: string;
+  voteWeight: number;
+  proposal: Proposal | ProposalDetailResponse;
 }

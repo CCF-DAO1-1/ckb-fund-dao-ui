@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { TimelineEventStatus, ProposalTimelineProps, TimelineEvent, TimelineEventType } from '../../types/timeline';
+import { VotingDetailsData } from '../../types/voting';
 import { formatDateTime } from '../../utils/proposalUtils';
 import { useI18n } from '@/contexts/I18nContext';
 import { getTimeline, TimelineEventRaw } from '@/server/timeline';
@@ -12,15 +13,7 @@ import './timeline.css';
 
 import { logger } from '@/lib/logger';
 
-// VotingDetailsData 类型定义
-interface VotingDetailsData {
-  candidate_votes: Array<number | number[]>;
-  valid_vote_sum: number;
-  valid_votes: Array<Array<string | number>>;
-  valid_weight_sum: number;
-  vote_sum: number;
-  weight_sum: number;
-}
+// VotingDetailsData imported from types/voting
 
 // 将 timeline_type 直接映射到 TimelineEventType（后端返回的值就是枚举值）
 const mapTimelineTypeToEventType = (timelineType: number): TimelineEventType => {
@@ -254,7 +247,7 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
                   <div className="flex items-center gap-2">
                     <span>{event.title}</span>
                     {event.type === TimelineEventType.VOTE_FINISHED && event.message && (
-                      <div
+                      <span
                         className="cursor-pointer text-gray-400 hover:text-primary transition-colors"
                         onClick={() => handleViewVotingDetails(event.message!)}
                         title={messages.common?.viewDetails || "View Details"}
@@ -263,7 +256,7 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                           <circle cx="12" cy="12" r="3"></circle>
                         </svg>
-                      </div>
+                      </span>
                     )}
                   </div>
                 )}

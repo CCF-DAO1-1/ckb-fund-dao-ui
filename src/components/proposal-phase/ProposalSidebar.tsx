@@ -44,6 +44,7 @@ const adaptProposalDetail = (detail: ProposalDetailResponse): Proposal => {
     milestones: milestonesInfo,
     category: proposalData.proposalType,
     tags: [],
+    vote_meta: detail.vote_meta,
   };
 };
 
@@ -109,6 +110,8 @@ export default function ProposalSidebar({ proposal }: ProposalSidebarProps) {
           milestones={milestones}
           currentMilestone={milestones.find(m => m.status === 'in_progress')?.index || 1}
           totalMilestones={proposal.record.data.milestones?.length || 3}
+          voteWeight={voteWeight}
+          proposal={proposal}
         />
       )}
 

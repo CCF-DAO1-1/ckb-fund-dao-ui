@@ -1,7 +1,7 @@
 /**
  * 提案相关API接口定义
  */
-import { ProposalStatus } from "@/utils/proposalUtils";
+import { ProposalStatus, VoteMetaItem } from "@/utils/proposalUtils";
 import defineAPI from "./defineAPI";
 
 // 提案详情接口的参数类型
@@ -19,19 +19,7 @@ export interface ProposalMilestone {
   index:number
 }
 
-// 投票元数据项类型（从提案详情接口返回）
-export interface VoteMetaItem {
-  id: number; // 投票ID
-  proposal_uri: string; // 提案URI
-  candidates: string[]; // 候选人列表（如 ["Abstain", "Agree", "Against"]）
-  start_time: string; // 投票开始时间（ISO 8601格式）
-  end_time: string; // 投票结束时间（ISO 8601格式）
-  created: string; // 创建时间（ISO 8601格式）
-  creater: string; // 创建者DID
-  state: number; // 投票状态
-  tx_hash: string | null; // 交易哈希
-  whitelist_id?: string; // 白名单ID
-}
+// VoteMetaItem imported from @/utils/proposalUtils
 
 // 提案详情接口的响应类型
 export interface ProposalDetailResponse {

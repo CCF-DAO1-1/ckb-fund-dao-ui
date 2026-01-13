@@ -39,6 +39,20 @@ export enum ProposalStatus {
   REJECTED = END,                    // 已拒绝 -> 结束
   ENDED = END,                       // 结束 -> 结束
 }
+// 投票元数据项类型
+export interface VoteMetaItem {
+  id: number; // 投票ID
+  proposal_uri: string; // 提案URI
+  candidates: string[]; // 候选人列表（如 ["Abstain", "Agree", "Against"]）
+  start_time: string; // 投票开始时间（ISO 8601格式）
+  end_time: string; // 投票结束时间（ISO 8601格式）
+  created: string; // 创建时间（ISO 8601格式）
+  creater: string; // 创建者DID
+  state: number; // 投票状态
+  tx_hash: string | null; // 交易哈希
+  whitelist_id?: string; // 白名单ID
+}
+
 // 提案接口
 export interface Proposal {
   id: string;
@@ -63,6 +77,7 @@ export interface Proposal {
     oppose: number;  // 反对票百分比
     totalVotes: number; // 总投票数
   };
+  vote_meta?: VoteMetaItem; // 投票元数据
 
   category: string;
   tags: string[];
