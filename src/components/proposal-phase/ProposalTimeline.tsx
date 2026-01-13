@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { TimelineEventStatus, ProposalTimelineProps, TimelineEvent, TimelineEventType } from '../../types/timeline';
 import { formatDateTime } from '../../utils/proposalUtils';
 import { useI18n } from '@/contexts/I18nContext';
@@ -81,6 +81,9 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
   const { messages, locale } = useI18n();
   const [events, setEvents] = useState<TimelineEvent[]>([]);
 
+  // 使用 ref 来追踪已经请求过的 uri，避免重复请求
+  const lastFetchedUriRef = useRef<string | null>(null);
+
   // 根据事件类型获取国际化标题
   const getEventTitle = (eventType: TimelineEventType): string => {
     const key = getEventTitleKey(eventType);
@@ -94,7 +97,7 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
   };
 
   // 转换 API 返回的数据格式为组件期望的格式
-  const convertTimelineEvents = (rawEvents: TimelineEventRaw[]): TimelineEvent[] => {
+  const convertTimelineEvents = useCallback((rawEvents: TimelineEventRaw[]): TimelineEvent[] => {
     return rawEvents.map((raw) => {
       const eventType = mapTimelineTypeToEventType(raw.timeline_type);
       const title = getEventTitle(eventType);
@@ -119,16 +122,25 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
         message: raw.message,
       };
     });
-  };
+  }, []);
 
   // 获取时间线数据
   useEffect(() => {
     if (!proposalUri) {
       setEvents([]);
+      lastFetchedUriRef.current = null;
+      return;
+    }
+
+    // 如果 uri 与上次请求相同，跳过请求
+    if (lastFetchedUriRef.current === proposalUri) {
       return;
     }
 
     const fetchTimeline = async () => {
+      // 在请求前更新 ref，防止重复请求
+      lastFetchedUriRef.current = proposalUri;
+
       try {
         const response = await getTimeline({ uri: proposalUri });
 
@@ -139,15 +151,17 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
         } else {
           setEvents([]);
         }
-      } catch (error) {
-        logger.error('获取时间线失败:');
+      } catch (err) {
+        logger.error('获取时间线失败:', err);
         // 如果获取失败，设置为空数组，不显示时间线
         setEvents([]);
+        // 请求失败时重置标记，允许重试
+        lastFetchedUriRef.current = null;
       }
     };
 
     fetchTimeline();
-  }, [proposalUri]);
+  }, [proposalUri, convertTimelineEvents]);
 
   // 使用获取的时间线数据
   const displayEvents = events || [];

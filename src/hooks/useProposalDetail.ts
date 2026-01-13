@@ -1,7 +1,7 @@
 /**
  * 获取提案详情的自定义Hook
  */
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { getProposalDetail, ProposalDetailResponse } from '@/server/proposal';
 import { getPostUriHref } from "@/lib/postUriHref";
 import useUserInfoStore from '@/store/userInfo';
@@ -36,8 +36,14 @@ export function useProposalDetail(uri: string | null): UseProposalDetailResult {
   const [error, setError] = useState<string>('');
   
   // 从 store 中获取用户的 did 作为 viewer
-  const { userInfo } = useUserInfoStore();
-  const viewer = userInfo?.did || null;
+  const userInfoStore = useUserInfoStore();
+
+  // 使用 ref 来追踪是否已经发起过请求，避免重复请求
+  const hasFetchedRef = useRef<string | null>(null);
+
+  // 使用 ref 来存储 userInfoStore，避免作为依赖项
+  const userInfoStoreRef = useRef(userInfoStore);
+  userInfoStoreRef.current = userInfoStore;
 
   const fetchProposal = useCallback(async () => {
     if (!uri) {
@@ -46,21 +52,30 @@ export function useProposalDetail(uri: string | null): UseProposalDetailResult {
       return;
     }
 
+    // 防止相同 uri 的重复请求
+    const normalizedUri = getPostUriHref(uri);
+    if (hasFetchedRef.current === normalizedUri) {
+      return;
+    }
+    hasFetchedRef.current = normalizedUri;
+
     try {
       setLoading(true);
       setError('');
-      
-      const data = await getProposalDetail({ 
-        uri: getPostUriHref(uri),
-        viewer: viewer 
+
+      // 从 ref 中获取最新的 userInfo，避免因 userInfo 变化导致重复请求
+      const viewer = userInfoStoreRef.current.userInfo?.did || null;
+      const data = await getProposalDetail({
+        uri: normalizedUri,
+        viewer: viewer
       });
-      
+
       setProposal(data);
     } catch (err) {
       logger.error('获取提案详情失败:', err);
-      
+
       const error = err as { response?: { status?: number }; message?: string };
-      
+
       // 根据不同的错误类型设置错误信息
       if (error.response?.status === 404) {
         setError('提案不存在');
@@ -71,14 +86,18 @@ export function useProposalDetail(uri: string | null): UseProposalDetailResult {
       } else {
         setError(error.message || '获取提案详情失败，请稍后重试');
       }
-      
+
       setProposal(null);
+      // 请求失败时重置标记，允许重试
+      hasFetchedRef.current = null;
     } finally {
       setLoading(false);
     }
-  }, [uri, viewer]);
+  }, [uri]);
 
   useEffect(() => {
+    // 当 uri 变化时，重置标记以允许新的请求
+    hasFetchedRef.current = null;
     fetchProposal();
   }, [fetchProposal]);
 
