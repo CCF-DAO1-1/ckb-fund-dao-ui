@@ -113,9 +113,9 @@ export default function RecordsTable({ activeTab, setActiveTab, className = '' }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         actions.push((messages.recordsTable.actions as any).viewVote);
       }
-      if (state === ProposalStatus.MILESTONE) {
-        actions.push(messages.recordsTable.actions.milestoneDelivery);
-      }
+      // if (state === ProposalStatus.MILESTONE) {
+      //   actions.push(messages.recordsTable.actions.milestoneDelivery);
+      // }
 
       return {
         id: proposal.uri || proposal.cid,

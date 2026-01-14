@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Proposal } from "@/utils/proposalUtils";
 import { ProposalListItem } from "@/server/proposal";
-import { formatNumber, formatDate } from "@/utils/proposalUtils";
+import { formatNumber, formatDate, ProposalStatus } from "@/utils/proposalUtils";
 import { postUriToHref } from "@/lib/postUriHref";
 import { useI18n } from "@/contexts/I18nContext";
 import Tag from "@/components/ui/tag/Tag";
@@ -114,33 +114,43 @@ export default function ProposalItem({ proposal }: ProposalItemProps) {
       )}
 
       {/* 进度显示 */}
-      <div className="proposal_progress">
-        {milestones ? (
-          <>
-            <p>{t("proposalItem.progress")}: {t("proposalItem.milestone")} {milestones.current}/{milestones.total}</p>
-            <div className="progress-bar">
-              <div
-                className="progress-fill"
-                style={{ width: `${'progressPercentage' in milestones ? milestones.progressPercentage : 0}%` }}
-              ></div>
-            </div>
-          </>
-        ) : voting ? (
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: `${voting.approve}%` }}
-            ></div>
-          </div>
-        ) : (
-          <>
-            <p>{t("proposalItem.progress")}: -</p>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: '0%' }}></div>
-            </div>
-          </>
-        )}
-      </div>
+      {/* 进度显示 (仅在项目执行阶段及之后显示) */}
+      {/* 进度显示 (仅在项目执行阶段及投票阶段) */}
+      {(proposal.state >= ProposalStatus.IN_PROGRESS || proposal.state === ProposalStatus.INITIATION_VOTE) && (
+        <div className="proposal_progress">
+          {milestones ? (
+            <>
+              <p>{t("proposalItem.progress")}: {t("proposalItem.milestone")} {milestones.current}/{milestones.total}</p>
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${'progressPercentage' in milestones ? milestones.progressPercentage : 0}%` }}
+                ></div>
+              </div>
+            </>
+          ) : voting ? (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
+                <span style={{ color: '#00E599' }}>{t("proposalItem.approve")}: {voting.approve}%</span>
+                <span style={{ color: '#FF4D4F' }}>{t("proposalItem.oppose")}: {voting.oppose}%</span>
+              </div>
+              <div className="progress-bar" style={{ display: 'flex', overflow: 'hidden', height: '8px', borderRadius: '4px', backgroundColor: '#FF4D4F' }}>
+                <div
+                  style={{ width: `${voting.approve}%`, height: '100%', backgroundColor: '#00E599' }}
+                ></div>
+                {/* Remaining part is background color which acts as oppose bar */}
+              </div>
+            </>
+          ) : (
+            <>
+              <p>{t("proposalItem.progress")}: -</p>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: '0%' }}></div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </li>
   );
 }

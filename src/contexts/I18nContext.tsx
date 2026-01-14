@@ -450,6 +450,7 @@ interface Messages {
   homepage: {
     proposalList: string;
     all: string;
+    draft: string;
     communityReview: string;
     voting: string;
     milestoneDelivery: string;

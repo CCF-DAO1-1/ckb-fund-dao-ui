@@ -78,8 +78,7 @@ export default function ProposalSidebar({ proposal }: ProposalSidebarProps) {
     const state = adaptedProposal.state;
     const stateValue = typeof state === 'number' ? state : Number(state);
     if (stateValue === ProposalStatus.IN_PROGRESS ||
-      stateValue === ProposalStatus.MILESTONE_VOTE ||
-      stateValue === ProposalStatus.COMPLETED) {
+      stateValue === ProposalStatus.MILESTONE_VOTE) {
       const milestoneData = generateMilestones(adaptedProposal);
       setMilestones(milestoneData);
     } else {

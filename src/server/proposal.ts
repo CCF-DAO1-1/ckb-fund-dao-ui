@@ -718,3 +718,60 @@ export const updateReceiverAddr = defineAPI<
     },
   }
 );
+
+// 获取项目金库地址列表参数类型
+export interface ReceiverAddrListParams {
+  page?: number; // 页码（可选）
+  per_page?: number; // 每页数量（可选）
+  q?: string | null; // 关键词搜索（可选）
+}
+
+// 项目金库地址项类型
+// 项目金库地址项类型 (匹配 /api/proposal/receiver_addr 响应)
+export interface ReceiverAddrItem {
+  cid: string;
+  progress: number;
+  receiver_addr: string;
+  record: {
+    $type: string;
+    created: string;
+    data: {
+      budget: string;
+      title: string;
+      [key: string]: unknown;
+    };
+  };
+  repo: string;
+  state: number;
+  updated: string;
+  uri: string;
+  // 注意：balance 和 signers 不在 API 响应中，需要额外处理或从其他地方获取
+  [key: string]: unknown;
+}
+
+// 获取项目金库地址列表响应类型
+export interface ReceiverAddrListResponse {
+  page: number;
+  per_page: number;
+  rows: ReceiverAddrItem[];
+  total: number;
+  total_pages: number;
+  [key: string]: unknown;
+}
+
+/**
+ * 获取项目金库地址列表
+ * GET /api/proposal/receiver_addr
+ */
+export const getReceiverAddrList = defineAPI<
+  ReceiverAddrListParams,
+  ReceiverAddrListResponse
+>(
+  "/proposal/receiver_addr",
+  "GET",
+  {
+    divider: {
+      query: ["page", "per_page", "q"], // 作为查询参数
+    },
+  }
+);

@@ -695,6 +695,7 @@
   "homepage": {
     "proposalList": "Proposal List",
     "all": "All",
+    "draft": "Draft",
     "communityReview": "Community Review",
     "voting": "Voting",
     "milestoneDelivery": "Milestone Delivery",
@@ -724,8 +725,8 @@
   },
   "projectWalletsTable": {
     "title": "Project Execution Wallets",
-    "titleTooltip": "Explanation of project execution wallets",
-    "searchPlaceholder": "Search wallets or projects",
+    "titleTooltip": "Wallets holding funds for active projects, controlled by project owners and multisig signers.",
+    "searchPlaceholder": "Search projects, signers, addresses...",
     "project": "Project",
     "currentBalance": "Current Balance (CKB)",
     "multisigSigners": "2/3 Multisig Signers",

@@ -498,10 +498,10 @@
   "voteMeta": {
     "createVoteMetaFailed": "生成signed_bytes失败",
     "userSignKeyNotExists": "用户签名密钥不存在",
-    "signatureGenerationFailed": "生成签名失败",
+    "signatureGenerationFailed": "签名生成失败",
     "createVoteMetaError": "创建投票元数据失败",
     "communityReviewVote": "社区审议投票",
-    "threeDaysLater": "3天后结束投票"
+    "threeDaysLater": "投票将在3天后结束"
   },
   "verificationResults": {
     "pass": "通过",
@@ -735,6 +735,7 @@
   "homepage": {
     "proposalList": "提案列表",
     "all": "全部",
+    "draft": "草稿",
     "communityReview": "社区审议中",
     "voting": "投票中",
     "milestoneDelivery": "里程碑交付中",
@@ -764,10 +765,10 @@
   },
   "projectWalletsTable": {
     "title": "项目执行钱包",
-    "titleTooltip": "项目有执行钱包的解释",
-    "searchPlaceholder": "搜索钱包或项目",
+    "titleTooltip": "持有活跃项目资金的钱包，由项目所有者和多签签名人控制。",
+    "searchPlaceholder": "搜索项目、签名人、地址...",
     "project": "项目",
-    "currentBalance": "当前余额（CKB）",
+    "currentBalance": "当前余额 (CKB)",
     "multisigSigners": "2/3 多签人",
     "walletAddress": "钱包地址",
     "sampleProjectName": "Web5 DID 身份协议栈开发"

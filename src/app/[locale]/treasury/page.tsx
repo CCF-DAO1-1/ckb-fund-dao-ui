@@ -9,6 +9,8 @@ import CopyButton from "@/components/ui/copy/CopyButton";
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 
+import ProjectWalletsTable from "@/components/treasury/ProjectWalletsTable";
+
 // 截取地址：显示前5后5
 function truncateAddress(address: string, head = 7, tail = 7): string {
   if (!address || address.length <= head + tail) return address;
@@ -19,21 +21,21 @@ export default function Treasury() {
   useTranslation();
   const { messages } = useI18n();
   const address = "ckb1qpw9q60tppt7l3j7r09qcp7lxnp3vcanvgha8pmvsa3jplykxn32sqf352eynr4y9zl66sdxjcef3a6z9uqhkncsaanyg";
-  
+
   // 检测是否为移动端
   const [isMobile, setIsMobile] = useState(false);
-  
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-  
+
   // 根据设备类型显示不同格式的地址
   const displayAddress = isMobile ? truncateAddress(address) : address;
 
@@ -50,17 +52,17 @@ export default function Treasury() {
           <h3>{messages.treasuryPage.treasuryInfo}</h3>
           <div className="treasury_wallet">
             <div className="treasury_wallet_address">
-            <label>{messages.treasuryPage.mainTreasuryAddress}</label>
-            <p title={address}>{displayAddress}</p>
+              <label>{messages.treasuryPage.mainTreasuryAddress}</label>
+              <p title={address}>{displayAddress}</p>
             </div>
-            
-            <CopyButton 
-              className="button-copy" 
-              text={address} 
+
+            <CopyButton
+              className="button-copy"
+              text={address}
               ariaLabel="copy-treasury-address"
               title={address}
             >
-           
+
             </CopyButton>
             <Link href="https://explorer.nervos.org/address/ckb1qpw9q60tppt7l3j7r09qcp7lxnp3vcanvgha8pmvsa3jplykxn32sqf352eynr4y9zl66sdxjcef3a6z9uqhkncsaanyg" target="_blank" aria-label="export-treasury-address">
               <AiOutlineExport />
@@ -117,11 +119,11 @@ export default function Treasury() {
           <h4>{messages.treasuryPage.totalAssetsStatistics}</h4>
           <TotalAssetsChart height={320} />
         </div>
-        {/* <div className="block_container">
+        <div className="block_container">
           <ProjectWalletsTable />
-        </div> */}
+        </div>
       </main>
- 
+
     </div>
   );
 }

@@ -154,9 +154,7 @@ export default function VotingDetailsModal({
                                     <th className="text-right" style={{ width: '25%' }}>
                                         {t("modal.voting.details.votes") || "Votes"}
                                     </th>
-                                    <th style={{ width: '50%' }}>
-                                        {t("modal.voting.details.progress") || "Progress"}
-                                    </th>
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -169,7 +167,7 @@ export default function VotingDetailsModal({
                                             <div className="votes-cell-content">
                                                 <span>
                                                     {option.value > 1000
-                                                        ? formatNumber(option.value)
+                                                        ? formatNumber(option.value / 100000000)
                                                         : option.value}
                                                 </span>
                                                 <span className={`percentage-text ${option.textColor}`}>
@@ -177,14 +175,7 @@ export default function VotingDetailsModal({
                                                 </span>
                                             </div>
                                         </td>
-                                        <td>
-                                            <div className="progress-track">
-                                                <div
-                                                    className={`progress-bar ${option.color}`}
-                                                    style={{ width: `${option.percentage}%` }}
-                                                ></div>
-                                            </div>
-                                        </td>
+
                                     </tr>
                                 ))}
                             </tbody>

@@ -87,7 +87,7 @@ export default function Treasury() {
       isFirstRenderRef.current = false;
       return;
     }
-    
+
     refetch({
       cursor: null,
       limit: 20,
@@ -179,6 +179,9 @@ export default function Treasury() {
                   }}
                 >
                   <option value="">{messages.homepage.all}</option>
+                  <option value={String(ProposalStatus.DRAFT)}>
+                    {messages.homepage.draft}
+                  </option>
                   <option value={String(ProposalStatus.INITIATION_VOTE)}>
                     {messages.homepage.voting}
                   </option>
@@ -188,10 +191,9 @@ export default function Treasury() {
                   <option value={String(ProposalStatus.COMPLETED)}>
                     {messages.homepage.approved}
                   </option>
-                  <option value={String(ProposalStatus.COMPLETED)}>
+                  <option value={String(ProposalStatus.END)}>
                     {messages.homepage.rejected}
                   </option>
-                  <option value={String(ProposalStatus.COMPLETED)}>{messages.homepage.ended}</option>
                 </select>
               </div>
             </nav>

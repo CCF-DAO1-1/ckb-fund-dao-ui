@@ -1146,6 +1146,7 @@ a {
 /* 提案进度 */
 .proposal_progress {
   margin-bottom: 20px;
+  margin-top: 10px;
 }
 
 .proposal_progress p {
