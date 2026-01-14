@@ -13,6 +13,7 @@ import UpdateReceiverAddrModal from "./UpdateReceiverAddrModal";
 import SendFundsModal from "./SendFundsModal";
 import CreateMeetingModal from "./CreateMeetingModal";
 import SubmitMeetingReportModal from "./SubmitMeetingReportModal";
+import SubmitMilestoneReportModal from "./SubmitMilestoneReportModal";
 import SubmitDelayReportModal from "./SubmitDelayReportModal";
 import { getTaskTypeText, TaskType as TaskTypeEnum } from "@/utils/taskUtils";
 
@@ -65,7 +66,7 @@ const adaptTaskData = (task: TaskItem, t: (key: string) => string, locale: 'en' 
 
   // 根据 task_type 数字值获取任务类型翻译
   const taskType = getTaskTypeText(task.task_type, t) as TaskType;
-  
+
   // 格式化截止日期
   const deadline = formatDeadline(task.deadline, locale);
 
@@ -103,17 +104,19 @@ export default function ManagementCenter() {
   const [selectedTaskForMeetingReport, setSelectedTaskForMeetingReport] = useState<TaskItem | undefined>(undefined);
   const [showSubmitDelayReportModal, setShowSubmitDelayReportModal] = useState(false);
   const [selectedTaskForDelayReport, setSelectedTaskForDelayReport] = useState<TaskItem | undefined>(undefined);
-  
+  const [showSubmitMilestoneReportModal, setShowSubmitMilestoneReportModal] = useState(false);
+  const [selectedTaskForMilestoneReport, setSelectedTaskForMilestoneReport] = useState<TaskItem | undefined>(undefined);
+
   // 筛选状态（暂时未使用，保留用于未来功能）
   // const [activeTab, setActiveTab] = useState("pending");
   // const [activeFilter, setActiveFilter] = useState("all");
   // const [searchQuery, setSearchQuery] = useState("");
 
   // 使用任务列表数据
-  const { 
-    tasks: rawTasks, 
-    loading, 
-    error, 
+  const {
+    tasks: rawTasks,
+    loading,
+    error,
     errorCode,
     refetch,
     page,
@@ -140,7 +143,7 @@ export default function ManagementCenter() {
   const proposalsWithNewFlag = useMemo(() => {
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    
+
     return proposals.map(proposal => {
       const task = rawTasks.find(t => t.id.toString() === proposal.id);
       if (task) {
@@ -161,7 +164,7 @@ export default function ManagementCenter() {
 
 
   // ========== 任务操作处理函数 ==========
-  
+
   // 添加钱包地址相关
   const handleAddReceiverAddr = (proposal: ProposalItem) => {
     const task = rawTasks.find(t => t.id.toString() === proposal.id);
@@ -262,6 +265,26 @@ export default function ManagementCenter() {
     setSelectedTaskForDelayReport(undefined);
   };
 
+  // 提交里程碑报告相关
+  const handleSubmitMilestoneReport = (proposal: ProposalItem) => {
+    const task = rawTasks.find(t => t.id.toString() === proposal.id);
+    if (task) {
+      setSelectedTaskForMilestoneReport(task);
+      setShowSubmitMilestoneReportModal(true);
+    }
+  };
+
+  const handleSubmitMilestoneReportSuccess = () => {
+    refetch();
+    setShowSubmitMilestoneReportModal(false);
+    setSelectedTaskForMilestoneReport(undefined);
+  };
+
+  const handleSubmitMilestoneReportModalClose = () => {
+    setShowSubmitMilestoneReportModal(false);
+    setSelectedTaskForMilestoneReport(undefined);
+  };
+
   // 创建投票相关
   const handleCreateVote = (proposal: ProposalItem) => {
     setSelectedProposal({ ...proposal, taskType: t("taskTypes.createVote") });
@@ -329,146 +352,165 @@ export default function ManagementCenter() {
                   const isSendMilestoneFund = taskType === TaskTypeEnum.SEND_MILESTONE_FUND;
                   const isCreateAMA = taskType === TaskTypeEnum.CREATE_AMA;
                   const isSubmitAMAReport = taskType === TaskTypeEnum.SUBMIT_AMA_REPORT;
+                  const isSubmitMilestoneReport = taskType === TaskTypeEnum.SUBMIT_MILESTONE_REPORT;
                   const isSubmitDelayReport = taskType === TaskTypeEnum.SUBMIT_DELAY_REPORT;
                   const isInitiationVote = taskType === TaskTypeEnum.INITIATION_VOTE;
                   const isReexamineVote = taskType === TaskTypeEnum.REEXAMINE_VOTE;
                   const isRectificationVote = taskType === TaskTypeEnum.RECTIFICATION_VOTE;
                   const isCreateReexamineMeeting = taskType === TaskTypeEnum.CREATE_REEXAMINE_MEETING;
-                  
+
                   return (
-                  <tr key={proposal.id}>
-                    <td>
-                      <div className="proposal-name">
-                        {proposal.name}
-                        {proposal.isNew && <span className="new-tag">NEW</span>}
-                      </div>
-                    </td>
-                    <td>{proposal.type}</td>
-                    <td>
-                      <Tag status={proposal.status} size="sm" />
-                    </td>
-                    <td>{proposal.taskType}</td>
-                    <td>{proposal.deadline}</td>
-                    <td>
-                      <div className="action-buttons">
-                        {/* <button
+                    <tr key={proposal.id}>
+                      <td>
+                        <div className="proposal-name">
+                          {proposal.name}
+                          {proposal.isNew && <span className="new-tag">NEW</span>}
+                        </div>
+                      </td>
+                      <td>{proposal.type}</td>
+                      <td>
+                        <Tag status={proposal.status} size="sm" />
+                      </td>
+                      <td>{proposal.taskType}</td>
+                      <td>{proposal.deadline}</td>
+                      <td>
+                        <div className="action-buttons">
+                          {/* <button
                           className="task-action-button"
                           onClick={() => handleTaskProcess(proposal)}
                         >
                           {t("taskModal.buttons.process")}
                         </button> */}
-                        {/* 根据 task_type 显示对应的操作按钮 */}
-                        {(isInitiationVote || isReexamineVote || isRectificationVote) && (
-                          <button
-                            className="vote-action-button"
-                            onClick={() => handleCreateVote(proposal)}
-                            style={{
-                              marginLeft: "8px",
-                              padding: "6px 12px",
-                              backgroundColor: "#00CC9B",
-                              color: "#000000",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              fontSize: "14px",
-                            }}
-                          >
-                            {t("taskModal.buttons.createVote")}
-                          </button>
-                        )}
-                        {isUpdateReceiverAddr && (
-                          <button
-                            className="add-addr-button"
-                            onClick={() => handleAddReceiverAddr(proposal)}
-                            style={{
-                              marginLeft: "8px",
-                              padding: "6px 12px",
-                              backgroundColor: "#00CC9B",
-                              color: "#000000",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              fontSize: "14px",
-                            }}
-                          >
-                            {t("updateReceiverAddr.addButton") || "添加钱包地址"}
-                          </button>
-                        )}
-                        {(isSendInitialFund || isSendMilestoneFund) && (
-                          <button
-                            className="send-funds-button"
-                            onClick={() => handleSendFunds(proposal)}
-                            style={{
-                              marginLeft: "8px",
-                              padding: "6px 12px",
-                              backgroundColor: "#00CC9B",
-                              color: "#000000",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              fontSize: "14px",
-                            }}
-                          >
-                            {t("sendFunds.button") || "拨款"}
-                          </button>
-                        )}
-                        {(isCreateAMA || isCreateReexamineMeeting) && (
-                          <button
-                            className="create-meeting-button"
-                            onClick={() => handleCreateMeeting(proposal)}
-                            style={{
-                              marginLeft: "8px",
-                              padding: "6px 12px",
-                              backgroundColor: "#00CC9B",
-                              color: "#000000",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              fontSize: "14px",
-                            }}
-                          >
-                            {t("createMeeting.button") || "组织会议"}
-                          </button>
-                        )}
-                        {isSubmitAMAReport && (
-                          <button
-                            className="submit-meeting-report-button"
-                            onClick={() => handleSubmitMeetingReport(proposal)}
-                            style={{
-                              marginLeft: "8px",
-                              padding: "6px 12px",
-                              backgroundColor: "#00CC9B",
-                              color: "#000000",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              fontSize: "14px",
-                            }}
-                          >
-                            {t("submitMeetingReport.button") || "提交AMA报告"}
-                          </button>
-                        )}
-                        {isSubmitDelayReport && (
-                          <button
-                            className="submit-delay-report-button"
-                            onClick={() => handleSubmitDelayReport(proposal)}
-                            style={{
-                              marginLeft: "8px",
-                              padding: "6px 12px",
-                              backgroundColor: "#00CC9B",
-                              color: "#000000",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              fontSize: "14px",
-                            }}
-                          >
-                            {t("submitDelayReport.button") || "提交延期报告"}
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                          {/* 根据 task_type 显示对应的操作按钮 */}
+                          {(isInitiationVote || isReexamineVote || isRectificationVote) && (
+                            <button
+                              className="vote-action-button"
+                              onClick={() => handleCreateVote(proposal)}
+                              style={{
+                                marginLeft: "8px",
+                                padding: "6px 12px",
+                                backgroundColor: "#00CC9B",
+                                color: "#000000",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                              }}
+                            >
+                              {t("taskModal.buttons.createVote")}
+                            </button>
+                          )}
+                          {isUpdateReceiverAddr && (
+                            <button
+                              className="add-addr-button"
+                              onClick={() => handleAddReceiverAddr(proposal)}
+                              style={{
+                                marginLeft: "8px",
+                                padding: "6px 12px",
+                                backgroundColor: "#00CC9B",
+                                color: "#000000",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                              }}
+                            >
+                              {t("updateReceiverAddr.addButton") || "添加钱包地址"}
+                            </button>
+                          )}
+                          {(isSendInitialFund || isSendMilestoneFund) && (
+                            <button
+                              className="send-funds-button"
+                              onClick={() => handleSendFunds(proposal)}
+                              style={{
+                                marginLeft: "8px",
+                                padding: "6px 12px",
+                                backgroundColor: "#00CC9B",
+                                color: "#000000",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                              }}
+                            >
+                              {t("sendFunds.button") || "拨款"}
+                            </button>
+                          )}
+                          {(isCreateAMA || isCreateReexamineMeeting) && (
+                            <button
+                              className="create-meeting-button"
+                              onClick={() => handleCreateMeeting(proposal)}
+                              style={{
+                                marginLeft: "8px",
+                                padding: "6px 12px",
+                                backgroundColor: "#00CC9B",
+                                color: "#000000",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                              }}
+                            >
+                              {t("createMeeting.button") || "组织会议"}
+                            </button>
+                          )}
+                          {isSubmitAMAReport && (
+                            <button
+                              className="submit-meeting-report-button"
+                              onClick={() => handleSubmitMeetingReport(proposal)}
+                              style={{
+                                marginLeft: "8px",
+                                padding: "6px 12px",
+                                backgroundColor: "#00CC9B",
+                                color: "#000000",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                              }}
+                            >
+                              {t("submitMeetingReport.button") || "提交AMA报告"}
+                            </button>
+                          )}
+                          {isSubmitMilestoneReport && (
+                            <button
+                              className="submit-milestone-report-button"
+                              onClick={() => handleSubmitMilestoneReport(proposal)}
+                              style={{
+                                marginLeft: "8px",
+                                padding: "6px 12px",
+                                backgroundColor: "#00CC9B",
+                                color: "#000000",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                              }}
+                            >
+                              {t("submitMilestoneReport.button") || "提交里程碑报告"}
+                            </button>
+                          )}
+                          {isSubmitDelayReport && (
+                            <button
+                              className="submit-delay-report-button"
+                              onClick={() => handleSubmitDelayReport(proposal)}
+                              style={{
+                                marginLeft: "8px",
+                                padding: "6px 12px",
+                                backgroundColor: "#00CC9B",
+                                color: "#000000",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                              }}
+                            >
+                              {t("submitDelayReport.button") || "提交延期报告"}
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })
               )}
@@ -549,6 +591,17 @@ export default function ManagementCenter() {
         onClose={handleSubmitDelayReportModalClose}
         onSuccess={handleSubmitDelayReportSuccess}
         proposalUri={selectedTaskForDelayReport?.target?.uri}
+      />
+
+      {/* 提交里程碑报告Modal */}
+      <SubmitMilestoneReportModal
+        isOpen={showSubmitMilestoneReportModal}
+        onClose={handleSubmitMilestoneReportModalClose}
+        onSuccess={handleSubmitMilestoneReportSuccess}
+        proposalUri={selectedTaskForMilestoneReport?.target?.uri}
+      // 假设 task.message 或其他字段中包含了 milestone index，或者默认为 undefined (Modal 中处理)
+      // 目前暂且不通过 task 数据传递 index，需确认后端返回的数据结构中是否有此信息
+      // 如果后端没有返回，可能需要在 Modal 中让用户选择，或根据 proposal 状态推断
       />
     </div>
   );

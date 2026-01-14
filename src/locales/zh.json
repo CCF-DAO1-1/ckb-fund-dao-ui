@@ -243,6 +243,22 @@
       "submitFailed": "提交失败，请重试"
     }
   },
+  "submitMilestoneReport": {
+    "title": "提交里程碑报告",
+    "reportLabel": "报告内容",
+    "milestoneIndex": "(里程碑 #{index})",
+    "reportPlaceholder": "请输入详细的里程碑完成情况、交付物链接等信息...",
+    "proposalUri": "提案 URI",
+    "submit": "提交",
+    "button": "提交里程碑报告",
+    "success": "里程碑报告提交成功",
+    "errors": {
+      "userNotLoggedIn": "请先登录",
+      "missingProposalUri": "提案信息缺失",
+      "missingReport": "请输入报告内容",
+      "submitFailed": "提交失败，请重试"
+    }
+  },
   "management": {
     "title": "管理中心",
     "proposalManagement": "提案管理",
@@ -1185,6 +1201,8 @@
       "submitSuccess": "提案提交成功！"
     },
     "unsavedChangesWarning": "您有未保存的更改，确定要离开吗？",
+    "saving": "保存中...",
+    "lastSaved": "最后保存于: ",
     "errors": {
       "pleaseLoginFirst": "请先登录",
       "submitFailed": "提交失败，请重试",

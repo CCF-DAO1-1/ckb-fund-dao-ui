@@ -243,7 +243,45 @@ export interface MeetingItem {
 // 会议列表响应类型（requestAPI 会自动解包 response.data.data）
 export type MeetingListResponse = MeetingItem[];
 
-// 获取会议列表参数类型
+// 提交里程碑报告参数类型
+export interface SubmitMilestoneReportParams {
+  did: string; // 用户DID
+  params: {
+    proposal_uri: string; // 提案URI
+    report: string; // 交付产物描述
+    timestamp: number; // 时间戳
+  };
+  signed_bytes: string; // 签名字节（顶层）
+  signing_key_did: string; // 签名密钥DID（顶层）
+}
+
+// 提交里程碑报告响应类型
+export interface SubmitMilestoneReportResponse {
+  success: boolean;
+  outputsData?: string[];
+  vote_meta?: {
+    id: number;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+/**
+ * 提交里程碑报告
+ * POST /api/task/submit_milestone_report
+ */
+export const submitMilestoneReport = defineAPI<
+  SubmitMilestoneReportParams,
+  SubmitMilestoneReportResponse
+>(
+  "/task/submit_milestone_report",
+  "POST",
+  {
+    divider: {
+      body: ["did", "params", "signed_bytes", "signing_key_did"],
+    },
+  }
+);
 export interface GetMeetingListParams {
   proposal?: string; // 提案URI，可选，用于过滤特定提案的会议
 }

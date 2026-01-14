@@ -104,42 +104,44 @@ export default function CreateProposal() {
     }
   }, []);
 
-  // 同步保存草稿（用于 beforeunload 事件，必须是同步的）
-  const saveDraftSync = useCallback((data: typeof formData) => {
-    if (!userInfo?.did) {
-      return;
-    }
-
-    if (!hasContent(data)) {
-      return;
-    }
+  // 自动保存草稿
+  const saveDraft = useCallback((data: typeof formData) => {
+    if (!userInfo?.did || !hasContent(data)) return;
 
     try {
-      const draftData = {
-        ...data,
-        savedAt: new Date().toISOString(),
-        version: 1,
-      };
-      const cacheItem = {
-        data: draftData,
-        timestamp: Date.now(),
-        expiry: Date.now() + 24 * 24 * 60 * 60 * 1000,
-      };
-      const draftKey = `@dao:proposal_draft:${userInfo.did}`;
-      window.localStorage.setItem(draftKey, JSON.stringify(cacheItem));
+      setIsDraftSaving(true);
+      storage.setProposalDraft(data, userInfo.did);
       lastSavedDataRef.current = JSON.stringify(data);
+      setLastSaved(new Date());
     } catch (error) {
-      logger.error("保存草稿失败:");
+      logger.error("自动保存草稿失败:", error);
+    } finally {
+      // 短暂延迟后重置保存状态，以便 UI 显示"已保存"
+      setTimeout(() => setIsDraftSaving(false), 1000);
     }
   }, [userInfo?.did, hasContent]);
+
+  // 监听数据变化并自动保存（防抖）
+  useEffect(() => {
+    if (!isClient || !userInfo?.did) return;
+
+    // 只有当数据有变化时才保存
+    if (!hasDataChanged(formData, lastSavedDataRef.current)) return;
+
+    const timer = setTimeout(() => {
+      saveDraft(formData);
+    }, 500); // 500ms防抖，更快响应用户输入
+
+    return () => clearTimeout(timer);
+  }, [formData, isClient, userInfo?.did, hasDataChanged, saveDraft]);
 
 
   useEffect(() => {
     setIsClient(true);
-    
+
     // 清理所有过期的草稿
     storage.clearExpiredDrafts();
-    
+
     // 加载当前用户的草稿
     if (userInfo?.did) {
       try {
@@ -160,26 +162,21 @@ export default function CreateProposal() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userInfo?.did]);
 
-  // 页面离开时提醒用户保存草稿
+  // 页面离开时提醒用户保存草稿（虽然有自动保存，但为了防止最后一次更改未保存的情况，还是提醒一下或者强制保存）
   useEffect(() => {
-    if (!isClient || !userInfo?.did) return;
-
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // 只有在有内容且数据有变化时才显示确认对话框
+      // 如果数据有变化且尚未保存（防抖期间），尝试同步保存一次
       if (hasContent(formData) && hasDataChanged(formData, lastSavedDataRef.current)) {
-        // 显示浏览器原生的确认对话框
-        e.preventDefault();
-        // 现代浏览器会忽略自定义消息，只显示默认消息
-        e.returnValue = t("proposalCreate.unsavedChangesWarning") || "您有未保存的更改，确定要离开吗？";
-        
-        // 保存草稿（同步保存，因为异步在 beforeunload 中可能不执行）
-        saveDraftSync(formData);
+        // 尝试最后一次保存
+        if (userInfo?.did) {
+          storage.setProposalDraft(formData, userInfo.did);
+        }
       }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [formData, isClient, userInfo?.did, hasContent, hasDataChanged, t, saveDraftSync]);
+  }, [formData, userInfo?.did, hasContent, hasDataChanged]);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -566,7 +563,7 @@ export default function CreateProposal() {
           </div>
           <div className="step-container">
             {/* 当前步骤标题 */}
-            <div className="step-title-container">
+            <div className="step-title-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 className="step-title">
                 {steps[currentStep - 1]?.name}{" "}
                 <IoMdInformationCircleOutline
@@ -574,6 +571,14 @@ export default function CreateProposal() {
                   data-tooltip-content={steps[currentStep - 1]?.description}
                 />
               </h2>
+              {/* 保存状态提示 */}
+              <div style={{ fontSize: '12px', color: '#8A949E' }}>
+                {isDraftSaving ? (
+                  t("proposalCreate.saving") || "保存中..."
+                ) : lastSaved ? (
+                  (t("proposalCreate.lastSaved") || "最后保存于: ") + lastSaved.toLocaleTimeString()
+                ) : null}
+              </div>
             </div>
 
             {/* 表单内容 */}

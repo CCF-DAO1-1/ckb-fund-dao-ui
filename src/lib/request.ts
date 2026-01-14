@@ -183,12 +183,29 @@ export async function requestAPI(url: string, config: RequestConfig) {
     const error = e as AxiosError;
 
     // 检查是否是 401 错误（token 过期）
-    const isUnauthorized = error.response?.status === 401;
+    const status = error.response?.status;
     const responseData = error.response?.data;
-    const isTokenExpired = isUnauthorized && responseData &&
-      (typeof responseData === 'object' && responseData !== null &&
-        (('code' in responseData && (responseData as { code?: number }).code === 401) ||
-          ('error' in responseData && (responseData as { error?: string }).error === 'ExpiredToken')));
+
+    // 检查是否是认证相关错误
+    const isUnauthorized = status === 401;
+
+    // 检查响应体是否包含 token 过期信息（支持 InvalidRequest/BadJwt 等格式）
+    const isTokenExpiredBody = responseData && typeof responseData === 'object' && responseData !== null && (
+      // 标准 401 code
+      ('code' in responseData && (responseData as { code?: number }).code === 401) ||
+      // 标准 ExpiredToken error
+      ('error' in responseData && (responseData as { error?: string }).error === 'ExpiredToken') ||
+      // InvalidRequest + BadJwt
+      ('error' in responseData && (responseData as { error?: string }).error === 'InvalidRequest' &&
+        ('message' in responseData && (responseData as { message?: string }).message?.includes('BadJwt'))) ||
+      // 通用消息包含 Token has expired 或 BadJwt
+      ('message' in responseData && (
+        (responseData as { message?: string }).message?.includes('Token has expired') ||
+        (responseData as { message?: string }).message?.includes('BadJwt')
+      ))
+    );
+
+    const isTokenExpired = isUnauthorized || isTokenExpiredBody;
 
     // 如果是 token 过期，尝试刷新 token 并重试
     if (isTokenExpired) {

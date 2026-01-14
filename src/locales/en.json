@@ -206,6 +206,22 @@
       "submitFailed": "Failed to submit, please try again"
     }
   },
+  "submitMilestoneReport": {
+    "title": "Submit Milestone Report",
+    "reportLabel": "Report Content",
+    "milestoneIndex": "(Milestone #{index})",
+    "reportPlaceholder": "Please enter detailed milestone completion status, deliverables links, etc...",
+    "proposalUri": "Proposal URI",
+    "submit": "Submit",
+    "button": "Submit Milestone Report",
+    "success": "Milestone report submitted successfully",
+    "errors": {
+      "userNotLoggedIn": "Please login first",
+      "missingProposalUri": "Proposal information missing",
+      "missingReport": "Please enter report content",
+      "submitFailed": "Failed to submit, please try again"
+    }
+  },
   "management": {
     "title": "Management Center",
     "proposalManagement": "Proposal Management",
@@ -1146,6 +1162,8 @@
       "submitSuccess": "Proposal submitted successfully!"
     },
     "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to leave?",
+    "saving": "Saving...",
+    "lastSaved": "Last saved at: ",
     "errors": {
       "pleaseLoginFirst": "Please login first",
       "submitFailed": "Submission failed, please try again",

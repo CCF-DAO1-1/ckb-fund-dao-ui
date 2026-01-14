@@ -84,6 +84,7 @@ async function refreshToken() {
       const errorMessage = err?.message || String(error);
       const isRefreshTokenExpired =
         err?.status === 400 ||
+        err?.status === 401 ||
         err?.error === 'BadJwt' ||
         err?.error === 'ExpiredToken' ||
         err?.error === 'InvalidRequest' ||
