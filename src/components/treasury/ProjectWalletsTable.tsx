@@ -8,6 +8,8 @@ import { useI18n } from "@/contexts/I18nContext";
 import { getReceiverAddrList, ReceiverAddrItem } from "@/server/proposal";
 import { logger } from "@/lib/logger";
 import { getAddressBalance } from "@/utils/ckbUtils";
+import Link from "next/link";
+import { postUriToHref } from "@/lib/postUriHref";
 
 export type ProjectWallet = {
   id: string; // address as id
@@ -15,6 +17,7 @@ export type ProjectWallet = {
   balanceCkb: number; // 以 CKB 计
   signers: string[]; // 多签人 DID
   address: string;
+  uri?: string;
 };
 
 type ProjectWalletsTableProps = {
@@ -25,7 +28,7 @@ function formatNumber(num: number): string {
   return num.toLocaleString("en-US");
 }
 
-function truncateMiddle(text: string, head = 12, tail = 6): string {
+function truncateMiddle(text: string, head = 20, tail = 20): string {
   if (!text || text.length <= head + tail) return text || "";
   return `${text.slice(0, head)}...${text.slice(-tail)}`;
 }
@@ -33,7 +36,7 @@ function truncateMiddle(text: string, head = 12, tail = 6): string {
 export default function ProjectWalletsTable({
   pageSize = 5,
 }: ProjectWalletsTableProps) {
-  const { messages } = useI18n();
+  const { messages, locale } = useI18n();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
 
@@ -59,6 +62,7 @@ export default function ProjectWalletsTable({
           balanceCkb: 0, // Placeholder
           signers: [], // Still placeholder
           address: item.receiver_addr,
+          uri: item.uri,
         }));
 
         setWallets(mappedWallets); // Render immediately
@@ -122,8 +126,7 @@ export default function ProjectWalletsTable({
       <div className="wallets_table">
         <div className="wallets_table_head">
           <div>{messages.projectWalletsTable.project}</div>
-          <div>{messages.projectWalletsTable.currentBalance}</div>
-          <div>{messages.projectWalletsTable.multisigSigners}</div>
+          <div style={{ textAlign: 'right' }}>{messages.projectWalletsTable.currentBalance}</div>
           <div>{messages.projectWalletsTable.walletAddress}</div>
         </div>
         <div className="wallets_table_body">
@@ -139,31 +142,34 @@ export default function ProjectWalletsTable({
             wallets.map((w) => (
               <div className="wallets_row" key={w.id}>
                 <div className="cell project_name" title={w.projectName}>
-                  {w.projectName}
-                </div>
-                <div className="cell balance">{formatNumber(w.balanceCkb)}</div>
-                <div className="cell signers">
-                  {w.signers && w.signers.length > 0 ? (
-                    w.signers.map((s, i) => (
-                      <div key={i}>{s}</div>
-                    ))
+                  {w.uri ? (
+                    <Link href={`/${locale}/proposal/${postUriToHref(w.uri)}`} className="hover:text-primary hover:underline">
+                      {w.projectName}
+                    </Link>
                   ) : (
-                    <span className="text-gray-400">-</span>
+                    w.projectName
                   )}
                 </div>
+                <div className="cell balance" style={{ textAlign: 'right', justifyContent: 'flex-end' }}>{formatNumber(w.balanceCkb)}</div>
+
                 <div className="cell address">
                   <span title={w.address}>{truncateMiddle(w.address)}</span>
                   <CopyButton
                     text={w.address}
                     ariaLabel="copy-project-wallet-address"
+                    className="icon_button"
                   >
 
                   </CopyButton>
                   <a
-                    href={`https://explorer.nervos.org/address/${w.address}`}
+                    href={w.address.startsWith('ckt')
+                      ? `https://testnet.explorer.nervos.org/address/${w.address}`
+                      : `https://explorer.nervos.org/address/${w.address}`
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="open-explorer-project-wallet-address"
+                    className="copy-button-reset icon_button"
                   >
                     <AiOutlineExport />
                   </a>
