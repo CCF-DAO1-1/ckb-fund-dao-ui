@@ -73,6 +73,7 @@ export interface Proposal {
     total: number;
     progress: number; // 百分比
   };
+  progress?: number; // 当前里程碑索引（0-based）
   voting?: {
     approve: number; // 赞成票百分比
     oppose: number;  // 反对票百分比

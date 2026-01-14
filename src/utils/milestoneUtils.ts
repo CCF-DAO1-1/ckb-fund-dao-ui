@@ -8,7 +8,7 @@ export const generateMilestones = (proposal: Proposal): Milestone[] => {
 
   // 从 API 获取当前里程碑索引（0-based）
   // progress 字段表示当前里程碑在数组中的下标
-  const currentMilestoneIndex = ('progress' in proposal) ? (proposal as any).progress : undefined;
+  const currentMilestoneIndex = ('progress' in proposal) ? proposal.progress : undefined;
 
   // 根据提案数据确定里程碑总数
   const totalMilestones = proposal.milestones?.total || 3;
