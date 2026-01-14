@@ -45,7 +45,9 @@ const adaptProposalDetail = (detail: ProposalDetailResponse): Proposal => {
     category: proposalData.proposalType,
     tags: [],
     vote_meta: detail.vote_meta,
-  };
+    // 从 API 获取当前里程碑索引（0-based）
+    progress: detail.progress,
+  } as Proposal;
 };
 
 export default function ProposalSidebar({ proposal }: ProposalSidebarProps) {
@@ -71,12 +73,12 @@ export default function ProposalSidebar({ proposal }: ProposalSidebarProps) {
 
     const adaptedProposal = adaptProposalDetail(proposal);
 
-    // 如果是执行阶段，生成里程碑信息
-    // MILESTONE 是 IN_PROGRESS 的别名 (3)
-    // APPROVED 和 ENDED 都是 COMPLETED 的别名 (9)
+    // 如果是执行阶段或里程碑投票阶段，生成里程碑信息
+    // IN_PROGRESS (4), MILESTONE_VOTE (5), COMPLETED (10)
     const state = adaptedProposal.state;
     const stateValue = typeof state === 'number' ? state : Number(state);
     if (stateValue === ProposalStatus.IN_PROGRESS ||
+      stateValue === ProposalStatus.MILESTONE_VOTE ||
       stateValue === ProposalStatus.COMPLETED) {
       const milestoneData = generateMilestones(adaptedProposal);
       setMilestones(milestoneData);

@@ -144,7 +144,26 @@ export default function MilestoneVoting({
         : 0;
 
       setVotingInfo(prev => {
-        if (!prev) return prev;
+        // 如果 prev 不存在，创建一个新的 VotingInfo 对象
+        if (!prev) {
+          return {
+            proposalId: proposal ? ('id' in proposal ? proposal.id : proposal.cid) : '',
+            title: milestoneTitle || '',
+            endTime: new Date().toISOString(),
+            totalVotes,
+            approveVotes,
+            rejectVotes,
+            userVotingPower: voteWeight * 100000000,
+            status: VotingStatus.PENDING,
+            conditions: {
+              minTotalVotes: 5000000,
+              minApprovalRate: 49,
+              currentTotalVotes: totalVotes,
+              currentApprovalRate: approvalRate,
+            },
+          };
+        }
+
         return {
           ...prev,
           totalVotes: typeof totalVotes === 'number' ? totalVotes : prev.totalVotes,

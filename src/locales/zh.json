@@ -9,7 +9,14 @@
     "goToNextjs": "前往 nextjs.org →",
     "backToHome": "返回主页",
     "cancel": "取消",
-    "viewDetails": "查看详情"
+    "close": "关闭",
+    "viewDetails": "查看详情",
+    "reportInputMode": {
+      "urlInput": "输入文档地址",
+      "richEditor": "使用富文本编辑器",
+      "urlPlaceholder": "https://example.com/document",
+      "urlInvalid": "请输入有效的URL地址"
+    }
   },
   "errors": {
     "noPermission": "无权限查看当前页面!",
@@ -147,7 +154,21 @@
       "signatureFailed": "签名生成失败，请检查网络连接后重试",
       "createVoteFailed": "创建投票元数据失败"
     },
-    "required": "必填"
+    "required": "必填",
+    "submitAcceptanceReport": {
+      "title": "提交验收报告",
+      "reportLabel": "验收报告",
+      "reportPlaceholder": "请输入详细的验收报告...",
+      "proposalUri": "提案 URI",
+      "submit": "提交",
+      "success": "验收报告提交成功",
+      "errors": {
+        "userNotLoggedIn": "请先登录",
+        "missingProposalUri": "提案信息缺失",
+        "missingReport": "请输入报告内容",
+        "submitFailed": "提交失败，请重试"
+      }
+    }
   },
   "updateReceiverAddr": {
     "title": "添加项目方金库钱包地址",
@@ -185,7 +206,7 @@
   "createMeeting": {
     "title": "组织AMA会议",
     "selectLabel": "选择会议",
-    "selectPlaceholder": "请选择会议（可选）",
+    "selectPlaceholder": "请选择会议",
     "loadingMeetings": "加载中...",
     "dateLabel": "会议日期",
     "datePlaceholder": "请选择会议日期",
@@ -214,10 +235,10 @@
   },
   "submitMeetingReport": {
     "title": "提交AMA报告",
-    "meetingLabel": "选择会议（可选）",
-    "selectPlaceholder": "请选择会议（可选）",
+    "meetingLabel": "选择会议",
+    "selectPlaceholder": "请选择会议",
     "loadingMeetings": "加载中...",
-    "contentLabel": "报告内容（可选）",
+    "contentLabel": "报告内容",
     "contentPlaceholder": "请输入报告内容...",
     "proposalUri": "提案 URI",
     "submit": "提交",

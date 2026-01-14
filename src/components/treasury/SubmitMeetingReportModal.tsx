@@ -9,6 +9,7 @@ import { submitMeetingReport } from "@/server/task";
 import { generateSignature } from "@/lib/signature";
 import VditorRichTextEditor from "@/components/common/VditorRichTextEditor";
 import MeetingSelect, { MeetingItem } from "./MeetingSelect";
+import { useWallet } from "@/provider/WalletProvider";
 
 import { logger } from '@/lib/logger';
 export interface SubmitMeetingReportModalProps {
@@ -26,9 +27,15 @@ export default function SubmitMeetingReportModal({
 }: SubmitMeetingReportModalProps) {
   const { t } = useTranslation();
   const { userInfo } = useUserInfoStore();
-  const [selectedMeetingId, setSelectedMeetingId] = useState<string>("");
+  const { signer, openSigner } = useWallet();
+  const [inputMode, setInputMode] = useState<'url' | 'editor'>('url'); // Default to URL for AMA reports
+  const [reportUrl, setReportUrl] = useState("");
   const [reportContent, setReportContent] = useState("");
+  const [selectedMeetingId, setSelectedMeetingId] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Combined report value based on mode
+  const report = inputMode === 'url' ? reportUrl : reportContent;
 
   // 当选择会议时
   const handleMeetingChange = (meeting: MeetingItem | null) => {
@@ -38,8 +45,10 @@ export default function SubmitMeetingReportModal({
   // 重置表单
   useEffect(() => {
     if (!isOpen) {
-      setSelectedMeetingId("");
+      setReportUrl("");
       setReportContent("");
+      setInputMode('url');
+      setSelectedMeetingId("");
     }
   }, [isOpen]);
 
@@ -58,7 +67,7 @@ export default function SubmitMeetingReportModal({
       return;
     }
 
-    if (!reportContent || !reportContent.trim()) {
+    if (!report || !report.trim()) {
       toast.error(t("submitMeetingReport.errors.reportRequired") || "请填写报告内容");
       setIsSubmitting(false);
       return;
@@ -74,7 +83,7 @@ export default function SubmitMeetingReportModal({
       } = {
         proposal_uri: proposalUri || "",
         meeting_id: parseInt(selectedMeetingId, 10),
-        report: reportContent,
+        report: report,
         timestamp: Math.floor(Date.now() / 1000), // UTC 时间戳（秒）
       };
 
@@ -108,6 +117,7 @@ export default function SubmitMeetingReportModal({
   const handleClose = () => {
     if (!isSubmitting) {
       setSelectedMeetingId("");
+      setReportUrl("");
       setReportContent("");
       onClose();
     }
@@ -143,6 +153,34 @@ export default function SubmitMeetingReportModal({
           disabled={isSubmitting}
         />
 
+        {/* 输入模式选择 */}
+        <div style={{ marginBottom: "20px" }}>
+          <div style={{ display: "flex", gap: "24px" }}>
+            <label style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "#FFFFFF" }}>
+              <input
+                type="radio"
+                name="inputMode"
+                value="url"
+                checked={inputMode === 'url'}
+                onChange={() => setInputMode('url')}
+                style={{ marginRight: "8px", cursor: "pointer" }}
+              />
+              {t("common.reportInputMode.urlInput")}
+            </label>
+            <label style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "#FFFFFF" }}>
+              <input
+                type="radio"
+                name="inputMode"
+                value="editor"
+                checked={inputMode === 'editor'}
+                onChange={() => setInputMode('editor')}
+                style={{ marginRight: "8px", cursor: "pointer" }}
+              />
+              {t("common.reportInputMode.richEditor")}
+            </label>
+          </div>
+        </div>
+
         {/* 报告内容 */}
         <div style={{ marginBottom: "16px" }}>
           <label
@@ -157,27 +195,27 @@ export default function SubmitMeetingReportModal({
           >
             {t("submitMeetingReport.contentLabel") || "报告内容"}
           </label>
-          <div >
+          {inputMode === 'url' ? (
             <input
-              type="text"
+              type="url"
               id="report-content"
-              value={reportContent}
-              onChange={(e) => setReportContent(e.target.value)}
+              value={reportUrl}
+              onChange={(e) => setReportUrl(e.target.value)}
               className="form-input"
-              placeholder={t("submitMeetingReport.contentPlaceholder") || "请输入报告链接地址..."}
-              style={{
-                width: "100%",
-                padding: "12px",
-                backgroundColor: "#1A1D23",
-                border: "1px solid #4C525C",
-                borderRadius: "6px",
-                color: "#FFFFFF",
-                fontSize: "14px",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
+              placeholder={t("common.reportInputMode.urlPlaceholder")}
+
             />
-          </div>
+          ) : (
+            <div>
+              <VditorRichTextEditor
+                value={reportContent}
+                onChange={setReportContent}
+                mode="ir"
+                toolbarPreset="simple"
+                placeholder={t("submitMeetingReport.contentPlaceholder") || "请输入报告内容..."}
+              />
+            </div>
+          )}
         </div>
 
         {proposalUri && (
@@ -202,7 +240,7 @@ export default function SubmitMeetingReportModal({
           </div>
         )}
       </div>
-    </Modal>
+    </Modal >
   );
 }
 

@@ -5,7 +5,7 @@ import Modal from "@/components/ui/modal/Modal";
 import { useTranslation } from "@/utils/i18n";
 import toast from "react-hot-toast";
 import useUserInfoStore from "@/store/userInfo";
-import { submitMilestoneReport, SubmitMilestoneReportResponse } from "@/server/task";
+import { submitAcceptanceReport, SubmitAcceptanceReportResponse } from "@/server/task";
 import { generateSignature } from "@/lib/signature";
 import VditorRichTextEditor from "@/components/common/VditorRichTextEditor";
 import { logger } from "@/lib/logger";
@@ -17,21 +17,19 @@ import { Secp256k1Keypair } from "@atproto/crypto";
 import { uint8ArrayToHex } from "@/lib/dag-cbor";
 import * as cbor from '@ipld/dag-cbor';
 
-export interface SubmitMilestoneReportModalProps {
+export interface SubmitAcceptanceReportModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
     proposalUri?: string;
-    milestoneIndex?: number; // 里程碑索引
 }
 
-export default function SubmitMilestoneReportModal({
+export default function SubmitAcceptanceReportModal({
     isOpen,
     onClose,
     onSuccess,
     proposalUri,
-    milestoneIndex,
-}: SubmitMilestoneReportModalProps) {
+}: SubmitAcceptanceReportModalProps) {
     const { t } = useTranslation();
     const { userInfo } = useUserInfoStore();
     const { signer, openSigner } = useWallet();
@@ -75,8 +73,8 @@ export default function SubmitMilestoneReportModal({
     }, [t]);
 
     // 构建并发送交易
-    const buildAndSendTransaction = useCallback(async (
-        response: SubmitMilestoneReportResponse,
+    const handleBuildAndSendVoteTx = useCallback(async (
+        response: SubmitAcceptanceReportResponse,
         signer: ccc.Signer
     ) => {
         try {
@@ -162,17 +160,17 @@ export default function SubmitMilestoneReportModal({
 
     const handleSubmit = async () => {
         if (!userInfo?.did) {
-            toast.error(t("submitMilestoneReport.errors.userNotLoggedIn") || "请先登录");
+            toast.error(t("taskModal.submitAcceptanceReport.errors.userNotLoggedIn") || "请先登录");
             return;
         }
 
         if (!proposalUri) {
-            toast.error(t("submitMilestoneReport.errors.missingProposalUri") || "提案信息缺失");
+            toast.error(t("taskModal.submitAcceptanceReport.errors.missingProposalUri") || "提案信息缺失");
             return;
         }
 
         if (!report.trim()) {
-            toast.error(t("submitMilestoneReport.errors.missingReport") || "请输入报告内容");
+            toast.error(t("taskModal.submitAcceptanceReport.errors.missingReport") || "请输入报告内容");
             return;
         }
 
@@ -182,7 +180,6 @@ export default function SubmitMilestoneReportModal({
             // 1. 构建参数对象（用于签名）
             const params = {
                 proposal_uri: proposalUri,
-                // index: milestoneIndex || 0, // 已被移除，改为 report
                 report: report,
                 timestamp: Math.floor(Date.now() / 1000), // UTC 时间戳（秒）
             };
@@ -191,9 +188,9 @@ export default function SubmitMilestoneReportModal({
             const { signed_bytes: signedBytes, signing_key_did: signingKeyDid } = await generateSignature(params);
 
             // 3. 调用 API
-            const response = await submitMilestoneReport({
+            const response = await submitAcceptanceReport({
                 did: userInfo.did,
-                params: params,
+                params,
                 signed_bytes: signedBytes,
                 signing_key_did: signingKeyDid,
             });
@@ -207,19 +204,19 @@ export default function SubmitMilestoneReportModal({
                         return;
                     }
                     // 发送交易
-                    await buildAndSendTransaction(response, signer as unknown as ccc.Signer);
+                    await handleBuildAndSendVoteTx(response, signer as unknown as ccc.Signer);
                 }
 
-                toast.success(t("submitMilestoneReport.success") || "里程碑报告提交成功");
+                toast.success(t("taskModal.submitAcceptanceReport.success") || "Acceptance report submitted successfully!");
                 onSuccess?.();
                 onClose();
             } else {
-                throw new Error(t("submitMilestoneReport.errors.submitFailed") || "提交失败");
+                throw new Error(t("taskModal.submitAcceptanceReport.errors.submitFailed") || "提交失败");
             }
         } catch (error) {
-            logger.error("提交里程碑报告失败:", error);
+            logger.error("提交验收报告失败:", error);
             const errorMessage = error instanceof Error ? error.message : String(error);
-            toast.error(errorMessage || t("submitMilestoneReport.errors.submitFailed") || "提交失败，请重试");
+            toast.error(errorMessage || t("taskModal.submitAcceptanceReport.errors.submitFailed") || "提交失败，请重试");
         } finally {
             setIsSubmitting(false);
         }
@@ -236,7 +233,7 @@ export default function SubmitMilestoneReportModal({
         <Modal
             isOpen={isOpen}
             onClose={handleClose}
-            title={t("submitMilestoneReport.title") || "提交里程碑报告"}
+            title={t("taskModal.submitAcceptanceReport.title") || "提交验收报告"}
             size="large"
             buttons={[
                 {
@@ -246,7 +243,7 @@ export default function SubmitMilestoneReportModal({
                     disabled: isSubmitting,
                 },
                 {
-                    text: t("submitMilestoneReport.submit") || "提交",
+                    text: t("taskModal.submitAcceptanceReport.submit") || "提交",
                     onClick: handleSubmit,
                     variant: "primary",
                     disabled: isSubmitting,
@@ -285,7 +282,7 @@ export default function SubmitMilestoneReportModal({
                 {/* 报告内容 */}
                 <div style={{ marginBottom: "16px" }}>
                     <label
-                        htmlFor="milestone-report"
+                        htmlFor="acceptance-report"
                         style={{
                             display: "block",
                             marginBottom: "8px",
@@ -294,12 +291,7 @@ export default function SubmitMilestoneReportModal({
                             fontWeight: 500,
                         }}
                     >
-                        {t("submitMilestoneReport.reportLabel") || "报告内容"}
-                        {milestoneIndex !== undefined && (
-                            <span style={{ color: "#8A949E", marginLeft: "8px", fontWeight: "normal" }}>
-                                {t("submitMilestoneReport.milestoneIndex").replace("{index}", (milestoneIndex + 1).toString())}
-                            </span>
-                        )}
+                        {t("taskModal.submitAcceptanceReport.reportLabel") || "验收报告"}
                     </label>
                     {inputMode === 'url' ? (
                         <input
@@ -324,7 +316,7 @@ export default function SubmitMilestoneReportModal({
                                 onChange={setReportContent}
                                 mode="ir"
                                 toolbarPreset="simple"
-                                placeholder={t("submitMilestoneReport.reportPlaceholder") || "请输入详细的里程碑完成情况、交付物链接等信息..."}
+                                placeholder={t("taskModal.submitAcceptanceReport.reportPlaceholder") || "请输入详细的验收报告..."}
                             />
                         </div>
                     )}
@@ -340,7 +332,7 @@ export default function SubmitMilestoneReportModal({
                         lineHeight: "1.5"
                     }}>
                         <div style={{ marginBottom: "4px", fontWeight: 500 }}>
-                            {t("submitMilestoneReport.proposalUri") || "提案 URI"}:
+                            {t("taskModal.submitAcceptanceReport.proposalUri") || "提案 URI"}:
                         </div>
                         <div style={{
                             wordBreak: "break-all",

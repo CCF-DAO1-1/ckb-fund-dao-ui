@@ -15,6 +15,7 @@ import CreateMeetingModal from "./CreateMeetingModal";
 import SubmitMeetingReportModal from "./SubmitMeetingReportModal";
 import SubmitMilestoneReportModal from "./SubmitMilestoneReportModal";
 import SubmitDelayReportModal from "./SubmitDelayReportModal";
+import SubmitAcceptanceReportModal from "./SubmitAcceptanceReportModal";
 import { getTaskTypeText, TaskType as TaskTypeEnum } from "@/utils/taskUtils";
 
 import { logger } from '@/lib/logger';
@@ -106,6 +107,8 @@ export default function ManagementCenter() {
   const [selectedTaskForDelayReport, setSelectedTaskForDelayReport] = useState<TaskItem | undefined>(undefined);
   const [showSubmitMilestoneReportModal, setShowSubmitMilestoneReportModal] = useState(false);
   const [selectedTaskForMilestoneReport, setSelectedTaskForMilestoneReport] = useState<TaskItem | undefined>(undefined);
+  const [showSubmitAcceptanceReportModal, setShowSubmitAcceptanceReportModal] = useState(false);
+  const [selectedTaskForAcceptanceReport, setSelectedTaskForAcceptanceReport] = useState<TaskItem | undefined>(undefined);
 
   // 筛选状态（暂时未使用，保留用于未来功能）
   // const [activeTab, setActiveTab] = useState("pending");
@@ -285,6 +288,26 @@ export default function ManagementCenter() {
     setSelectedTaskForMilestoneReport(undefined);
   };
 
+  // 提交验收报告相关
+  const handleSubmitAcceptanceReport = (proposal: ProposalItem) => {
+    const task = rawTasks.find(t => t.id.toString() === proposal.id);
+    if (task) {
+      setSelectedTaskForAcceptanceReport(task);
+      setShowSubmitAcceptanceReportModal(true);
+    }
+  };
+
+  const handleSubmitAcceptanceReportSuccess = () => {
+    refetch();
+    setShowSubmitAcceptanceReportModal(false);
+    setSelectedTaskForAcceptanceReport(undefined);
+  };
+
+  const handleSubmitAcceptanceReportModalClose = () => {
+    setShowSubmitAcceptanceReportModal(false);
+    setSelectedTaskForAcceptanceReport(undefined);
+  };
+
   // 创建投票相关
   const handleCreateVote = (proposal: ProposalItem) => {
     setSelectedProposal({ ...proposal, taskType: t("taskTypes.createVote") });
@@ -354,6 +377,7 @@ export default function ManagementCenter() {
                   const isSubmitAMAReport = taskType === TaskTypeEnum.SUBMIT_AMA_REPORT;
                   const isSubmitMilestoneReport = taskType === TaskTypeEnum.SUBMIT_MILESTONE_REPORT;
                   const isSubmitDelayReport = taskType === TaskTypeEnum.SUBMIT_DELAY_REPORT;
+                  const isSubmitAcceptanceReport = taskType === TaskTypeEnum.SUBMIT_ACCEPTANCE_REPORT;
                   const isInitiationVote = taskType === TaskTypeEnum.INITIATION_VOTE;
                   const isReexamineVote = taskType === TaskTypeEnum.REEXAMINE_VOTE;
                   const isRectificationVote = taskType === TaskTypeEnum.RECTIFICATION_VOTE;
@@ -508,6 +532,24 @@ export default function ManagementCenter() {
                               {t("submitDelayReport.button") || "提交延期报告"}
                             </button>
                           )}
+                          {isSubmitAcceptanceReport && (
+                            <button
+                              className="submit-acceptance-report-button"
+                              onClick={() => handleSubmitAcceptanceReport(proposal)}
+                              style={{
+                                marginLeft: "8px",
+                                padding: "6px 12px",
+                                backgroundColor: "#00CC9B",
+                                color: "#000000",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                              }}
+                            >
+                              {t("taskModal.submitAcceptanceReport.title") || "提交验收报告"}
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -602,6 +644,14 @@ export default function ManagementCenter() {
       // 假设 task.message 或其他字段中包含了 milestone index，或者默认为 undefined (Modal 中处理)
       // 目前暂且不通过 task 数据传递 index，需确认后端返回的数据结构中是否有此信息
       // 如果后端没有返回，可能需要在 Modal 中让用户选择，或根据 proposal 状态推断
+      />
+
+      {/* 提交验收报告Modal */}
+      <SubmitAcceptanceReportModal
+        isOpen={showSubmitAcceptanceReportModal}
+        onClose={handleSubmitAcceptanceReportModalClose}
+        onSuccess={handleSubmitAcceptanceReportSuccess}
+        proposalUri={selectedTaskForAcceptanceReport?.target?.uri}
       />
     </div>
   );

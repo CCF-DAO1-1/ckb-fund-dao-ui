@@ -3,31 +3,32 @@
 export const formatNumber = (num: number, locale: string = 'en-US') => {
   return num.toLocaleString(locale);
 };
-// 提案状态枚举（数组下标对应 task_type）
-// 0: Draft (草稿)
-// 1: InitiationVote (立项投票)
-// 2: WaitingForStartFund (等待启动金)
-// 3: InProgress (项目执行中:里程碑过程)
-// 4: MilestoneVote (里程碑验收投票)
-// 5: DelayVote (延期投票)
-// 6: WaitingForMilestoneFund (等待启动金)
-// 7: ReviewVote (进度复核投票)
-// 8: WaitingForAcceptanceReport (等待验收报告)
-// 9: Completed (项目完成)
-// 10: ReexamineVote (复核投票)
-// 11: RectificationVote (整改投票)
+// 提案状态枚举（值对应后端 state）
+// 0: END (结束)
+// 1: DRAFT (草稿)
+// 2: INITIATION_VOTE (立项投票)
+// 3: WAITING_FOR_START_FUND (等待启动金)
+// 4: IN_PROGRESS (项目执行中)
+// 5: MILESTONE_VOTE (里程碑验收投票)
+// 6: DELAY_VOTE (延期投票)
+// 7: WAITING_FOR_MILESTONE_FUND (等待里程碑资金)
+// 8: WAITING_FOR_ACCEPTANCE_REPORT (等待验收报告)
+// 9: COMPLETED (项目完成)
+// 10: REVIEW_VOTE (进度复核投票)
+// 11: REEXAMINE_VOTE (复核投票)
+// 12: RECTIFICATION_VOTE (整改投票)
 export enum ProposalStatus {
   END = 0,                          // 结束
   DRAFT = 1,                        // 草稿
   INITIATION_VOTE = 2,              // 立项投票
   WAITING_FOR_START_FUND = 3,       // 等待启动金
-  IN_PROGRESS = 4,                  // 项目执行中:里程碑过程
+  IN_PROGRESS = 4,                  // 项目执行中
   MILESTONE_VOTE = 5,               // 里程碑验收投票
   DELAY_VOTE = 6,                   // 延期投票
-  WAITING_FOR_MILESTONE_FUND = 7,   // 等待启动金
-  REVIEW_VOTE = 8,                  // 进度复核投票
-  WAITING_FOR_ACCEPTANCE_REPORT = 9, // 等待验收报告
-  COMPLETED = 10,                   // 项目完成
+  WAITING_FOR_MILESTONE_FUND = 7,   // 等待里程碑资金
+  WAITING_FOR_ACCEPTANCE_REPORT = 8, // 等待验收报告
+  COMPLETED = 9,                    // 项目完成
+  REVIEW_VOTE = 10,                 // 进度复核投票
   REEXAMINE_VOTE = 11,              // 复核投票
   RECTIFICATION_VOTE = 12,          // 整改投票
 

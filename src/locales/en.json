@@ -9,7 +9,14 @@
     "goToNextjs": "Go to nextjs.org →",
     "backToHome": "Back to Home",
     "cancel": "Cancel",
-    "viewDetails": "View Details"
+    "close": "Close",
+    "viewDetails": "View Details",
+    "reportInputMode": {
+      "urlInput": "Enter Document URL",
+      "richEditor": "Use Rich Text Editor",
+      "urlPlaceholder": "https://example.com/document",
+      "urlInvalid": "Please enter a valid URL"
+    }
   },
   "errors": {
     "noPermission": "No permission to view this page!",
@@ -110,7 +117,21 @@
       "signatureFailed": "Signature generation failed, please check network connection and try again",
       "createVoteFailed": "Failed to create vote metadata"
     },
-    "required": "Required"
+    "required": "Required",
+    "submitAcceptanceReport": {
+      "title": "Submit Acceptance Report",
+      "reportLabel": "Acceptance Report",
+      "reportPlaceholder": "Please enter detailed acceptance report...",
+      "proposalUri": "Proposal URI",
+      "submit": "Submit",
+      "success": "Acceptance report submitted successfully",
+      "errors": {
+        "userNotLoggedIn": "Please login first",
+        "missingProposalUri": "Proposal information missing",
+        "missingReport": "Please enter report content",
+        "submitFailed": "Failed to submit, please try again"
+      }
+    }
   },
   "updateReceiverAddr": {
     "title": "Add Project Treasury Wallet Address",
@@ -148,7 +169,7 @@
   "createMeeting": {
     "title": "Organize AMA Meeting",
     "selectLabel": "Select Meeting",
-    "selectPlaceholder": "Please select a meeting (optional)",
+    "selectPlaceholder": "Please select a meeting",
     "loadingMeetings": "Loading...",
     "dateLabel": "Meeting Date",
     "datePlaceholder": "Please select meeting date",
@@ -177,10 +198,10 @@
   },
   "submitMeetingReport": {
     "title": "Submit AMA Report",
-    "meetingLabel": "Select Meeting (optional)",
-    "selectPlaceholder": "Please select a meeting (optional)",
+    "meetingLabel": "Select Meeting",
+    "selectPlaceholder": "Please select a meeting",
     "loadingMeetings": "Loading...",
-    "contentLabel": "Report Content (optional)",
+    "contentLabel": "Report Content",
     "contentPlaceholder": "Please enter report content...",
     "proposalUri": "Proposal URI",
     "submit": "Submit",

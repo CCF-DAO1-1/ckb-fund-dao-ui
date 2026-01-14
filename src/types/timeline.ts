@@ -29,8 +29,8 @@ export enum TimelineEventType {
   REVIEW_VOTE = 12,                   // 复审投票
   REEXAMINE_VOTE = 13,                // 复核投票 (原 CreateReexamineMeeting 对应位置似乎变了，根据用户列表 ReexamineVote 是 13)
   ACCEPTANCE_VOTE = 14,               // 验收投票
-  RECTIFICATION_VOTE = 15,            // 整改投票
-  SUBMIT_ACCEPTANCE_REPORT = 16,      // 提交验收报告
+  SUBMIT_ACCEPTANCE_REPORT = 15,      // 提交验收报告
+  RECTIFICATION_VOTE = 16,            // 整改投票
   CREATE_AMA = 17,                    // 创建 AMA
   SUBMIT_AMA_REPORT = 18              // 提交 AMA 报告
 }

@@ -82,7 +82,27 @@ export default function ProposalVoting({
         : 0;
 
       setVotingInfo(prev => {
-        if (!prev) return prev;
+        // 如果 prev 不存在，但 API 返回了数据，我们需要强制创建状态
+        // 使用最小必要信息创建一个基本框架
+        if (!prev) {
+          // 如果没有初始状态，创建一个最小可用的状态对象
+          return {
+            proposalId: '',
+            title: '',
+            endTime: '',
+            totalVotes,
+            approveVotes,
+            rejectVotes,
+            userVotingPower: 0,
+            status: VotingStatus.PENDING,
+            conditions: {
+              minTotalVotes: 0,
+              minApprovalRate: 51,
+              currentTotalVotes: totalVotes,
+              currentApprovalRate: approvalRate,
+            },
+          };
+        }
 
         return {
           ...prev,
@@ -128,8 +148,8 @@ export default function ProposalVoting({
     const lastParams = lastFetchParamsRef.current;
 
     if (lastParams &&
-        lastParams.voteMetaId === currentParams.voteMetaId &&
-        lastParams.userDid === currentParams.userDid) {
+      lastParams.voteMetaId === currentParams.voteMetaId &&
+      lastParams.userDid === currentParams.userDid) {
       return; // 参数未变化，跳过请求
     }
 
@@ -160,7 +180,25 @@ export default function ProposalVoting({
           : 0;
 
         setVotingInfo(prev => {
-          if (!prev) return prev;
+          // 如果 prev 不存在，但 API 返回了数据，我们需要强制创建状态
+          if (!prev) {
+            return {
+              proposalId: '',
+              title: '',
+              endTime: '',
+              totalVotes,
+              approveVotes,
+              rejectVotes,
+              userVotingPower: 0,
+              status: VotingStatus.PENDING,
+              conditions: {
+                minTotalVotes: 0,
+                minApprovalRate: 51,
+                currentTotalVotes: totalVotes,
+                currentApprovalRate: approvalRate,
+              },
+            };
+          }
 
           return {
             ...prev,
@@ -473,13 +511,13 @@ export default function ProposalVoting({
           <h3 className="voting-title">
             {messages.proposalPhase.proposalVoting.title}
           </h3>
-          <div className="voting-countdown">
-            <span>
-              {messages.proposalPhase.proposalVoting.deadline} {timeLeft}
-            </span>
-          </div>
-        </div>
 
+        </div>
+        <div className="voting-countdown">
+          <span>
+            {messages.proposalPhase.proposalVoting.deadline} {timeLeft}
+          </span>
+        </div>
         {/* 投票统计 */}
         <div className="voting-stats">
           <div className="voting-total">

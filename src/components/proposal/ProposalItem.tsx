@@ -49,11 +49,18 @@ export default function ProposalItem({ proposal }: ProposalItemProps) {
     : (proposal as Proposal).proposer;
 
   // 处理里程碑数据
+  // progress 字段是当前进行中的里程碑索引（0-based）
   const milestones = isAPIFormat && proposal.record.data.milestones && proposal.record.data.milestones.length > 0
     ? {
-      current: 1, // 默认为第一个
+      current: ('progress' in proposal && typeof proposal.progress === 'number')
+        ? proposal.progress + 1  // progress 是 0-based 索引，current 是 1-based 显示
+        : 1,
       total: proposal.record.data.milestones.length,
-      progress: 0,
+      // progress 是当前里程碑索引，转换为百分比：(当前进行到的里程碑 / 总数) * 100
+      // progress=1 表示在第2个里程碑，应算作2个里程碑的进度
+      progressPercentage: ('progress' in proposal && typeof proposal.progress === 'number')
+        ? ((proposal.progress + 1) / proposal.record.data.milestones.length) * 100
+        : 0,
     }
     : ('milestones' in proposal ? (proposal as Proposal).milestones : undefined);
 
@@ -114,7 +121,7 @@ export default function ProposalItem({ proposal }: ProposalItemProps) {
             <div className="progress-bar">
               <div
                 className="progress-fill"
-                style={{ width: `${milestones.progress}%` }}
+                style={{ width: `${'progressPercentage' in milestones ? milestones.progressPercentage : 0}%` }}
               ></div>
             </div>
           </>

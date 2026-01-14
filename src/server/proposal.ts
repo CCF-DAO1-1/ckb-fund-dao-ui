@@ -7,7 +7,7 @@ import defineAPI from "./defineAPI";
 // 提案详情接口的参数类型
 export interface ProposalDetailParams {
   uri: string; // 提案的URI
-  viewer:string | null; // 查看者的did
+  viewer: string | null; // 查看者的did
 }
 
 // 提案里程碑类型
@@ -16,14 +16,15 @@ export interface ProposalMilestone {
   title: string;
   description: string;
   date: string;
-  index:number
+  index: number
 }
 
 // VoteMetaItem imported from @/utils/proposalUtils
 
 // 提案详情接口的响应类型
 export interface ProposalDetailResponse {
-  state:number;
+  state: number;
+  progress?: number; // 当前里程碑索引（0-based），表示当前里程碑在 milestones 数组中的下标
   author: {
     $type: string;
     created: string;
@@ -66,7 +67,7 @@ export const getProposalDetail = defineAPI<
   "GET",
   {
     divider: {
-      query: ["uri","viewer"], // uri作为查询参数
+      query: ["uri", "viewer"], // uri作为查询参数
     },
   }
 );
@@ -138,7 +139,7 @@ export const getProposalList = defineAPI<
 // 个人提案列表项类型（与普通提案列表不同，没有author、like_count等字段）
 export interface SelfProposalItem {
   cid: string; // 内容ID
-  progress: number; // 进度
+  progress: number; // 当前里程碑索引（0-based），表示当前里程碑在 milestones 数组中的下标
   receiver_addr: string | null; // 接收地址
   record: {
     $type: string;
@@ -425,7 +426,7 @@ export const initiationVote = defineAPI<
   "/proposal/initiation_vote",
   "POST",
   {
-    
+
     divider: {
       path: ["uri", "state"], // uri 和 state 作为路径参数
       body: ["did", "params", "signed_bytes", "signing_key_did"],
@@ -615,14 +616,34 @@ export interface ListSelfVoteParams {
 }
 
 // 个人投票信息项类型
+// 个人投票信息项类型
 export interface SelfVoteItem {
   id: number; // 投票ID
-  vote_meta_id: number; // 投票元数据ID
-  proposal_uri: string; // 提案URI
-  vote_option: string; // 投票选项（如 "Agree", "Against", "Abstain"）
-  vote_time: string; // 投票时间（ISO 8601格式）
-  tx_hash: string | null; // 交易哈希
+  candidates_index: number; // 候选人索引
   created: string; // 创建时间（ISO 8601格式）
+  proposal: {
+    record: {
+      data: {
+        title: string;
+      };
+    };
+    uri: string;
+  };
+  vote_meta: {
+    candidates: string[];
+    proposal_state: number; // 提案状态（在投票时刻）
+    results?: {
+      valid_votes: Array<Array<[string, number]>>; // [ [ [addr, weight], ... ], ... ] maps to candidates
+    };
+  };
+  vote_meta_id: number; // 投票元数据ID
+  state: number; // 状态
+  tx_hash: string | null; // 交易哈希
+
+  // 兼容旧字段（如果还需要）
+  proposal_uri?: string;
+  vote_option?: string;
+  vote_time?: string;
   [key: string]: unknown;
 }
 

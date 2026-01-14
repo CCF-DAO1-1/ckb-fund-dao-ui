@@ -12,6 +12,17 @@ import VotingDetailsModal from './VotingDetailsModal';
 import './timeline.css';
 
 import { logger } from '@/lib/logger';
+import ReportContentModal from './ReportContentModal';
+
+// Helper to check if string is URL
+const isUrl = (str: string) => {
+  try {
+    const url = new URL(str);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
 
 // VotingDetailsData imported from types/voting
 
@@ -183,6 +194,29 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
   const [showVotingModal, setShowVotingModal] = useState(false);
   const [votingData, setVotingData] = useState<VotingDetailsData | null>(null);
 
+  // 报告内容Modal状态
+  const [reportModal, setReportModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    content: string;
+  }>({
+    isOpen: false,
+    title: '',
+    content: '',
+  });
+
+  const handleReportClick = (message: string, title: string) => {
+    if (isUrl(message)) {
+      window.open(message, '_blank');
+    } else {
+      setReportModal({
+        isOpen: true,
+        title,
+        content: message,
+      });
+    }
+  };
+
   // 处理查看投票详情
   const handleViewVotingDetails = (message: string) => {
     try {
@@ -212,16 +246,35 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
                   用户要求：timeline_type为16时,展示的时间线标题为,提交AMA报告,后面应有一个文档的icon,tooltip展示message中的说明文字
                   注意：Enum 中 16 目前定义为 SUBMIT_ACCEPTANCE_REPORT，但我们根据 timeline_type (raw type) 来判断
                 */}
-                {event.type === TimelineEventType.SUBMIT_ACCEPTANCE_REPORT ? (
+                {event.type === TimelineEventType.SUBMIT_MILESTONE_REPORT ? (
                   <div className="ama-icon-container">
-                    <span>{getEventTitle(TimelineEventType.SUBMIT_AMA_REPORT)}</span>
+                    <span>{event.title}</span>
                     {event.message && (
                       <>
                         <IoMdDocument
                           className="document-icon"
                           data-tooltip-id={`tooltip-${event.id}`}
-                          data-tooltip-content={event.message}
+                          data-tooltip-content={isUrl(event.message || "") ? event.message : "点击查看报告详情"}
                           size={14}
+                          onClick={() => handleReportClick(event.message || "", event.title)}
+                          style={{ cursor: 'pointer' }}
+                        />
+                        <Tooltip id={`tooltip-${event.id}`} />
+                      </>
+                    )}
+                  </div>
+                ) : event.type === TimelineEventType.SUBMIT_ACCEPTANCE_REPORT ? (
+                  <div className="ama-icon-container">
+                    <span>{event.title}</span>
+                    {event.message && (
+                      <>
+                        <IoMdDocument
+                          className="document-icon"
+                          data-tooltip-id={`tooltip-${event.id}`}
+                          data-tooltip-content={isUrl(event.message || "") ? event.message : "点击查看报告详情"}
+                          size={14}
+                          onClick={() => handleReportClick(event.message || "", event.title)}
+                          style={{ cursor: 'pointer' }}
                         />
                         <Tooltip id={`tooltip-${event.id}`} />
                       </>
@@ -235,9 +288,10 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
                         <IoMdDocument
                           className="document-icon"
                           data-tooltip-id={`tooltip-${event.id}`}
-                          data-tooltip-content={event.message}
+                          data-tooltip-content={isUrl(event.message || "") ? event.message : "点击查看报告详情"}
                           size={14}
-                          onClick={() => window.open(event.message, '_blank')}
+                          onClick={() => handleReportClick(event.message || "", "AMA 报告")}
+                          style={{ cursor: 'pointer' }}
                         />
                         <Tooltip id={`tooltip-${event.id}`} />
                       </>
@@ -270,6 +324,13 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
         isOpen={showVotingModal}
         onClose={() => setShowVotingModal(false)}
         data={votingData}
+      />
+
+      <ReportContentModal
+        isOpen={reportModal.isOpen}
+        onClose={() => setReportModal(prev => ({ ...prev, isOpen: false }))}
+        title={reportModal.title}
+        content={reportModal.content}
       />
     </div>
   );

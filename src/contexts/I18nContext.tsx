@@ -170,6 +170,17 @@ interface Messages {
     rejected: string;
     ended: string;
     unknown: string;
+    initiationVote: string;
+    waitingForStartFund: string;
+    inProgress: string;
+    milestoneVote: string;
+    delayVote: string;
+    waitingForMilestoneFund: string;
+    reviewVote: string;
+    waitingForAcceptanceReport: string;
+    completed: string;
+    reexamineVote: string;
+    rectificationVote: string;
   };
   proposalInfo: {
     proposalName: string;

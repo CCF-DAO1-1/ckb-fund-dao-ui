@@ -1,9 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useSelfVoteList } from '@/hooks/useSelfVoteList';
 import { SelfVoteItem } from '@/server/proposal';
+import { ProposalStatus } from '@/utils/proposalUtils';
+import storage from "@/lib/storage";
 
 interface VotingRecord {
   id: string;
@@ -21,6 +23,14 @@ interface VotingRecordsTableProps {
 export default function VotingRecordsTable({ className = '' }: VotingRecordsTableProps) {
   const { messages } = useI18n();
   const { votes, loading, error, page, totalPages, setPage } = useSelfVoteList({ page: 1, per_page: 10 });
+
+  // 获取当前用户的钱包地址，用于查找投票权重
+  // 使用 useState + useEffect 避免 hydration mismatch
+  const [currentUserAddr, setCurrentUserAddr] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    setCurrentUserAddr(storage.getToken()?.walletAddress);
+  }, []);
 
   // 格式化日期
   const formatDate = (dateString: string): string => {
@@ -42,7 +52,7 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
   // 转换投票数据为表格格式
   const votingRecords: VotingRecord[] = useMemo(() => {
     // 获取投票选项文本
-    const getVoteOptionText = (voteOption: string): string => {
+    const getVoteOptionText = (candidate: string): string => {
       const optionMap: { [key: string]: string } = {
         'Agree': messages.votingRecords.choices.approve,
         'Against': messages.votingRecords.choices.against,
@@ -51,20 +61,69 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
         'against': messages.votingRecords.choices.against,
         'abstain': messages.votingRecords.choices.abstain,
       };
-      return optionMap[voteOption] || voteOption;
+      return optionMap[candidate] || candidate;
     };
 
     return votes.map((vote: SelfVoteItem) => {
-      // 从 proposal_uri 提取提案名称（暂时使用URI，后续可以获取提案详情）
-      const proposalName = vote.proposal_uri || messages.votingRecords.unknownProposal || '未知提案';
-      // 投票阶段暂时显示为"投票"（后续可以根据 vote_meta_id 获取详细信息）
-      const votingStage = messages.votingRecords.votingStages.voting || '投票';
-      // 投票选项
-      const myChoice = getVoteOptionText(vote.vote_option);
-      // 投票数量暂时不显示（需要从其他地方获取）
-      const voteQuantity = '-';
-      // 投票时间
-      const voteDate = formatDate(vote.vote_time || vote.created);
+      // 1. 提取提案名称：优先使用 proposal.record.data.title，其次 proposal_uri
+      const proposalName = vote.proposal?.record?.data?.title || vote.proposal_uri || messages.votingRecords.unknownProposal || '未知提案';
+
+      // 2. 投票阶段：根据 vote_meta.proposal_state 获取
+      let votingStage = messages.votingRecords.votingStages.voting || '投票';
+      if (vote.vote_meta?.proposal_state !== undefined) {
+        const state = vote.vote_meta.proposal_state;
+        switch (state) {
+          case ProposalStatus.INITIATION_VOTE:
+            votingStage = messages.proposalStatus?.initiationVote || '立项投票';
+            break;
+          case ProposalStatus.MILESTONE_VOTE:
+            votingStage = messages.proposalStatus?.milestoneVote || '里程碑投票';
+            break;
+          case ProposalStatus.DELAY_VOTE:
+            votingStage = messages.proposalStatus?.delayVote || '延期投票';
+            break;
+          case ProposalStatus.REVIEW_VOTE:
+            votingStage = messages.proposalStatus?.reviewVote || '进度复核投票';
+            break;
+          case ProposalStatus.REEXAMINE_VOTE:
+            votingStage = messages.proposalStatus?.reexamineVote || '复核投票';
+            break;
+          case ProposalStatus.RECTIFICATION_VOTE:
+            votingStage = messages.proposalStatus?.rectificationVote || '整改投票';
+            break;
+          default:
+            // 尝试直接使用 Tag 组件的逻辑或者 fallback
+            votingStage = messages.votingRecords.votingStages.voting || '投票';
+        }
+      }
+
+      // 3. 投票选项：根据 candidates_index 从 vote_meta.candidates 获取
+      let myChoice = '-';
+      if (vote.vote_meta?.candidates && typeof vote.candidates_index === 'number') {
+        const candidate = vote.vote_meta.candidates[vote.candidates_index];
+        if (candidate) {
+          myChoice = getVoteOptionText(candidate);
+        }
+      } else if (vote.vote_option) {
+        // 兼容旧字段
+        myChoice = getVoteOptionText(vote.vote_option);
+      }
+
+      // 4. 投票数量：从 vote_meta.results.valid_votes 中查找当前用户的权重
+      let voteQuantity = '-';
+      if (vote.vote_meta?.results?.valid_votes && currentUserAddr && typeof vote.candidates_index === 'number') {
+        const voters = vote.vote_meta.results.valid_votes[vote.candidates_index];
+        if (Array.isArray(voters)) {
+          // 查找当前用户的投票记录 [addr, weight]
+          const userVote = voters.find((v: [string, number]) => v[0] === currentUserAddr);
+          if (userVote) {
+            voteQuantity = (userVote[1] / 100000000).toLocaleString();
+          }
+        }
+      }
+
+      // 5. 投票时间：优先使用 created
+      const voteDate = formatDate(vote.created || vote.vote_time || '');
 
       return {
         id: String(vote.id),
@@ -75,7 +134,7 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
         voteDate,
       };
     });
-  }, [votes, messages]);
+  }, [votes, messages, currentUserAddr]);
 
   const getChoiceClass = (choice: string) => {
     const choiceMap: { [key: string]: string } = {
