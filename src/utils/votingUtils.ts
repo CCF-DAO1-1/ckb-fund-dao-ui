@@ -1,6 +1,6 @@
 import { VotingInfo, VoteOption, VotingStatus } from '../types/voting';
-import { Proposal, ProposalStatus } from './proposalUtils';
-import { VoteMetaItem, PrepareVoteResponse, ProposalDetailResponse } from '@/server/proposal';
+import { Proposal, ProposalStatus, VoteMetaItem } from './proposalUtils';
+import { PrepareVoteResponse, ProposalDetailResponse } from '@/server/proposal';
 import enMessages from '../locales/en.json';
 import zhMessages from '../locales/zh.json';
 import { logger } from '@/lib/logger';
