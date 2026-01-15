@@ -106,15 +106,13 @@ export default function ProposalVoting({
 
         return {
           ...prev,
-          totalVotes: typeof totalVotes === 'number' ? totalVotes : prev.totalVotes,
-          approveVotes: typeof approveVotes === 'number' ? approveVotes : prev.approveVotes,
-          rejectVotes: typeof rejectVotes === 'number' ? rejectVotes : prev.rejectVotes,
+          totalVotes: totalVotes,
+          approveVotes: approveVotes,
+          rejectVotes: rejectVotes,
           conditions: {
             ...prev.conditions,
-            currentTotalVotes: typeof totalVotes === 'number' ? totalVotes : prev.conditions.currentTotalVotes,
-            currentApprovalRate: typeof approvalRate === 'number' && !isNaN(approvalRate)
-              ? approvalRate
-              : prev.conditions.currentApprovalRate,
+            currentTotalVotes: totalVotes,
+            currentApprovalRate: !isNaN(approvalRate) ? approvalRate : prev.conditions.currentApprovalRate,
           },
         };
       });
@@ -124,20 +122,22 @@ export default function ProposalVoting({
   }, [voteMetaId]);
 
   // 初始化投票信息（基于提案数据，不涉及API）
-  useEffect(() => {
-    if (!proposal || !proposal.vote_meta) {
-      setVotingInfo(null);
-      return;
-    }
+  // DISABLED: This was overwriting API data with zeros
+  // useEffect(() => {
+  //   if (!proposal || !proposal.vote_meta) {
+  //     setVotingInfo(null);
+  //     return;
+  //   }
 
-    if ((proposal.state === ProposalStatus.VOTE || ('vote_meta' in proposal && proposal.vote_meta && proposal.vote_meta.state === 1)) && proposal.vote_meta) {
-      const userVotingPower = voteWeight * 100000000;
-      const voting = generateVotingInfo(proposal, proposal.vote_meta, userVotingPower);
-      setVotingInfo(voting);
-    } else {
-      setVotingInfo(null);
-    }
-  }, [proposal, voteWeight]);
+  //   if ((proposal.state === ProposalStatus.VOTE || ('vote_meta' in proposal && proposal.vote_meta && proposal.vote_meta.state === 1)) && proposal.vote_meta) {
+  //     const userVotingPower = voteWeight * 100000000;
+  //     const voting = generateVotingInfo(proposal, proposal.vote_meta, userVotingPower);
+  //     console.log('🎯 generateVotingInfo result:', voting);
+  //     setVotingInfo(voting);
+  //   } else {
+  //     setVotingInfo(null);
+  //   }
+  // }, [proposal, voteWeight]);
 
   // 进入页面时，如果存在 voteMetaId，先调用 getVoteDetail，然后调用 getVoteStatus
   useEffect(() => {
@@ -165,6 +165,9 @@ export default function ProposalVoting({
         let approveVotes = 0;
         let rejectVotes = 0;
 
+        console.log('🔍 Vote Detail API Response:', voteDetail);
+        console.log('🔍 candidate_votes:', voteDetail.candidate_votes);
+
         if (voteDetail.candidate_votes && Array.isArray(voteDetail.candidate_votes)) {
           if (voteDetail.candidate_votes[1] && Array.isArray(voteDetail.candidate_votes[1])) {
             approveVotes = voteDetail.candidate_votes[1][1] ?? 0;
@@ -174,15 +177,19 @@ export default function ProposalVoting({
           }
         }
 
+        console.log('✅ Extracted votes - Approve:', approveVotes, 'Reject:', rejectVotes, 'Total:', voteDetail.valid_weight_sum ?? voteDetail.weight_sum ?? 0);
+
         const totalVotes = voteDetail.valid_weight_sum ?? voteDetail.weight_sum ?? 0;
         const approvalRate = totalVotes > 0
           ? (approveVotes / totalVotes) * 100
           : 0;
 
         setVotingInfo(prev => {
+          console.log('🔄 Updating votingInfo. Previous state:', prev);
+
           // 如果 prev 不存在，但 API 返回了数据，我们需要强制创建状态
           if (!prev) {
-            return {
+            const newState = {
               proposalId: '',
               title: '',
               endTime: '',
@@ -198,21 +205,23 @@ export default function ProposalVoting({
                 currentApprovalRate: approvalRate,
               },
             };
+            console.log('✨ Created new votingInfo state:', newState);
+            return newState;
           }
 
-          return {
+          const updatedState = {
             ...prev,
-            totalVotes: typeof totalVotes === 'number' ? totalVotes : prev.totalVotes,
-            approveVotes: typeof approveVotes === 'number' ? approveVotes : prev.approveVotes,
-            rejectVotes: typeof rejectVotes === 'number' ? rejectVotes : prev.rejectVotes,
+            totalVotes: totalVotes,
+            approveVotes: approveVotes,
+            rejectVotes: rejectVotes,
             conditions: {
               ...prev.conditions,
-              currentTotalVotes: typeof totalVotes === 'number' ? totalVotes : prev.conditions.currentTotalVotes,
-              currentApprovalRate: typeof approvalRate === 'number' && !isNaN(approvalRate)
-                ? approvalRate
-                : prev.conditions.currentApprovalRate,
+              currentTotalVotes: totalVotes,
+              currentApprovalRate: !isNaN(approvalRate) ? approvalRate : prev.conditions.currentApprovalRate,
             },
           };
+          console.log('✨ Updated votingInfo state:', updatedState);
+          return updatedState;
         });
 
         // getVoteDetail 完成后，调用 getVoteStatus
@@ -461,6 +470,7 @@ export default function ProposalVoting({
   }
 
   // 计算百分比
+  console.log('📊 Computing percentages. votingInfo:', votingInfo);
   const approveRate =
     votingInfo.totalVotes > 0
       ? (votingInfo.approveVotes / votingInfo.totalVotes) * 100
@@ -469,6 +479,7 @@ export default function ProposalVoting({
     votingInfo.totalVotes > 0
       ? (votingInfo.rejectVotes / votingInfo.totalVotes) * 100
       : 0;
+  console.log('📊 Calculated rates - Approve:', approveRate.toFixed(1) + '%', 'Reject:', rejectRate.toFixed(1) + '%');
 
   // 检查用户是否已投票（且不在上链中）
   const hasVoted = userVote !== undefined;
