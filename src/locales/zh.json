@@ -734,6 +734,8 @@
   },
   "homepage": {
     "proposalList": "提案列表",
+    "ongoingProjects": "在建项目",
+    "ongoingBudget": "在建项目预算",
     "all": "全部",
     "draft": "草稿",
     "communityReview": "社区审议中",

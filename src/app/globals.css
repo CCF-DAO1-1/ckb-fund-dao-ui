@@ -846,6 +846,50 @@ a {
   padding: 20px;
 }
 
+/* DAO 信息卡片 */
+.dao_info {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+  list-style: none;
+  padding: 0;
+}
+
+.dao_info li {
+  background: #252831;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.dao_info li h3 {
+  font-size: 14px;
+  color: #8a949e;
+  font-weight: 500;
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+.dao_info li p {
+  font-size: 24px;
+  color: #fff;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* 响应式适配 */
+@media (max-width: 1024px) {
+  .dao_info {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .dao_info {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* 提案列表区域 */
 .proposal_list {
   border-radius: 8px;

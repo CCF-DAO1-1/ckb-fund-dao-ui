@@ -694,6 +694,8 @@
   },
   "homepage": {
     "proposalList": "Proposal List",
+    "ongoingProjects": "Ongoing Projects",
+    "ongoingBudget": "Ongoing Budget",
     "all": "All",
     "draft": "Draft",
     "communityReview": "Community Review",

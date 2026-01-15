@@ -9,6 +9,8 @@ import { ProposalStatus } from "@/utils/proposalUtils";
 import UserGovernance from "@/components/common/UserGovernance";
 import { useI18n } from "@/contexts/I18nContext";
 import isMobile from "is-mobile";
+import { useProposalStatus } from "@/hooks/useProposalStatus";
+import { formatNumber } from "@/utils/proposalUtils";
 import { FiSearch } from "react-icons/fi";
 
 export default function Treasury() {
@@ -119,27 +121,22 @@ export default function Treasury() {
 
   // 加载与错误状态改为仅在列表区域显示
 
+  // 获取提案状态统计
+  const { data: statusData } = useProposalStatus();
+
   return (
     <div className="container">
       <main>
-        {/* <ul className="dao_info">
+        <ul className="dao_info">
           <li>
-            <h3>申请中提案</h3>
-            <p>{stats.pending}</p>
+            <h3>{messages.homepage.ongoingProjects}</h3>
+            <p>{statusData?.in_progress_num ?? '-'}</p>
           </li>
           <li>
-            <h3>总申请预算</h3>
-            <p>{formatNumber(stats.totalBudget)} CKB</p>
+            <h3>{messages.homepage.ongoingBudget}</h3>
+            <p>{statusData ? `${formatNumber(statusData.budget_amount_in_progress / 100000000)} CKB` : '-'}</p>
           </li>
-          <li>
-            <h3>待拨款提案</h3>
-            <p>{stats.pending}</p>
-          </li>
-          <li>
-            <h3>待拨款预算</h3>
-            <p>{formatNumber(stats.pendingBudget)} CKB</p>
-          </li>
-        </ul> */}
+        </ul>
         <div className="proposal_list_container">
           {/* 移动端：my_info 在前 */}
           {isMobileDevice && (

@@ -608,6 +608,25 @@ export const getVoteDetail = defineAPI<
   }
 );
 
+// 提案状态统计响应类型
+export interface ProposalStatusResponse {
+  budget_amount_in_progress: number; // 在建项目预算
+  in_progress_num: number; // 在建项目数量
+}
+
+/**
+ * 获取提案状态统计
+ * GET /api/proposal/status
+ */
+export const getProposalStatus = defineAPI<
+  Record<string, never>, // 无参数
+  ProposalStatusResponse
+>(
+  "/proposal/status",
+  "GET",
+  {}
+);
+
 // 查询个人投票信息参数类型
 export interface ListSelfVoteParams {
   did: string; // 用户DID

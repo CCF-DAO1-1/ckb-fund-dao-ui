@@ -462,6 +462,8 @@ interface Messages {
     noProposals: string;
     loadMore: string;
     searchPlaceholder: string;
+    ongoingProjects: string;
+    ongoingBudget: string;
   };
   userGovernance: {
     title: string;
