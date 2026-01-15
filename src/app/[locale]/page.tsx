@@ -134,7 +134,7 @@ export default function Treasury() {
           </li>
           <li>
             <h3>{messages.homepage.ongoingBudget}</h3>
-            <p>{statusData ? `${formatNumber(statusData.budget_amount_in_progress / 100000000)} CKB` : '-'}</p>
+            <p>{statusData ? `${formatNumber(1 * statusData.budget_amount_in_progress)} CKB` : '-'}</p>
           </li>
         </ul>
         <div className="proposal_list_container">
