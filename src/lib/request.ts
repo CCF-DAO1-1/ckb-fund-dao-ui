@@ -75,12 +75,74 @@ async function refreshAccessToken(): Promise<string> {
       requestQueue = [];
 
       return newToken;
-    } catch (error) {
+    } catch (error: unknown) {
+      logger.error('Failed to refresh token:', { error });
+
+      // 检查是否是 refresh token 也过期了
+      const err = error as { error?: string; message?: string; status?: number };
+      const errorMessage = err?.message || String(error);
+      const isRefreshTokenExpired =
+        err?.status === 400 ||
+        err?.status === 401 ||
+        err?.error === 'BadJwt' ||
+        err?.error === 'ExpiredToken' ||
+        err?.error === 'InvalidRequest' ||
+        errorMessage.includes('Token has expired') ||
+        errorMessage.includes('BadJwt');
+
+      // 如果 refresh token 也过期了，清除 session 并提示用户重新登录
+      if (isRefreshTokenExpired && typeof window !== 'undefined') {
+        try {
+          const pdsClient = getPDSClient();
+          // 清除 session - 使用 logout 方法或直接设置 session 为 null
+          if (typeof pdsClient.logout === 'function') {
+            pdsClient.logout();
+          } else {
+            // 如果 logout 方法不存在，直接清除 session
+            // @ts-expect-error - sessionManager.session 可能允许设置为 null
+            pdsClient.sessionManager.session = null;
+          }
+
+          // 清除本地存储的 token
+          const { default: storage } = await import("./storage");
+          storage.removeToken();
+
+          // 清除 userInfo cache
+          storage.removeUserInfoCache();
+
+          // 更新 Zustand store
+          const { default: useUserInfoStore } = await import('../store/userInfo');
+          const { logout } = useUserInfoStore.getState();
+          if (logout) {
+            logout();
+          }
+
+          logger.warn('Refresh token 已过期，已清除 session，请重新登录');
+        } catch (clearError) {
+          logger.error('清除 session 失败:', clearError);
+        }
+      }
+
       // 通知队列中的所有请求失败
-      const err = error instanceof Error ? error : new Error(String(error));
-      requestQueue.forEach(({ reject }) => reject(err));
+      let errorObj: Error;
+      if (error instanceof Error) {
+        errorObj = error;
+      } else if (typeof error === 'object' && error !== null) {
+        // 尝试提取错误消息
+        const err = error as { message?: string; error?: string };
+        const msg = err.message || err.error || JSON.stringify(error);
+        errorObj = new Error(msg);
+        // 保留原始对象的属性
+        Object.assign(errorObj, error);
+      } else {
+        errorObj = new Error(String(error));
+      }
+
+      requestQueue.forEach(({ reject }) => reject(errorObj));
       requestQueue = [];
-      throw err;
+
+      // 抛出错误，由调用者处理
+      throw errorObj;
     } finally {
       isRefreshingToken = false;
       refreshTokenPromise = null;
@@ -228,8 +290,45 @@ export async function requestAPI(url: string, config: RequestConfig) {
             url,
             status: response.status
           });
-        } catch (refreshError) {
+        } catch (refreshError: unknown) {
           logger.error('刷新 token 失败', refreshError, { url });
+
+          // 检查是否是 refresh token 也过期了
+          const refreshErr = refreshError as { error?: string; message?: string; status?: number };
+          const refreshErrorMessage = refreshErr?.message || String(refreshError);
+          const isRefreshTokenExpired =
+            refreshErr?.status === 400 ||
+            refreshErr?.status === 401 ||
+            refreshErr?.error === 'BadJwt' ||
+            refreshErr?.error === 'ExpiredToken' ||
+            refreshErr?.error === 'InvalidRequest' ||
+            refreshErrorMessage.includes('Token has expired') ||
+            refreshErrorMessage.includes('BadJwt');
+
+          // 如果 refresh token 也过期了，清除 session
+          if (isRefreshTokenExpired) {
+            try {
+              const pdsClient = getPDSClient();
+              if (typeof pdsClient.logout === 'function') {
+                pdsClient.logout();
+              }
+
+              const { default: storage } = await import("./storage");
+              storage.removeToken();
+              storage.removeUserInfoCache();
+
+              const { default: useUserInfoStore } = await import('../store/userInfo');
+              const { logout } = useUserInfoStore.getState();
+              if (logout) {
+                logout();
+              }
+
+              logger.warn('Refresh token 已过期，已清除 session，请重新登录');
+            } catch (clearError) {
+              logger.error('清除 session 失败:', clearError);
+            }
+          }
+
           // 刷新失败，处理认证错误
           const apiError = APIError.fromAxiosError(error);
           handleAuthError(apiError);

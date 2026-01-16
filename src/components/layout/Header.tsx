@@ -15,6 +15,7 @@ import { IoMenu, IoClose } from "react-icons/io5";
 import isMobile from "is-mobile";
 import "@/components/user-login/LoginModal.css";
 import { getUserDisplayNameFromStore } from "@/utils/userDisplayUtils";
+import { useWallet } from "@/provider/WalletProvider";
 
 export default function Header() {
   const pathname = usePathname();
@@ -25,6 +26,7 @@ export default function Header() {
   // const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { userInfo, userProfile } = useUserInfoStore();
   const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const { disconnect } = useWallet();
 
   useEffect(() => {
     // 确保只在客户端执行
@@ -146,7 +148,10 @@ export default function Header() {
             </div>
           ) : (
             <button
-              onClick={() => setIsLoginModalOpen(true)}
+              onClick={() => {
+                disconnect().catch(console.error);
+                setIsLoginModalOpen(true)
+              }}
               className="button-normal"
             >
               {t("header.login")}

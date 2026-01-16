@@ -52,6 +52,10 @@ export default function Tag({
         return t("proposalStatus.waitingForAcceptanceReport");
       case ProposalStatus.COMPLETED:
         return t("proposalStatus.completed");
+      case ProposalStatus.WAITING_FINAL_RULING:
+        return t("proposalStatus.waitingFinalRuling");
+      case ProposalStatus.WAITING_RECTIFICATION:
+        return t("proposalStatus.waitingRectification");
       case ProposalStatus.REEXAMINE_VOTE:
         return t("proposalStatus.reexamineVote");
       case ProposalStatus.RECTIFICATION_VOTE:

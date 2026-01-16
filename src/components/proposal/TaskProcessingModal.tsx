@@ -8,6 +8,7 @@ import { useWallet } from "@/provider/WalletProvider";
 import { useTranslation } from "@/utils/i18n";
 import { InitiationVoteResponse } from "@/server/proposal";
 import { ccc } from "@ckb-ccc/core";
+import Tag from "@/components/ui/tag/Tag";
 
 interface ProposalItem {
   id: string;
@@ -15,6 +16,7 @@ interface ProposalItem {
   type: string;
   status: ProposalStatus;
   taskType: TaskType;
+  task_type?: number; // 添加原始的 task_type 数字值
   deadline: string;
   isNew?: boolean;
   progress?: string;
@@ -103,7 +105,7 @@ export default function TaskProcessingModal({
   proposal
 }: TaskProcessingModalProps) {
   const [isClient, setIsClient] = useState(false);
-  const { createVoteMetaData, buildAndSendTransaction, error: voteError } = useCreateVoteMeta();
+  const { createVoteMetaData, createRectificationVote, buildAndSendTransaction, error: voteError } = useCreateVoteMeta();
   const { signer, openSigner } = useWallet();
   const { t } = useTranslation();
   const [formData, setFormData] = useState<TaskFormData>({
@@ -133,11 +135,21 @@ export default function TaskProcessingModal({
   const handleComplete = async () => {
     if (isTaskType(taskType, "taskTypes.createVote", t) && proposal) {
       // 处理投票创建
-      // 使用新的 initiation_vote 接口
-      const result = await createVoteMetaData({
-        proposalUri: formData.proposal_uri,
-        proposalState: proposal.status, // 使用提案的状态
-      });
+      let result;
+
+      // 根据 task_type 调用不同的API
+      if (proposal.task_type === 12) {
+        // task_type=12: 调用整改投票API
+        result = await createRectificationVote({
+          proposalUri: formData.proposal_uri,
+        });
+      } else {
+        // 其他投票类型：调用initiation_vote API
+        result = await createVoteMetaData({
+          proposalUri: formData.proposal_uri,
+          proposalState: proposal.status,
+        });
+      }
 
       if (result.success && result.data) {
         // 检查响应中是否有 outputsData，如果有则发送交易
@@ -215,7 +227,9 @@ export default function TaskProcessingModal({
               </div>
               <div className="info-item">
                 <span className="info-label">{t("proposalInfo.proposalPhase")}:</span>
-                <span className="info-value">{proposal ? getStatusText(proposal.status, t) : t("proposalInfo.unknownStatus")}</span>
+                <span className="info-value">
+                  {proposal ? <Tag status={proposal.status} size="sm" /> : t("proposalInfo.unknownStatus")}
+                </span>
               </div>
               <div className="info-item">
                 <span className="info-label">{t("proposalInfo.budget")}:</span>

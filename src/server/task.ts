@@ -166,6 +166,11 @@ export interface SubmitMeetingReportParams {
 // 提交AMA报告响应类型
 export interface SubmitMeetingReportResponse {
   success: boolean;
+  outputsData?: string[];
+  vote_meta?: {
+    id: number;
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 }
 
@@ -323,6 +328,7 @@ export const submitAcceptanceReport = defineAPI<
   }
 );
 
+
 export interface GetMeetingListParams {
   proposal?: string; // 提案URI，可选，用于过滤特定提案的会议
 }
@@ -340,6 +346,81 @@ export const getMeetingList = defineAPI<
   {
     divider: {
       query: ["proposal"],
+    },
+  }
+);
+
+// ==================== 整改投票相关 ====================
+
+export interface RectificationVoteParams {
+  did: string;
+  params: {
+    proposal_uri: string; // 提案URI
+    timestamp: number;     // UTC时间戳（秒）
+  };
+  signed_bytes: string;    // CBOR编码后的签名
+  signing_key_did: string; // 签名密钥DID
+}
+
+export interface RectificationVoteResponse {
+  outputsData?: string[];   // 输出数据数组
+  vote_meta?: {
+    id: number;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+/**
+ * 发起整改投票
+ * POST /api/task/rectification_vote
+ */
+export const rectificationVote = defineAPI<
+  RectificationVoteParams,
+  RectificationVoteResponse
+>(
+  "/task/rectification_vote",
+  "POST",
+  {
+    divider: {
+      body: ["did", "params", "signed_bytes", "signing_key_did"],
+    },
+  }
+);
+
+
+// ==================== 提交整改报告相关 ====================
+
+export interface SubmitRectificationParams {
+  did: string;
+  params: {
+    progress: number;       // Integar (int32)
+    proposal_uri: string;   // string
+    timestamp: number;      // Integar (int64) - Assuming Seconds based on other APIs
+    value: any;            // record value (Proposal Data)
+  };
+  signed_bytes: string;
+  signing_key_did: string;
+}
+
+export interface SubmitRectificationResponse {
+  success: boolean;
+  [key: string]: unknown;
+}
+
+/**
+ * 提交整改报告
+ * POST /api/task/rectification
+ */
+export const submitRectification = defineAPI<
+  SubmitRectificationParams,
+  SubmitRectificationResponse
+>(
+  "/task/rectification",
+  "POST",
+  {
+    divider: {
+      body: ["did", "params", "signed_bytes", "signing_key_did"],
     },
   }
 );

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { initiationVote, InitiationVoteParams, InitiationVoteResponse, updateMetaTxHash } from "@/server/proposal";
+import { rectificationVote, RectificationVoteParams, RectificationVoteResponse } from "@/server/task";
 import useUserInfoStore from "@/store/userInfo";
 import * as cbor from '@ipld/dag-cbor';
 import { uint8ArrayToHex } from "@/lib/dag-cbor";
@@ -164,6 +165,64 @@ export function useCreateVoteMeta() {
       proposalState, // 默认使用 REVIEW 状态 (1)
     });
   }, [createVoteMetaData]);
+
+  // 创建整改投票（task_type=12）
+  const createRectificationVote = useCallback(async (params: {
+    proposalUri: string;
+  }) => {
+    if (!userInfo?.did) {
+      setError(t("taskModal.errors.userNotLoggedIn"));
+      return { success: false, error: t("taskModal.errors.userNotLoggedIn") };
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // 构建参数对象
+      const voteParams = {
+        proposal_uri: params.proposalUri,
+        timestamp: Math.floor(Date.now() / 1000),
+      };
+
+      // 生成signed_bytes
+      const signedBytes = await generateInitiationVoteSignedBytes(voteParams);
+
+      // 获取signing_key_did
+      const storageInfo = storage.getToken();
+      if (!storageInfo?.signKey) {
+        throw new Error(t("taskModal.errors.userNotLoggedIn"));
+      }
+      const keyPair = await Secp256k1Keypair.import(storageInfo.signKey.slice(2));
+      const signingKeyDid = keyPair.did();
+
+      const rectificationVoteParams: RectificationVoteParams = {
+        did: userInfo.did,
+        params: voteParams,
+        signed_bytes: signedBytes,
+        signing_key_did: signingKeyDid,
+      };
+
+      const response = await rectificationVote(rectificationVoteParams);
+
+      if (response) {
+        return {
+          success: true,
+          data: response,
+        };
+      } else {
+        throw new Error(t("taskModal.errors.createVoteFailed"));
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : t("taskModal.errors.createVoteFailed");
+      setError(errorMessage);
+      logger.error("创建整改投票失败:", error);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userInfo?.did, generateInitiationVoteSignedBytes, t]);
+
 
   // 根据 API 返回的 outputsData 组装并发送交易
   // 参照: https://github.com/web5fans/web5-components/blob/dev/vote/create-vote-meta/src/index.ts
@@ -357,6 +416,7 @@ export function useCreateVoteMeta() {
   return {
     createVoteMetaData,
     createReviewVote,
+    createRectificationVote,
     buildAndSendTransaction,
     isLoading,
     error,

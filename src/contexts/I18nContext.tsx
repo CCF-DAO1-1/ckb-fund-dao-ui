@@ -159,6 +159,14 @@ interface Messages {
     projectRectification: string;
     recoverFunds: string;
     publishReport: string;
+    submitReexamineReport: string;
+    initiationVote: string;
+    milestoneVoteTask: string;
+    delayVoteTask: string;
+    reviewVoteTask: string;
+    reexamineVote: string;
+    rectificationVote: string;
+    submitRectificationReport: string;
     createVote: string;
   };
   proposalStatus: {
@@ -179,8 +187,10 @@ interface Messages {
     reviewVote: string;
     waitingForAcceptanceReport: string;
     completed: string;
-    reexamineVote: string;
+    waitingFinalRuling: string;
+    waitingRectification: string;
     rectificationVote: string;
+    reexamineVote: string;
   };
   proposalInfo: {
     proposalName: string;

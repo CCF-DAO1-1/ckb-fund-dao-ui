@@ -17,6 +17,7 @@
 // 11: ReexamineVote (复核投票)
 // 12: RectificationVote (整改投票)
 // 13: SubmitRectificationReport (提交整改报告)
+// 14: SubmitReexamineReport (提交复核报告)
 export enum TaskType {
   DEFAULT = 0,                    // 默认
   CREATE_AMA = 1,                // 组织AMA
@@ -30,8 +31,9 @@ export enum TaskType {
   SUBMIT_ACCEPTANCE_REPORT = 9,  // 提交验收报告
   CREATE_REEXAMINE_MEETING = 10, // 创建复核会议
   REEXAMINE_VOTE = 11,           // 复核投票
-  RECTIFICATION_VOTE = 12,      // 整改投票
+  RECTIFICATION_VOTE = 12,       // 整改投票
   SUBMIT_RECTIFICATION_REPORT = 13, // 提交整改报告
+  SUBMIT_REEXAMINE_REPORT = 14,  // 提交复核报告
 }
 
 // 任务类型数字映射到翻译键
@@ -40,7 +42,7 @@ export const TASK_TYPE_MAP: Record<number, string> = {
   [TaskType.DEFAULT]: 'organizeMeeting',                    // Default -> 默认使用组织会议
   [TaskType.CREATE_AMA]: 'organizeAMA',                    // CreateAMA
   [TaskType.SUBMIT_AMA_REPORT]: 'publishMinutes',          // SubmitAMAReport
-  [TaskType.INITIATION_VOTE]: 'createVote',                 // InitiationVote
+  [TaskType.INITIATION_VOTE]: 'initiationVote',             // InitiationVote
   [TaskType.UPDATE_RECEIVER_ADDR]: 'milestoneAllocation',  // UpdateReceiverAddr
   [TaskType.SEND_INITIAL_FUND]: 'milestoneAllocation',     // SendInitialFund
   [TaskType.SUBMIT_MILESTONE_REPORT]: 'publishReport',     // SubmitMilestoneReport
@@ -48,9 +50,10 @@ export const TASK_TYPE_MAP: Record<number, string> = {
   [TaskType.SEND_MILESTONE_FUND]: 'milestoneAllocation',   // SendMilestoneFund
   [TaskType.SUBMIT_ACCEPTANCE_REPORT]: 'milestoneVerification', // SubmitAcceptanceReport
   [TaskType.CREATE_REEXAMINE_MEETING]: 'organizeMeeting',  // CreateReexamineMeeting
-  [TaskType.REEXAMINE_VOTE]: 'createVote',                 // ReexamineVote
-  [TaskType.RECTIFICATION_VOTE]: 'createVote',            // RectificationVote
-  [TaskType.SUBMIT_RECTIFICATION_REPORT]: 'publishReport', // SubmitRectificationReport
+  [TaskType.REEXAMINE_VOTE]: 'reexamineVote',              // ReexamineVote
+  [TaskType.RECTIFICATION_VOTE]: 'rectificationVote',      // RectificationVote
+  [TaskType.SUBMIT_RECTIFICATION_REPORT]: 'submitRectificationReport', // SubmitRectificationReport
+  [TaskType.SUBMIT_REEXAMINE_REPORT]: 'submitReexamineReport',    // SubmitReexamineReport
 };
 
 /**
