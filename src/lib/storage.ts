@@ -41,7 +41,16 @@ const storage = {
     return window.localStorage.removeItem(key);
   }),
   clear: clientRun(() => {
-    return window.localStorage.clear();
+    // Collect all keys to remove, excluding the access token
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i);
+      if (key && key !== ACCESS_TOKEN_STORE_KEY) {
+        keysToRemove.push(key);
+      }
+    }
+    // Remove identified keys
+    keysToRemove.forEach(key => window.localStorage.removeItem(key));
   }),
   setToken: clientRun((accTokenVal: TokenStorageType) => {
     window.localStorage.setItem(ACCESS_TOKEN_STORE_KEY, JSON.stringify(accTokenVal));
