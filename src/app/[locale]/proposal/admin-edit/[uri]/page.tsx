@@ -92,8 +92,7 @@ export default function AdminEditProposal() {
     const [activeMilestoneIndex, setActiveMilestoneIndex] = useState(0);
     const [showPreview, setShowPreview] = useState(false);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const quillModules = useMemo(() => ({} as any), []);
+    const quillModules = useMemo<Record<string, unknown>>(() => ({}), []);
     const quillFormats = useMemo(() => [] as string[], []);
 
     useEffect(() => {
@@ -114,7 +113,7 @@ export default function AdminEditProposal() {
                 team: data.team || "",
                 budget: data.budget || "",
                 milestones: data.milestones || [],
-                progress: (proposal as any).progress || 0,
+                progress: proposal?.progress ?? 0,
             });
         }
     }, [proposal]);

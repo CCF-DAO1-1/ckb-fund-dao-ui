@@ -6,7 +6,7 @@ import { useTranslation } from "@/utils/i18n";
 import { useI18n } from "@/contexts/I18nContext";
 import { useTaskList } from "@/hooks/useTaskList";
 import { useManagementModals } from "@/hooks/useManagementModals";
-import { adaptTaskData, markNewTasks } from "@/utils/managementCenterUtils";
+import { adaptTaskData, markNewTasks, ProposalItem } from "@/utils/managementCenterUtils";
 import TaskTable from "./TaskTable";
 import TaskProcessingModal from "@/components/proposal/TaskProcessingModal";
 import UpdateReceiverAddrModal from "./UpdateReceiverAddrModal";
@@ -56,7 +56,7 @@ export default function ManagementCenter() {
   }, [rawTasks, t, locale]);
 
   // 统一的操作处理器
-  const handleAction = (action: string, proposal: any) => {
+  const handleAction = (action: string, proposal: ProposalItem) => {
     // 提交整改报告跳转
     if (action === 'submitRectificationReport') {
       const href = postUriToHref(proposal.uri);

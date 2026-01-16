@@ -397,7 +397,19 @@ export interface SubmitRectificationParams {
     progress: number;       // Integar (int32)
     proposal_uri: string;   // string
     timestamp: number;      // Integar (int64) - Assuming Seconds based on other APIs
-    value: any;            // record value (Proposal Data)
+    value:{
+      $type: string;
+      created: string;
+      data: {
+        background: string;
+        budget: string;
+        goals: string;
+        milestones: unknown[];
+        proposalType: string;
+        releaseDate: string;
+        team: string;
+      }
+    } ; // record value (Proposal Data)
   };
   signed_bytes: string;
   signing_key_did: string;

@@ -49,7 +49,7 @@ export default function TransactionDebugTool() {
                 data.startsWith('0x') ? data : `0x${data}`
             );
 
-            logger.log('📦 OutputsData:', outputsData);
+            logger.log('📦 OutputsData:', { outputsData });
 
             // 获取地址
             const addresses = await signer.getAddresses();
@@ -57,7 +57,7 @@ export default function TransactionDebugTool() {
                 throw new Error('无法获取钱包地址');
             }
             const fromAddress = addresses[0];
-            logger.log('✅ 钱包地址:', fromAddress);
+            logger.log('✅ 钱包地址:', { fromAddress });
 
             // 获取 lock script
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -271,7 +271,7 @@ export default function TransactionDebugTool() {
                 <ol style={{ margin: 0, paddingLeft: '20px' }}>
                     <li>输入 vote_meta.id</li>
                     <li>粘贴 API 返回的 outputsData</li>
-                    <li>点击"发送交易"按钮</li>
+                    <li>点击&quot;发送交易&quot;按钮</li>
                     <li>确认钱包签名</li>
                     <li>复制返回的 txHash</li>
                 </ol>
