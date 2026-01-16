@@ -1,7 +1,19 @@
 
 // 格式化数字显示
-export const formatNumber = (num: number, locale: string = 'en-US') => {
-  return num.toLocaleString(locale);
+export const formatNumber = (num: number | string, locale: string = 'en-US') => {
+  const n = typeof num === 'string' ? Number(num) : num;
+  // If it's a safe integer, use Number.toLocaleString
+  if (Number.isSafeInteger(n)) {
+    return n.toLocaleString(locale);
+  }
+  // For large numbers, utilize BigInt formatting via Intl.NumberFormat if possible or fallback string
+  try {
+    const bigIntVal = BigInt(num);
+    return bigIntVal.toLocaleString(locale);
+  } catch {
+    // Fallback for non-integer strings or invalid inputs
+    return num.toLocaleString();
+  }
 };
 // 提案状态枚举（值对应后端 state）
 // 0: END (结束)

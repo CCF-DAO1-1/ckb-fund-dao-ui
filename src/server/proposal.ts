@@ -610,7 +610,7 @@ export const getVoteDetail = defineAPI<
 
 // 提案状态统计响应类型
 export interface ProposalStatusResponse {
-  budget_amount_in_progress: number; // 在建项目预算
+  budget_amount_in_progress: string; // 在建项目预算
   in_progress_num: number; // 在建项目数量
 }
 
