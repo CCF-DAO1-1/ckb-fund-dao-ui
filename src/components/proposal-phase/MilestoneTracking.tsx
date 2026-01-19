@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { MilestoneTrackingProps, MilestoneStatus } from '../../types/milestone';
 import { VotingDetailsData } from '../../types/voting';
-import MilestoneVoting from './MilestoneVoting';
+import ProposalVoting from './ProposalVoting';
 import { useI18n } from '@/contexts/I18nContext';
 import { getTimeline } from '@/server/timeline';
 import { logger } from '@/lib/logger';
@@ -21,7 +21,7 @@ export default function MilestoneTracking({
   const fetchedRef = useRef<string | null>(null);
 
   // 获取提案URI
-  const proposalUri = 'uri' in proposal ? proposal.uri : null;
+  const proposalUri = proposal?.uri || null;
 
   // 获取时间线数据以查找最新的投票结果
   useEffect(() => {
@@ -126,7 +126,7 @@ export default function MilestoneTracking({
       </div>
 
       {/* 里程碑投票区域 */}
-      {/* <div className="milestone-voting-section">
+      <div className="milestone-voting-section">
         {milestones
           .filter(milestone => {
             // 只在进行中状态显示
@@ -141,18 +141,18 @@ export default function MilestoneTracking({
             return false;
           })
           .map((milestone) => (
-            <MilestoneVoting
+            <ProposalVoting
               key={`voting-${milestone.id}`}
               voteMetaId={milestone.voteMetaId || 0} // 如果没有ID但有结果，传0或其他占位符
               voteWeight={voteWeight}
               proposal={proposal}
-              milestoneTitle={milestone.title}
+              title={milestone.title}
               className="milestone-voting-item"
               // 如果没有正在进行的投票ID，则传入结束的结果
               finishedResult={!milestone.voteMetaId ? latestVoteResult || undefined : undefined}
             />
           ))}
-      </div> */}
+      </div>
     </div>
   );
 }

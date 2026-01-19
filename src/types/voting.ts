@@ -57,4 +57,6 @@ export interface ProposalVotingProps {
   voteMetaId: number | null;
   voteWeight: number; // CKB 单位
   className?: string;
+  title?: string;
+  finishedResult?: VotingDetailsData; // 已完成的投票结果
 }

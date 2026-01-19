@@ -14,13 +14,10 @@ import { useWallet } from "@/provider/WalletProvider";
 import useUserInfoStore from "@/store/userInfo";
 import { getVoteDetail, getVoteStatus, updateVoteTxHash, VoteRecord, VoteDetailResponse } from "@/server/proposal";
 import { generateVotingInfo, handleVote as handleVoteUtil, buildAndSendVoteTransaction } from "@/utils/votingUtils";
-import { Proposal, ProposalStatus } from "@/utils/proposalUtils";
-import { getUserDisplayNameFromInfo } from "@/utils/userDisplayUtils";
-import { getAvatarByDid } from "@/utils/avatarUtils";
+
 import { SuccessModal, Modal } from "@/components/ui/modal";
 import { MdErrorOutline } from "react-icons/md";
 import { generateSignature } from "@/lib/signature";
-import { ProposalDetailResponse } from "@/server/proposal";
 import "./voting.css";
 import ProposalVotingConditions from "./ProposalVotingConditions";
 
@@ -32,6 +29,8 @@ export default function ProposalVoting({
   voteMetaId,
   voteWeight,
   className = "",
+  title,
+  finishedResult
 }: ProposalVotingProps) {
   const { messages } = useI18n();
   const { userInfo } = useUserInfoStore();
@@ -53,8 +52,73 @@ export default function ProposalVoting({
   // 用于防止短时间内重复请求的 ref
   const lastFetchParamsRef = useRef<{ voteMetaId: number | null; userDid: string | null } | null>(null);
 
+  // 初始化 finishedResult 逻辑
+  useEffect(() => {
+    if (finishedResult && proposal) {
+      // 如果有 finishedResult，优先使用它展示结果
+      let approveVotes = 0;
+      let rejectVotes = 0;
+
+      if (finishedResult.candidate_votes && Array.isArray(finishedResult.candidate_votes)) {
+        if (finishedResult.candidate_votes[1] && Array.isArray(finishedResult.candidate_votes[1])) {
+          approveVotes = (finishedResult.candidate_votes[1] as unknown as [number, number])[1] ?? 0;
+        }
+        if (finishedResult.candidate_votes[2] && Array.isArray(finishedResult.candidate_votes[2])) {
+          rejectVotes = (finishedResult.candidate_votes[2] as unknown as [number, number])[1] ?? 0;
+        }
+      }
+
+      const totalVotes = finishedResult.valid_weight_sum ?? finishedResult.weight_sum ?? 0;
+      const approvalRate = totalVotes > 0
+        ? (approveVotes / totalVotes) * 100
+        : 0;
+
+      // 构造 VotingInfo
+      const info: VotingInfo = {
+        proposalId: 'id' in proposal ? (proposal as any).id : proposal.cid,
+        title: title || '',
+        // 尝试从 proposal.vote_meta 获取 end_time (如果是同一个投票)，否则置空
+        endTime: (voteMetaId && 'vote_meta' in proposal && proposal.vote_meta?.id === voteMetaId)
+          ? proposal.vote_meta.end_time
+          : '',
+        totalVotes,
+        approveVotes,
+        rejectVotes,
+        userVotingPower: voteWeight,
+        status: VotingStatus.ENDED,
+        conditions: {
+          minTotalVotes: 0,
+          minApprovalRate: 0,
+          currentTotalVotes: totalVotes,
+          currentApprovalRate: approvalRate
+        }
+      };
+
+      // 复用下方的 budget 计算逻辑来设置 minTotalVotes，以保持 UI 一致性
+      let minTotalVotes = 5000000;
+      if (proposal) {
+        let budget = 0;
+        if ('record' in proposal && proposal.record?.data?.budget) {
+          budget = Number(proposal.record.data.budget);
+        } else if ('budget' in proposal && typeof proposal.budget === 'number') {
+          budget = proposal.budget;
+        }
+        if (budget > 0) {
+          minTotalVotes = budget * 3 * 100000000;
+        }
+      }
+      info.conditions.minTotalVotes = minTotalVotes;
+      info.conditions.minApprovalRate = 51; // 保持一致
+
+      setVotingInfo(info);
+    }
+  }, [finishedResult, proposal, title, voteWeight]);
+
   // 获取投票详情的函数（用于投票后刷新）
   const refreshVoteDetail = useCallback(async () => {
+    // 如果有 finishedResult，不请求 API
+    if (finishedResult) return;
+
     if (!voteMetaId) {
       return;
     }
@@ -88,15 +152,31 @@ export default function ProposalVoting({
           // 如果没有初始状态，创建一个最小可用的状态对象
           return {
             proposalId: '',
-            title: '',
-            endTime: '',
+            title: title || '', // Use prop title if available
+            endTime: voteDetail.vote_meta?.end_time || '',
             totalVotes,
             approveVotes,
             rejectVotes,
-            userVotingPower: 0,
+            userVotingPower: voteWeight * 100000000,
             status: VotingStatus.PENDING,
             conditions: {
-              minTotalVotes: 0,
+              minTotalVotes: (() => {
+                let min = 0;
+                // 尝试计算 3倍预算
+                if (proposal) {
+                  let budget = 0;
+                  if ('record' in proposal && proposal.record?.data?.budget) {
+                    budget = Number(proposal.record.data.budget);
+                  } else if ('budget' in proposal && typeof proposal.budget === 'number') {
+                    budget = proposal.budget;
+                  }
+
+                  if (budget > 0) {
+                    min = budget * 3 * 100000000;
+                  }
+                }
+                return min;
+              })(),
               minApprovalRate: 51,
               currentTotalVotes: totalVotes,
               currentApprovalRate: approvalRate,
@@ -119,7 +199,17 @@ export default function ProposalVoting({
     } catch (error) {
       logger.error("获取投票详情失败:");
     }
-  }, [voteMetaId]);
+  }, [voteMetaId, voteWeight]);
+
+  useEffect(() => {
+    setVotingInfo((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        userVotingPower: voteWeight,
+      };
+    });
+  }, [voteWeight]);
 
   // 初始化投票信息（基于提案数据，不涉及API）
   // DISABLED: This was overwriting API data with zeros
@@ -192,14 +282,30 @@ export default function ProposalVoting({
             const newState = {
               proposalId: '',
               title: '',
-              endTime: '',
+              endTime: voteDetail.vote_meta?.end_time || '',
               totalVotes,
               approveVotes,
               rejectVotes,
-              userVotingPower: 0,
+              userVotingPower: voteWeight * 100000000,
               status: VotingStatus.PENDING,
               conditions: {
-                minTotalVotes: 0,
+                minTotalVotes: (() => {
+                  let min = 0;
+                  // 尝试计算 3倍预算
+                  if (proposal) {
+                    let budget = 0;
+                    if ('record' in proposal && proposal.record?.data?.budget) {
+                      budget = Number(proposal.record.data.budget);
+                    } else if ('budget' in proposal && typeof proposal.budget === 'number') {
+                      budget = proposal.budget;
+                    }
+
+                    if (budget > 0) {
+                      min = budget * 3;
+                    }
+                  }
+                  return min;
+                })(),
                 minApprovalRate: 51,
                 currentTotalVotes: totalVotes,
                 currentApprovalRate: approvalRate,
@@ -454,6 +560,7 @@ export default function ProposalVoting({
   // 处理投票
   const handleVote = (option: VoteOption) => {
     if (votingInfo?.status === VotingStatus.ENDED) return;
+    if (finishedResult) return; // 禁止对已结束的结果投票
     if (isChainPending) return;
     if (isVoting) return;
 
@@ -520,7 +627,7 @@ export default function ProposalVoting({
         {/* 标题和倒计时 */}
         <div className="voting-header">
           <h3 className="voting-title">
-            {messages.proposalPhase.proposalVoting.title}
+            {votingInfo.title || messages.proposalPhase.proposalVoting.title}
           </h3>
 
         </div>

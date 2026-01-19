@@ -41,11 +41,10 @@ export enum ProposalStatus {
   WAITING_FOR_MILESTONE_FUND = 7,   // 等待里程碑资金
   WAITING_FOR_ACCEPTANCE_REPORT = 8, // 等待验收报告
   COMPLETED = 9,                    // 项目完成
-  REVIEW_VOTE = 10,                 // 进度复核投票
-  WAITING_FINAL_RULING = 11,        // 等待最终裁定
+  WAITING_REEXAMINE = 10,           // 等待复核
+  REEXAMINE_VOTE = 11,              // 复核投票
   RECTIFICATION_VOTE = 12,          // 整改投票
   WAITING_RECTIFICATION = 13,       // 等待整改
-  REEXAMINE_VOTE = 14,              // 复核投票
 
   // 向后兼容的别名（映射到新状态）
   REVIEW = INITIATION_VOTE,          // 社区审议中 -> 立项投票
@@ -126,12 +125,11 @@ export const getStatusClass = (status: ProposalStatus) => {
       return 'status-tag milestone';
     case ProposalStatus.MILESTONE_VOTE:
     case ProposalStatus.DELAY_VOTE:
-    case ProposalStatus.REVIEW_VOTE:
     case ProposalStatus.REEXAMINE_VOTE:
     case ProposalStatus.RECTIFICATION_VOTE:
       return 'status-tag vote';
     case ProposalStatus.WAITING_RECTIFICATION:
-    case ProposalStatus.WAITING_FINAL_RULING:
+    case ProposalStatus.WAITING_REEXAMINE:
       return 'status-tag waiting';
     case ProposalStatus.COMPLETED:
     case ProposalStatus.APPROVED:
@@ -163,12 +161,11 @@ export const getStatusTagClass = (status: ProposalStatus) => {
       return 'tag-status--milestone';
     case ProposalStatus.MILESTONE_VOTE:
     case ProposalStatus.DELAY_VOTE:
-    case ProposalStatus.REVIEW_VOTE:
     case ProposalStatus.REEXAMINE_VOTE:
     case ProposalStatus.RECTIFICATION_VOTE:
       return 'tag-status--vote';
     case ProposalStatus.WAITING_RECTIFICATION:
-    case ProposalStatus.WAITING_FINAL_RULING:
+    case ProposalStatus.WAITING_REEXAMINE:
       return 'tag-status--review';
     case ProposalStatus.COMPLETED:
     case ProposalStatus.APPROVED:
