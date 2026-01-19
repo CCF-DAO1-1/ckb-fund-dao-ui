@@ -211,24 +211,6 @@ export default function ProposalVoting({
     });
   }, [voteWeight]);
 
-  // 初始化投票信息（基于提案数据，不涉及API）
-  // DISABLED: This was overwriting API data with zeros
-  // useEffect(() => {
-  //   if (!proposal || !proposal.vote_meta) {
-  //     setVotingInfo(null);
-  //     return;
-  //   }
-
-  //   if ((proposal.state === ProposalStatus.VOTE || ('vote_meta' in proposal && proposal.vote_meta && proposal.vote_meta.state === 1)) && proposal.vote_meta) {
-  //     const userVotingPower = voteWeight * 100000000;
-  //     const voting = generateVotingInfo(proposal, proposal.vote_meta, userVotingPower);
-  //     console.log('🎯 generateVotingInfo result:', voting);
-  //     setVotingInfo(voting);
-  //   } else {
-  //     setVotingInfo(null);
-  //   }
-  // }, [proposal, voteWeight]);
-
   // 进入页面时，如果存在 voteMetaId，先调用 getVoteDetail，然后调用 getVoteStatus
   useEffect(() => {
     if (!voteMetaId) return;
@@ -700,7 +682,7 @@ export default function ProposalVoting({
                       votedApprove?: string;
                     }
                   ).votedApprove || "已投赞成"
-                  } : ${formatNumber(votingInfo.userVotingPower / 100000000)}`
+                  } : ${formatNumber(votingInfo.userVotingPower)}`
                   : `${(
                     messages.proposalPhase.proposalVoting as {
                       votedReject?: string;

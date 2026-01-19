@@ -1,26 +1,28 @@
 /* Voting Details Modal Styles */
 .voting-details-section {
-  padding-top: 0.5rem;
-  padding-bottom: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.5rem;
 }
 
 .voting-summary-card {
   background-color: #141619;
   border: 1px solid #2a2e35;
-  border-radius: 0.75rem; /* rounded-xl */
-  padding: 1.25rem; /* p-5 */
+  border-radius: 0.75rem;
+  /* rounded-xl */
+  padding: 0.5rem 1.25rem;
+  /* p-5 */
 }
 
 .section-title {
   font-weight: 700;
   margin-bottom: 1rem;
-  font-size: 0.75rem; /* text-xs */
+  font-size: 0.75rem;
+  /* text-xs */
   color: #8a949e;
   text-transform: uppercase;
-  letter-spacing: 0.05em; /* tracking-wider */
+  letter-spacing: 0.05em;
+  /* tracking-wider */
 }
 
 .voting-summary-grid {
@@ -32,15 +34,18 @@
 
 .summary-item-label {
   color: #8a949e;
-  font-size: 0.875rem; /* text-sm */
+  font-size: 0.875rem;
+  /* text-sm */
   display: block;
   margin-bottom: 0.25rem;
 }
 
 .summary-item-value {
   font-weight: 700;
-  font-size: 1.25rem; /* text-xl */
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; /* font-mono */
+  font-size: 1.25rem;
+  /* text-xl */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  /* font-mono */
   color: #ffffff;
 }
 
@@ -57,7 +62,8 @@
 
 .voting-table {
   width: 100%;
-  font-size: 0.875rem; /* text-sm */
+  font-size: 0.875rem;
+  /* text-sm */
   border-collapse: collapse;
 }
 
@@ -107,13 +113,29 @@
 }
 
 /* Option Colors */
-.text-yellow-500 { color: #eab308; }
-.text-green-brand { color: #00cc9b; }
-.text-red-500 { color: #ef4444; }
+.text-yellow-500 {
+  color: #eab308;
+}
 
-.bg-yellow-500 { background-color: #eab308; }
-.bg-green-brand { background-color: #00cc9b; }
-.bg-red-500 { background-color: #ef4444; }
+.text-green-brand {
+  color: #00cc9b;
+}
+
+.text-red-500 {
+  color: #ef4444;
+}
+
+.bg-yellow-500 {
+  background-color: #eab308;
+}
+
+.bg-green-brand {
+  background-color: #00cc9b;
+}
+
+.bg-red-500 {
+  background-color: #ef4444;
+}
 
 .progress-track {
   width: 100%;
