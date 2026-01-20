@@ -17,7 +17,7 @@ export const formatNumber = (num: number | string, locale: string = 'en-US') => 
 };
 // 提案状态枚举（值对应后端 state）
 // 0: END (结束)
-// 1: DRAFT (草稿)
+// 1: DRAFT (社区审议中)
 // 2: INITIATION_VOTE (立项投票)
 // 3: WAITING_FOR_START_FUND (等待启动金)
 // 4: IN_PROGRESS (项目执行中)
@@ -32,7 +32,7 @@ export const formatNumber = (num: number | string, locale: string = 'en-US') => 
 // 13: REEXAMINE_VOTE (复核投票)
 export enum ProposalStatus {
   END = 0,                          // 结束
-  DRAFT = 1,                        // 草稿
+  DRAFT = 1,                        // 社区审议中
   INITIATION_VOTE = 2,              // 立项投票
   WAITING_FOR_START_FUND = 3,       // 等待启动金
   IN_PROGRESS = 4,                  // 项目执行中

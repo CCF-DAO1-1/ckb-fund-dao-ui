@@ -248,7 +248,7 @@
     "proposalManagement": "Proposal Management",
     "filterByStatus": "Filter by Status",
     "allStatuses": "All Statuses",
-    "draft": "Draft",
+    "draft": "Community Review",
     "review": "Community Review",
     "vote": "Voting",
     "milestone": "Milestone",
@@ -295,7 +295,7 @@
     "createVote": "Create Vote"
   },
   "proposalStatus": {
-    "draft": "Draft",
+    "draft": "Community Review",
     "initiationVote": "Initiation Vote",
     "waitingForStartFund": "Waiting For Start Fund",
     "inProgress": "In Progress",

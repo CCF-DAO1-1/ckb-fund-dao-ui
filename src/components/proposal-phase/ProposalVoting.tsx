@@ -32,6 +32,7 @@ export default function ProposalVoting({
   title,
   finishedResult
 }: ProposalVotingProps) {
+  console.log('🔍 ProposalVoting render. voteWeight:', voteWeight, 'voteMetaId:', voteMetaId);
   const { messages } = useI18n();
   const { userInfo } = useUserInfoStore();
   const { signer, walletClient, openSigner, isConnected } = useWallet();
@@ -75,7 +76,7 @@ export default function ProposalVoting({
 
       // 构造 VotingInfo
       const info: VotingInfo = {
-        proposalId: 'id' in proposal ? (proposal as any).id : proposal.cid,
+        proposalId: 'id' in proposal ? (proposal as { id: string }).id : proposal.cid,
         title: title || '',
         // 尝试从 proposal.vote_meta 获取 end_time (如果是同一个投票)，否则置空
         endTime: (voteMetaId && 'vote_meta' in proposal && proposal.vote_meta?.id === voteMetaId)

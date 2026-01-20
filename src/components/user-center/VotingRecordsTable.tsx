@@ -82,8 +82,8 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
           case ProposalStatus.DELAY_VOTE:
             votingStage = messages.proposalStatus?.delayVote || '延期投票';
             break;
-          case ProposalStatus.REVIEW_VOTE:
-            votingStage = messages.proposalStatus?.reviewVote || '进度复核投票';
+          case ProposalStatus.WAITING_REEXAMINE:
+            votingStage = messages.proposalStatus?.waitingReexamine || '等待复核';
             break;
           case ProposalStatus.REEXAMINE_VOTE:
             votingStage = messages.proposalStatus?.reexamineVote || '复核投票';

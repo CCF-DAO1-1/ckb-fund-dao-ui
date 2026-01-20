@@ -184,10 +184,9 @@ interface Messages {
     milestoneVote: string;
     delayVote: string;
     waitingForMilestoneFund: string;
-    reviewVote: string;
     waitingForAcceptanceReport: string;
     completed: string;
-    waitingFinalRuling: string;
+    waitingReexamine: string;
     waitingRectification: string;
     rectificationVote: string;
     reexamineVote: string;

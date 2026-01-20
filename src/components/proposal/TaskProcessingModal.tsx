@@ -69,8 +69,8 @@ const getStatusText = (status: ProposalStatus, t: (key: string) => string): stri
       return t("proposalStatus.delayVote");
     case ProposalStatus.WAITING_FOR_MILESTONE_FUND:
       return t("proposalStatus.waitingForMilestoneFund");
-    case ProposalStatus.REVIEW_VOTE:
-      return t("proposalStatus.reviewVote");
+    case ProposalStatus.WAITING_REEXAMINE:
+      return t("proposalStatus.waitingReexamine");
     case ProposalStatus.WAITING_FOR_ACCEPTANCE_REPORT:
       return t("proposalStatus.waitingForAcceptanceReport");
     case ProposalStatus.COMPLETED:

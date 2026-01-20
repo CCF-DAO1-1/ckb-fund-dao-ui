@@ -32,7 +32,7 @@ export enum TaskType {
   CREATE_REEXAMINE_MEETING = 10, // 创建复核会议
   REEXAMINE_VOTE = 11,           // 复核投票
   RECTIFICATION_VOTE = 12,       // 整改投票
-  RECTIFICATION = 13,       // 整改
+  SUBMIT_RECTIFICATION_REPORT = 13,       // 提交整改报告
   SUBMIT_REEXAMINE_REPORT = 14,  // 提交复核报告
 }
 
@@ -52,7 +52,7 @@ export const TASK_TYPE_MAP: Record<number, string> = {
   [TaskType.CREATE_REEXAMINE_MEETING]: 'organizeMeeting',  // CreateReexamineMeeting
   [TaskType.REEXAMINE_VOTE]: 'reexamineVote',              // ReexamineVote
   [TaskType.RECTIFICATION_VOTE]: 'rectificationVote',      // RectificationVote
-  [TaskType.RECTIFICATION]: 'submitRectificationReport', // Rectification -> use submit report key for now
+  [TaskType.SUBMIT_RECTIFICATION_REPORT]: 'submitRectificationReport', // SubmitRectificationReport
   [TaskType.SUBMIT_REEXAMINE_REPORT]: 'submitReexamineReport',    // SubmitReexamineReport
 };
 

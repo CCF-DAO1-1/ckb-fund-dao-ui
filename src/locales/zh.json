@@ -285,7 +285,7 @@
     "proposalManagement": "提案管理",
     "filterByStatus": "按状态筛选",
     "allStatuses": "全部状态",
-    "draft": "草稿",
+    "draft": "社区审议中",
     "review": "社区审议",
     "vote": "投票中",
     "milestone": "里程碑",
@@ -1140,7 +1140,7 @@
       "approved": "已通过",
       "rejected": "已拒绝",
       "ended": "结束",
-      "draft": "草稿",
+      "draft": "社区审议中",
       "projectReview": "项目复核",
       "terminated": "终止",
       "completed": "结项"

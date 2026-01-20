@@ -46,14 +46,12 @@ export default function Tag({
         return t("proposalStatus.delayVote");
       case ProposalStatus.WAITING_FOR_MILESTONE_FUND:
         return t("proposalStatus.waitingForMilestoneFund");
-      case ProposalStatus.REVIEW_VOTE:
-        return t("proposalStatus.reviewVote");
+      case ProposalStatus.WAITING_REEXAMINE:
+        return t("proposalStatus.waitingReexamine");
       case ProposalStatus.WAITING_FOR_ACCEPTANCE_REPORT:
         return t("proposalStatus.waitingForAcceptanceReport");
       case ProposalStatus.COMPLETED:
         return t("proposalStatus.completed");
-      case ProposalStatus.WAITING_FINAL_RULING:
-        return t("proposalStatus.waitingFinalRuling");
       case ProposalStatus.WAITING_RECTIFICATION:
         return t("proposalStatus.waitingRectification");
       case ProposalStatus.REEXAMINE_VOTE:

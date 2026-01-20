@@ -11,7 +11,10 @@ import { ProposalDetailResponse } from "@/server/proposal";
 import { getUserDisplayNameFromInfo, getUserDisplayNameFromStore } from "@/utils/userDisplayUtils";
 import toast from "react-hot-toast";
 import { useTranslation } from "@/utils/i18n";
-import { SessionExpiredError } from "@/lib/wrapApiAutoSession";
+
+interface SessionExpiredError {
+  isSessionExpired?: boolean;
+}
 
 import { logger } from '@/lib/logger';
 interface ProposalCommentsProps {
@@ -31,7 +34,7 @@ const adaptCommentItem = (item: CommentItem, currentUserDid?: string): Comment =
     handle: item.author.handle,
     did: item.author.did,
   });
-  
+
   // 格式化 to 字段的 handle（如果存在）
   const formattedTo = item.to ? {
     did: item.to.did,
@@ -43,7 +46,7 @@ const adaptCommentItem = (item: CommentItem, currentUserDid?: string): Comment =
     handle: item.to.handle, // 保留原始 handle，但 displayName 优先
     avatar: item.to.avatar,
   } : undefined;
-  
+
   return {
     id: item.cid,
     content: item.text,
@@ -62,21 +65,21 @@ const adaptCommentItem = (item: CommentItem, currentUserDid?: string): Comment =
   };
 };
 
-export default function ProposalComments({ 
-  proposal, 
-  apiComments, 
-  commentsLoading, 
-  commentsError, 
+export default function ProposalComments({
+  proposal,
+  apiComments,
+  commentsLoading,
+  commentsError,
   onRefetchComments: _onRefetchComments,
   quotedText: externalQuotedText = "",
   onGetCommentSubmit
 }: ProposalCommentsProps) {
   // 暂时不使用 onRefetchComments，避免发送评论后重新获取
   void _onRefetchComments;
-  
+
   const { t } = useTranslation();
   const { userInfo, userProfile } = useUserInfoStore();
-  
+
   const [comments, setComments] = useState<Comment[]>([]);
   const [quotedText, setQuotedText] = useState(externalQuotedText);
   const [replyToCommentId, setReplyToCommentId] = useState<string | null>(null);
@@ -109,7 +112,7 @@ export default function ProposalComments({
       }
     }
 
-    const adaptedComments = apiComments.map(item => 
+    const adaptedComments = apiComments.map(item =>
       adaptCommentItem(item, userInfo?.did)
     );
 
@@ -118,7 +121,7 @@ export default function ProposalComments({
       const existingCommentMap = new Map(prevComments.map(c => [c.id, c]));
       // 创建新评论的 Map，用于查找新评论
       const newCommentMap = new Map(adaptedComments.map(c => [c.id, c]));
-      
+
       // 1. 更新已存在的评论数据（点赞数、点赞状态等），但保持原有位置
       // 只有当数据真正变化时才更新，避免不必要的重新渲染
       let hasDataChanged = false;
@@ -128,7 +131,7 @@ export default function ProposalComments({
           // 检查数据是否真的变化了
           const likesChanged = existingComment.likes !== updatedComment.likes;
           const isLikedChanged = existingComment.isLiked !== updatedComment.isLiked;
-          
+
           if (likesChanged || isLikedChanged) {
             hasDataChanged = true;
             // 更新数据但保持原有位置
@@ -143,20 +146,20 @@ export default function ProposalComments({
         // 数据没有变化，返回原对象（保持引用不变，避免重新渲染）
         return existingComment;
       });
-      
+
       // 2. 找出新评论（不在现有列表中的评论）
       const newComments = adaptedComments.filter(
-        newComment => !existingCommentMap.has(newComment.id) && 
-                      !processedCommentIdsRef.current.has(newComment.id)
+        newComment => !existingCommentMap.has(newComment.id) &&
+          !processedCommentIdsRef.current.has(newComment.id)
       );
-      
+
       // 3. 如果有新评论或数据变化，才更新状态
       if (newComments.length > 0 || hasDataChanged) {
         // 将新评论 ID 添加到已处理集合
         newComments.forEach(comment => {
           processedCommentIdsRef.current.add(comment.id);
         });
-        
+
         if (newComments.length > 0) {
           // 新评论按时间降序排序（最新的在前）
           const sortedNewComments = newComments.sort((a, b) => {
@@ -165,11 +168,11 @@ export default function ProposalComments({
           // 将新评论添加到开头，保持现有评论的顺序
           return [...sortedNewComments, ...updatedExistingComments];
         }
-        
+
         // 只有数据变化，没有新评论
         return updatedExistingComments;
       }
-      
+
       // 既没有新评论，也没有数据变化，返回原数组（保持引用不变，避免重新渲染）
       return prevComments;
     });
@@ -197,7 +200,7 @@ export default function ProposalComments({
       };
 
       const targetCommentId = replyToCommentId || parentId;
-      
+
       if (targetCommentId) {
         const parentComment = apiComments?.find(c => c.cid === targetCommentId || c.uri === targetCommentId);
         if (parentComment) {
@@ -215,7 +218,7 @@ export default function ProposalComments({
 
       if (result) {
         const displayName = getUserDisplayNameFromStore(userInfo, userProfile);
-        
+
         const newComment: Comment = {
           id: result.cid || `temp-${Date.now()}`,
           content: content,
@@ -232,12 +235,12 @@ export default function ProposalComments({
           parentId: record.parent,
           to: targetCommentId ? apiComments?.find(c => c.cid === targetCommentId || c.uri === targetCommentId)?.to : undefined,
         };
-        
+
         // 将新评论添加到已处理集合，避免 refetch 时重复处理
         if (newComment.id) {
           processedCommentIdsRef.current.add(newComment.id);
         }
-        
+
         setComments(prev => [newComment, ...prev]);
         setQuotedText("");
         setReplyToCommentId(null);
@@ -245,10 +248,10 @@ export default function ProposalComments({
       }
     } catch (error) {
       logger.error('发布评论失败:');
-      
+
       // 检查是否是 session 过期错误
       const errorMessage = error instanceof Error ? error.message : String(error);
-      const isSessionExpired = errorMessage.includes('Session expired') || 
+      const isSessionExpired = errorMessage.includes('Session expired') ||
         (error instanceof Error && 'isSessionExpired' in error && (error as SessionExpiredError).isSessionExpired);
       if (isSessionExpired) {
         toast.error(t('proposalComments.errors.sessionExpired') || '登录已过期，请重新登录');
@@ -297,7 +300,7 @@ export default function ProposalComments({
       });
     } catch (error) {
       logger.error('评论点赞失败:');
-      
+
       setComments(comments.map(comment => {
         if (comment.id === commentId) {
           return {
@@ -316,14 +319,14 @@ export default function ProposalComments({
     // 找到被引用的评论，获取作者信息
     const targetComment = apiComments?.find(c => c.cid === commentId || c.uri === commentId);
     const authorName = targetComment?.author?.displayName || targetComment?.author?.handle || '用户';
-    
+
     // 格式化引用内容：参考 bbs-fe 的格式，包含作者信息
     // 如果内容已经是 HTML，提取纯文本；否则直接使用
     const textContent = content.replace(/<[^>]*>/g, '').trim();
-    
+
     // 构建引用格式：作者名 + 内容
     const formattedQuote = `<p><strong>${authorName}</strong> 说：</p>${content}`;
-    
+
     setQuotedText(formattedQuote);
     setReplyToCommentId(commentId);
     window.location.hash = '#comment-section';
