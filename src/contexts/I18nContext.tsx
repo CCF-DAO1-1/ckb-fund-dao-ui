@@ -631,6 +631,7 @@ interface Messages {
     };
     proposalTimeline: {
       title: string;
+      amaReport: string;
       events: {
         proposalPublished: string;
         proposalPublishedDesc: string;
@@ -646,6 +647,30 @@ interface Messages {
         milestoneInProgressDesc: string;
         projectCompleted: string;
         projectCompletedDesc: string;
+      };
+      eventTypes: {
+        default: string;
+        proposalCreated: string;
+        proposalEdited: string;
+        initiationVote: string;
+        updateReceiverAddr: string;
+        voteFinished: string;
+        sendInitialFund: string;
+        submitMilestoneReport: string;
+        submitDelayReport: string;
+        milestoneVote: string;
+        delayVote: string;
+        sendMilestoneFund: string;
+        reexamineVote: string;
+        acceptanceVote: string;
+        rectificationVote: string;
+        submitAcceptanceReport: string;
+        createAMA: string;
+        submitAMAReport: string;
+        createReexamineMeeting: string;
+        submitReexamineReport: string;
+        rectification: string;
+        timelineEvent: string;
       };
     };
   };

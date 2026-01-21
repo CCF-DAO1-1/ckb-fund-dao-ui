@@ -887,6 +887,7 @@
     },
     "proposalTimeline": {
       "title": "Proposal Timeline",
+      "amaReport": "AMA Report",
       "events": {
         "proposalPublished": "Proposal Published",
         "proposalPublishedDesc": "Proposal \"{title}\" has been published, community review begins",
@@ -908,7 +909,7 @@
         "proposalCreated": "Proposal Created",
         "proposalEdited": "Proposal Edited",
         "initiationVote": "Initiation Vote",
-        "updateReceiverAddr": "Update Receiver Address",
+        "updateReceiverAddr": "Update Treasury Address",
         "voteFinished": "Vote Finished",
         "sendInitialFund": "Send Initial Fund",
         "submitMilestoneReport": "Submit Milestone Report",
@@ -916,13 +917,15 @@
         "milestoneVote": "Milestone Vote",
         "delayVote": "Delay Vote",
         "sendMilestoneFund": "Send Milestone Fund",
-        "reviewVote": "Review Vote",
         "reexamineVote": "Reexamine Vote",
         "acceptanceVote": "Acceptance Vote",
         "rectificationVote": "Rectification Vote",
         "submitAcceptanceReport": "Submit Acceptance Report",
-        "createAMA": "Create AMA",
+        "createAMA": "Organize AMA",
         "submitAMAReport": "Submit AMA Report",
+        "createReexamineMeeting": "Organize Reexamine Meeting",
+        "submitReexamineReport": "Submit Reexamine Report",
+        "rectification": "Project Rectification",
         "timelineEvent": "Timeline Event"
       }
     }

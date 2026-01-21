@@ -29,7 +29,7 @@ const isUrl = (str: string) => {
 // 将 timeline_type 直接映射到 TimelineEventType（后端返回的值就是枚举值）
 const mapTimelineTypeToEventType = (timelineType: number): TimelineEventType => {
   // 确保值在有效范围内
-  if (timelineType >= 0 && timelineType <= 18) {
+  if (timelineType >= 0 && timelineType <= 20) {
     return timelineType as TimelineEventType;
   }
   return TimelineEventType.DEFAULT;
@@ -62,8 +62,6 @@ const getEventTitleKey = (eventType: TimelineEventType): string => {
       return 'proposalPhase.proposalTimeline.eventTypes.delayVote';
     case TimelineEventType.SEND_MILESTONE_FUND:
       return 'proposalPhase.proposalTimeline.eventTypes.sendMilestoneFund';
-    case TimelineEventType.REVIEW_VOTE:
-      return 'proposalPhase.proposalTimeline.eventTypes.reviewVote';
     case TimelineEventType.REEXAMINE_VOTE:
       return 'proposalPhase.proposalTimeline.eventTypes.reexamineVote';
     case TimelineEventType.ACCEPTANCE_VOTE:
@@ -76,6 +74,12 @@ const getEventTitleKey = (eventType: TimelineEventType): string => {
       return 'proposalPhase.proposalTimeline.eventTypes.createAMA';
     case TimelineEventType.SUBMIT_AMA_REPORT:
       return 'proposalPhase.proposalTimeline.eventTypes.submitAMAReport';
+    case TimelineEventType.CREATE_REEXAMINE_MEETING:
+      return 'proposalPhase.proposalTimeline.eventTypes.createReexamineMeeting';
+    case TimelineEventType.SUBMIT_REEXAMINE_REPORT:
+      return 'proposalPhase.proposalTimeline.eventTypes.submitReexamineReport';
+    case TimelineEventType.RECTIFICATION:
+      return 'proposalPhase.proposalTimeline.eventTypes.rectification';
     default:
       return 'proposalPhase.proposalTimeline.eventTypes.timelineEvent';
   }
@@ -282,7 +286,7 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
                   </div>
                 ) : event.type === TimelineEventType.CREATE_AMA ? (
                   <div className="ama-icon-container">
-                    <span>AMA 报告</span>
+                    <span>{event.title}</span>
                     {event.message && (
                       <>
                         <IoMdDocument
@@ -290,7 +294,7 @@ export default function ProposalTimeline({ proposalUri, className = '' }: Propos
                           data-tooltip-id={`tooltip-${event.id}`}
                           data-tooltip-content={isUrl(event.message || "") ? event.message : "点击查看报告详情"}
                           size={14}
-                          onClick={() => handleReportClick(event.message || "", "AMA 报告")}
+                          onClick={() => handleReportClick(event.message || "", messages.proposalPhase.proposalTimeline.amaReport)}
                           style={{ cursor: 'pointer' }}
                         />
                         <Tooltip id={`tooltip-${event.id}`} />

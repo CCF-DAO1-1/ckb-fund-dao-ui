@@ -17,22 +17,24 @@ export enum TimelineEventType {
   DEFAULT = 0,                        // 默认
   PROPOSAL_CREATED = 1,               // 提案创建
   PROPOSAL_EDITED = 2,                // 提案编辑
-  INITIATION_VOTE = 3,                // 立项投票
-  UPDATE_RECEIVER_ADDR = 4,           // 更新收款地址
-  VOTE_FINISHED = 5,                  // 投票结束
-  SEND_INITIAL_FUND = 6,              // 发送启动资金
+  INITIATION_VOTE = 3,                // 发起立项投票
+  UPDATE_RECEIVER_ADDR = 4,           // 维护项目金库地址
+  VOTE_FINISHED = 5,                  // 计票完成
+  SEND_INITIAL_FUND = 6,              // 发送初始资金
   SUBMIT_MILESTONE_REPORT = 7,        // 提交里程碑报告
   SUBMIT_DELAY_REPORT = 8,            // 提交延期报告
-  MILESTONE_VOTE = 9,                 // 里程碑投票
-  DELAY_VOTE = 10,                    // 延期投票
+  MILESTONE_VOTE = 9,                 // 发起里程碑投票
+  DELAY_VOTE = 10,                    // 发起延期投票
   SEND_MILESTONE_FUND = 11,           // 发送里程碑资金
-  REVIEW_VOTE = 12,                   // 复审投票
-  REEXAMINE_VOTE = 13,                // 复核投票 (原 CreateReexamineMeeting 对应位置似乎变了，根据用户列表 ReexamineVote 是 13)
-  ACCEPTANCE_VOTE = 14,               // 验收投票
+  REEXAMINE_VOTE = 12,                // 发起复核投票
+  ACCEPTANCE_VOTE = 13,               // 发起验收投票
+  RECTIFICATION_VOTE = 14,            // 发起整改投票
   SUBMIT_ACCEPTANCE_REPORT = 15,      // 提交验收报告
-  RECTIFICATION_VOTE = 16,            // 整改投票
-  CREATE_AMA = 17,                    // 创建 AMA
-  SUBMIT_AMA_REPORT = 18              // 提交 AMA 报告
+  CREATE_AMA = 16,                    // 组织AMA
+  SUBMIT_AMA_REPORT = 17,             // 提交AMA报告
+  CREATE_REEXAMINE_MEETING = 18,      // 组织复核会议
+  SUBMIT_REEXAMINE_REPORT = 19,       // 提交复核会议报告
+  RECTIFICATION = 20                  // 项目整改
 }
 
 // 时间线事件状态
