@@ -5,11 +5,14 @@ import { useI18n } from '@/contexts/I18nContext';
 import { useSelfVoteList } from '@/hooks/useSelfVoteList';
 import { SelfVoteItem } from '@/server/proposal';
 import { ProposalStatus } from '@/utils/proposalUtils';
+import Link from 'next/link';
+import { postUriToHref } from "@/lib/postUriHref";
 import storage from "@/lib/storage";
 
 interface VotingRecord {
   id: string;
   proposalName: string;
+  proposalUri?: string;
   votingStage: string;
   myChoice: string;
   voteQuantity: string;
@@ -21,7 +24,7 @@ interface VotingRecordsTableProps {
 }
 
 export default function VotingRecordsTable({ className = '' }: VotingRecordsTableProps) {
-  const { messages } = useI18n();
+  const { messages, locale } = useI18n();
   const { votes, loading, error, page, totalPages, setPage } = useSelfVoteList({ page: 1, per_page: 10 });
 
   // 获取当前用户的钱包地址，用于查找投票权重
@@ -67,6 +70,7 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
     return votes.map((vote: SelfVoteItem) => {
       // 1. 提取提案名称：优先使用 proposal.record.data.title，其次 proposal_uri
       const proposalName = vote.proposal?.record?.data?.title || vote.proposal_uri || messages.votingRecords.unknownProposal || '未知提案';
+      const proposalUri = vote.proposal_uri || vote.proposal?.uri;
 
       // 2. 投票阶段：根据 vote_meta.proposal_state 获取
       let votingStage = messages.votingRecords.votingStages.voting || '投票';
@@ -128,6 +132,7 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
       return {
         id: String(vote.id),
         proposalName,
+        proposalUri,
         votingStage,
         myChoice,
         voteQuantity,
@@ -176,7 +181,15 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
             ) : (
               votingRecords.map((record) => (
                 <tr key={record.id}>
-                  <td className="proposal-name">{record.proposalName}</td>
+                  <td className="proposal-name">
+                    {record.proposalUri ? (
+                      <Link href={`/${locale}/proposal/${postUriToHref(record.proposalUri)}`} className="hover:text-primary hover:underline">
+                        {record.proposalName}
+                      </Link>
+                    ) : (
+                      record.proposalName
+                    )}
+                  </td>
                   <td className="voting-stage">{record.votingStage}</td>
                   <td className={`my-choice ${getChoiceClass(record.myChoice)}`}>
                     {record.myChoice}
