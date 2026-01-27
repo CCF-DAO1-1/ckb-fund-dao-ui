@@ -1197,7 +1197,8 @@
       "reset": "Reset",
       "submitProposal": "Submit Proposal",
       "submitting": "Submitting...",
-      "nextStep": "Next Step"
+      "nextStep": "Next Step",
+      "updateProposal": "Update Proposal"
     },
     "messages": {
       "submitSuccess": "Proposal submitted successfully!"

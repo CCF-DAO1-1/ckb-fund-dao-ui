@@ -511,7 +511,7 @@ export default function EditProposal({ params }: EditProposalProps) {
                                         >
                                             {submitting
                                                 ? t("proposalCreate.buttons.submitting")
-                                                : "Update Proposal"}
+                                                : t("proposalCreate.buttons.updateProposal")}
                                         </button>
                                     </div>
                                 ) : (

@@ -1236,7 +1236,8 @@
       "reset": "重置",
       "submitProposal": "提交提案",
       "submitting": "提交中...",
-      "nextStep": "下一步"
+      "nextStep": "下一步",
+      "updateProposal": "更新提案"
     },
     "messages": {
       "submitSuccess": "提案提交成功！"
