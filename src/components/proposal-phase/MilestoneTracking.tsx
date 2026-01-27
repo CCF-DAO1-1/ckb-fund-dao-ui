@@ -125,34 +125,7 @@ export default function MilestoneTracking({
         ))}
       </div>
 
-      {/* 里程碑投票区域 */}
-      <div className="milestone-voting-section">
-        {milestones
-          .filter(milestone => {
-            // 只在进行中状态显示
-            if (milestone.status !== MilestoneStatus.IN_PROGRESS) return false;
 
-            // 如果有 voteMetaId，说明正在投票，显示
-            if (milestone.voteMetaId) return true;
-
-            // 如果没有 voteMetaId（投票结束），但有最新的投票结果，也显示
-            if (latestVoteResult) return true;
-
-            return false;
-          })
-          .map((milestone) => (
-            <ProposalVoting
-              key={`voting-${milestone.id}`}
-              voteMetaId={milestone.voteMetaId || 0} // 如果没有ID但有结果，传0或其他占位符
-              voteWeight={voteWeight}
-              proposal={proposal}
-              title={milestone.title}
-              className="milestone-voting-item"
-              // 如果没有正在进行的投票ID，则传入结束的结果
-              finishedResult={!milestone.voteMetaId ? latestVoteResult || undefined : undefined}
-            />
-          ))}
-      </div>
     </div>
   );
 }

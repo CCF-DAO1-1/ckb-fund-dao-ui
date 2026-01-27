@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Modal from '@/components/ui/modal/Modal';
-import { QRCodeSVG } from 'qrcode.react';
-import { MdRefresh } from 'react-icons/md';
+import { QRCodeCanvas } from 'qrcode.react';
+import { MdRefresh, MdFileDownload } from 'react-icons/md';
 import { useTranslation } from '@/utils/i18n';
 import storage from '@/lib/storage';
 import './KeyQRCodeModal.css';
@@ -81,6 +81,20 @@ export default function KeyQRCodeModal({ isOpen, onClose }: KeyQRCodeModalProps)
     }
   };
 
+  // 下载二维码
+  const handleDownloadQRCode = () => {
+    const canvas = document.getElementById('key-qr-code-canvas') as HTMLCanvasElement;
+    if (canvas) {
+      const pngUrl = canvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.href = pngUrl;
+      downloadLink.download = 'web5-did-key-qrcode.png';
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    }
+  };
+
   // 清理定时器
   useEffect(() => {
     return () => {
@@ -128,9 +142,33 @@ export default function KeyQRCodeModal({ isOpen, onClose }: KeyQRCodeModalProps)
         return (
           <div className="key-qr-modal-content">
             <div className="key-qr-code-container">
-              {qrCodeData && <QRCodeSVG value={qrCodeData} size={200} />}
+              {qrCodeData && (
+                <QRCodeCanvas
+                  id="key-qr-code-canvas"
+                  value={qrCodeData}
+                  size={200}
+                  level={"H"}
+                  imageSettings={{
+                    src: "/favicon.ico",
+                    x: undefined,
+                    y: undefined,
+                    height: 24,
+                    width: 24,
+                    excavate: true,
+                  }}
+                />
+              )}
             </div>
-            <p className="key-qr-instruction">{t('web5.keyQRCode.qrCodeInstruction')}</p>
+
+            <button
+              className="key-qr-download-btn"
+              onClick={handleDownloadQRCode}
+            >
+              <MdFileDownload size={18} />
+              {t('web5.keyQRCode.download')}
+            </button>
+
+            {/* <p className="key-qr-instruction">{t('web5.keyQRCode.qrCodeInstruction')}</p> */}
             <p className="key-qr-note">{t('web5.keyQRCode.qrCodeNote')}</p>
           </div>
         );
@@ -139,7 +177,7 @@ export default function KeyQRCodeModal({ isOpen, onClose }: KeyQRCodeModalProps)
         return (
           <div className="key-qr-modal-content">
             <div className="key-qr-code-container expired">
-              {qrCodeData && <QRCodeSVG value={qrCodeData} size={200} />}
+              {qrCodeData && <QRCodeCanvas value={qrCodeData} size={200} />}
               <div className="key-qr-refresh-overlay">
                 <MdRefresh className="refresh-icon" />
               </div>

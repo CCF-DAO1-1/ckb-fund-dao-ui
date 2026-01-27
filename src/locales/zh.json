@@ -561,7 +561,8 @@
       "confirm": "确定",
       "cancel": "取消",
       "close": "关闭",
-      "refresh": "刷新"
+      "refresh": "刷新",
+      "download": "下载"
     },
     "exportDIDInfo": {
       "title": "Web5 DID信息",
@@ -739,7 +740,10 @@
     "walletMismatchTitle": "钱包地址不匹配",
     "walletMismatchMessage": "当前连接的钱包不是创建此DID时使用的钱包，请使用正确的钱包重新连接",
     "walletMismatchConfirm": "确认",
-    "registeredWalletAddress": "注册时的CKB地址："
+    "registeredWalletAddress": "注册时的CKB地址：",
+    "identityVerification": "身份验证",
+    "identityVerificationDesc": "为确保账户安全，请连接创建此DID时的钱包地址以验证身份",
+    "web5DidAccount": "Web 5 DID 账号："
   },
   "homepage": {
     "proposalList": "提案列表",

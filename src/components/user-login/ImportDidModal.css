@@ -70,7 +70,7 @@
   font-weight: 500;
   text-align: left;
   color: #00CC9B;
-  
+
 }
 
 .import-did-hint {
@@ -78,8 +78,8 @@
   font-size: 12px;
   text-align: left;
   margin: 0;
-  
-    width: 100%;
+
+  width: 100%;
   line-height: 1.6;
 }
 
@@ -202,10 +202,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.7;
     transform: scale(1.05);
@@ -282,3 +285,113 @@
   line-height: 1.6;
 }
 
+
+/* Identity Verification Modal */
+.identity-verification-modal {
+  width: 600px !important;
+  height: 400px !important;
+  max-width: 90vw !important;
+  padding: 0 !important;
+  border-radius: 12px;
+  display: flex !important;
+  flex-direction: column;
+}
+
+.identity-verification-modal .modal-content {
+  padding: 0 !important;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.identity-verification-modal .modal-header {
+  border-bottom: none !important;
+  padding: 20px 0 0 0 !important;
+  justify-content: center !important;
+}
+
+.identity-verification-modal .modal-title {
+  font-size: 20px !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  margin-top: 40px;
+}
+
+.identity-verification-content {
+  padding: 20px 80px;
+  color: #FFFFFF;
+}
+
+.identity-verification-desc {
+  color: #00E096;
+  font-size: 14px;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.identity-verification-info {
+  margin-bottom: 24px;
+}
+
+.identity-verification-row {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #8A949E;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+
+
+.identity-verification-copy-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  padding: 0;
+  margin-left: 8px;
+}
+
+.identity-verification-actions {
+  display: flex;
+  justify-content: center;
+  padding: 0 40px;
+  margin-top: 48px;
+  gap: 20px;
+}
+
+.identity-verification-btn-connect {
+  height: 32px;
+  font-size: 14px;
+  display: flex;
+  color: #000;
+  align-items: center;
+  justify-content: center;
+}
+
+.identity-verification-status {
+  height: 32px;
+  background-color: #1A1D23;
+  color: #00E096;
+  border: 1px solid #00E096;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.identity-verification-btn-close {
+  width: 120px;
+  height: 32px;
+  font-size: 14px;
+}
+
+.identity-verification-icon {
+  width: 20px;
+  height: 20px;
+}

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Modal from "@/components/ui/modal/Modal";
 import { useTranslation } from "@/utils/i18n";
 import useUserInfoStore from "@/store/userInfo";
+import CopyButton from "@/components/ui/copy/CopyButton";
 import { MdCloudUpload, MdError } from "react-icons/md";
 import { ccc } from "@ckb-ccc/connector-react";
 import storage from "@/lib/storage";
@@ -150,67 +151,72 @@ export default function WalletConnectionModal() {
       {/* 连接钱包弹窗 */}
       <Modal
         isOpen={showModal && !showWalletMismatchModal}
-        onClose={() => { }} // 不允许关闭，必须连接钱包
-        title={t("importDid.connectWallet")}
-        size="small"
+        onClose={handleLogout} // 强制行为：关闭即登出
+        title={t("importDid.identityVerification") || "身份验证"}
         showCloseButton={false}
-        className="import-did-modal"
+        className="identity-verification-modal"
       >
-        <div className="import-did-content">
-          <div className="import-did-step">
-            <div className="import-did-password-section">
-              <p className="import-did-instruction">
-                {t("importDid.connectWallet")}
-              </p>
-              <p className="import-did-hint" style={{ marginTop: '8px', fontSize: '14px', color: '#666' }}>
-                {t("importDid.connectWalletHint")}
-              </p>
-              {registeredWalletAddress && (
-                <div style={{ marginTop: '16px', fontSize: '14px' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '4px', color: '#333' }}>
-                    {t("importDid.registeredWalletAddress")}
-                  </div>
-                  <div style={{ color: '#666', wordBreak: 'break-all', fontFamily: 'monospace' }}>
-                    {formatAddress(registeredWalletAddress)}
-                  </div>
-                </div>
-              )}
-              {error && <div className="import-did-error" style={{ marginTop: '12px' }}>{error}</div>}
-              <div className="import-did-buttons" style={{ marginTop: '24px', flexDirection: 'column', width: '100%' }}>
-                {!isConnected ? (
-                  <button
-                    className="import-did-button import-did-button-primary"
-                    onClick={handleConnectWallet}
-                    disabled={isConnecting}
-                    style={{ width: '100%' }}
-                  >
-                    {isConnecting ? t("importDid.connecting") : t("importDid.connectWalletButton")}
-                  </button>
-                ) : (
-                  <div className="import-did-verifying">
-                    <div className="import-did-icon-large">
-                      <MdCloudUpload />
-                    </div>
-                    <p className="import-did-verifying-text">
-                      {isVerifying ? t("importDid.verifyingWallet") : t("importDid.connecting")}
-                    </p>
-                  </div>
-                )}
-                <button
-                  className="import-did-button"
-                  onClick={handleLogout}
-                  style={{
-                    width: '100%',
-                    marginTop: '12px',
-                    backgroundColor: 'transparent',
-                    color: '#666',
-                    border: '1px solid #ddd'
-                  }}
-                >
-                  {t("logout")}
-                </button>
-              </div>
+        <div className="identity-verification-content">
+          <p className="identity-verification-desc">
+            {t("importDid.identityVerificationDesc") || "为确保账户安全，请连接创建此DID时的钱包地址以验证身份"}
+          </p>
+
+          <div className="identity-verification-info">
+            {/* DID Display */}
+            <div className="identity-verification-row">
+              <span className="identity-verification-label">
+                {t("importDid.web5DidAccount") || "Web 5 DID 账号："}
+              </span>
+              <span className="identity-verification-value">
+                {userInfo?.handle || "..."}
+              </span>
             </div>
+
+            {/* CKB Address Display */}
+            {registeredWalletAddress && (
+              <div className="identity-verification-row">
+                <span className="identity-verification-label">
+                  {t("importDid.registeredWalletAddress") || "注册时的CKB地址："}
+                </span>
+                <span className="identity-verification-address">
+                  {formatAddress(registeredWalletAddress)}
+                </span>
+                <CopyButton
+                  text={registeredWalletAddress}
+                  className="identity-verification-copy-btn"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor" />
+                  </svg>
+                </CopyButton>
+              </div>
+            )}
+          </div>
+
+          <div className="identity-verification-actions">
+            {!isConnected ? (
+              <button
+                onClick={handleConnectWallet}
+                disabled={isConnecting}
+                className="btn btn-primary identity-verification-btn-connect"
+              >
+                {isConnecting ? t("importDid.connecting") : (t("importDid.connectWalletButton") || "连接钱包")}
+              </button>
+            ) : (
+              <div className="identity-verification-status">
+                <div className="import-did-icon-large identity-verification-icon">
+                  <MdCloudUpload />
+                </div>
+                {isVerifying ? t("importDid.verifyingWallet") : t("importDid.connecting")}
+              </div>
+            )}
+
+            <button
+              onClick={handleLogout}
+              className="btn btn-secondary identity-verification-btn-close"
+            >
+              {t("importDid.close") || "关闭"}
+            </button>
           </div>
         </div>
       </Modal>
@@ -255,4 +261,3 @@ export default function WalletConnectionModal() {
     </>
   );
 }
-

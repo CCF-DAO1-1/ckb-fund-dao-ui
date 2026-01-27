@@ -56,13 +56,7 @@ export default function VotingDetailsModal({
     };
 
     const options = [
-        {
-            label: t("modal.voting.options.abstain") || "Abstain",
-            value: abstainVotes,
-            percentage: getPercentage(abstainVotes),
-            color: "bg-yellow-500",
-            textColor: "text-yellow-500"
-        },
+
         {
             label: t("modal.voting.options.approve") || "Agree",
             value: agreeVotes,

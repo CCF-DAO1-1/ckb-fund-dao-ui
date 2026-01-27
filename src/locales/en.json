@@ -521,7 +521,8 @@
       "confirm": "Confirm",
       "cancel": "Cancel",
       "close": "Close",
-      "refresh": "Refresh"
+      "refresh": "Refresh",
+      "download": "Download"
     },
     "exportDIDInfo": {
       "title": "Web5 DID Info",
@@ -699,7 +700,10 @@
     "walletMismatchTitle": "Wallet Address Mismatch",
     "walletMismatchMessage": "The currently connected wallet is not the wallet used when creating this DID. Please reconnect with the correct wallet",
     "walletMismatchConfirm": "Confirm",
-    "registeredWalletAddress": "Registered CKB Address:"
+    "registeredWalletAddress": "Registered CKB Address:",
+    "identityVerification": "Identity Verification",
+    "identityVerificationDesc": "To ensure account security, please connect the wallet address used when creating this DID to verify identity",
+    "web5DidAccount": "Web 5 DID Account:"
   },
   "homepage": {
     "proposalList": "Proposal List",
