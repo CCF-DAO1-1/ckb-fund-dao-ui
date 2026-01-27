@@ -20,7 +20,7 @@ export default function CommentSection({
   error,
   quotedText = ""
 }: CommentSectionProps) {
-  const { messages } = useI18n();
+  const { messages, locale } = useI18n();
   logger.log('CommentSection rendered');
   const handleAddComment = (content: string, parentId?: string) => {
     onAddComment(content, parentId);
@@ -46,7 +46,7 @@ export default function CommentSection({
     <div className="comment-section">
       <div className="comment-header">
         <h3 className="comment-title">
-          {loading ? messages.comment.loading : error ? `${messages.comment.loadFailed} ${error}` : `${messages.comment.commentsCount}(${comments.length})`}
+          {loading ? messages.comment.loading : error ? `${messages.comment.loadFailed} ${error}` : locale === 'zh' ? `(${comments.length})${messages.comment.commentsCount}` : `${messages.comment.commentsCount}(${comments.length})`}
         </h3>
       </div>
       <div className="comment-content">
