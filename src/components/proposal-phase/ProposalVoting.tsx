@@ -616,16 +616,18 @@ export default function ProposalVoting({
         </div>
         <div className="voting-countdown">
           <span>
-            {messages.proposalPhase.proposalVoting.deadline} {timeLeft}
+            {messages.proposalPhase.proposalVoting.deadline}
           </span>
+          <span> {timeLeft}</span>
         </div>
         {/* 投票统计 */}
         <div className="voting-stats">
           <div className="voting-total">
             <span>
               {messages.proposalPhase.proposalVoting.totalVotes}{" "}
-              {formatNumber(votingInfo.totalVotes / 100000000)} CKB
+
             </span>
+            <span>{formatNumber(votingInfo.totalVotes / 100000000)} CKB</span>
           </div>
 
           {/* 进度条 */}
@@ -762,7 +764,7 @@ export default function ProposalVoting({
         {/* 我的投票权 */}
         <span>{messages.proposalPhase.proposalVoting.myVotingPower} </span>
         <span className="power-amount">
-          {formatNumber(votingInfo.userVotingPower / 100000000)} CKB
+          {formatNumber(votingInfo.userVotingPower)} CKB
         </span>
 
         {/* 分隔线 */}
@@ -809,7 +811,9 @@ export default function ProposalVoting({
             <MdErrorOutline />
           </div>
           <p style={{ color: '#FFFFFF', margin: 0, wordBreak: 'break-word' }}>
-            {voteErrorMessage || messages.modal.voteModal.voteFailedMessage}
+            {(voteErrorMessage && voteErrorMessage.includes('vote_meta not already: 4'))
+              ? messages.modal.voteModal.votingEnded
+              : (voteErrorMessage || messages.modal.voteModal.voteFailedMessage)}
           </p>
         </div>
       </Modal>

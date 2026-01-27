@@ -745,6 +745,7 @@ interface Messages {
       voteFailed: string;
       voteFailedMessage: string;
       missingInfo: string;
+      votingEnded: string;
       close: string;
     };
     voting: {

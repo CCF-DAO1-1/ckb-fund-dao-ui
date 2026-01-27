@@ -1003,6 +1003,7 @@
       "voteFailed": "Vote failed",
       "voteFailedMessage": "Failed to submit vote, please try again later",
       "missingInfo": "Missing voting information or user not logged in",
+      "votingEnded": "Voting has ended",
       "close": "Close"
     },
     "voting": {

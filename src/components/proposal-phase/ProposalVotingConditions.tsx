@@ -39,7 +39,7 @@ export default function ProposalVotingConditions({
 
   // 检查通过条件
   const totalVotesMet = useMemo(() => {
-    return votingInfo.totalVotes >= votingInfo.conditions.minTotalVotes;
+    return votingInfo.totalVotes / 100000000 >= votingInfo.conditions.minTotalVotes;
   }, [votingInfo.totalVotes, votingInfo.conditions.minTotalVotes]);
 
   const approvalRateMet = useMemo(() => {

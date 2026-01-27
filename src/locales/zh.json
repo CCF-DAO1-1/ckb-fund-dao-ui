@@ -1043,6 +1043,7 @@
       "voteFailed": "投票失败",
       "voteFailedMessage": "投票提交失败，请稍后重试",
       "missingInfo": "缺少投票信息或用户未登录",
+      "votingEnded": "当前投票已结束",
       "close": "关闭"
     },
     "voting": {

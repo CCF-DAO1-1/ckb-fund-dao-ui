@@ -26,6 +26,7 @@
 .voting-countdown {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 6px;
   font-size: 14px;
   font-weight: 500;
@@ -36,9 +37,10 @@
 }
 
 .voting-total {
+
   color: #8A949E;
   font-size: 14px;
-  margin-bottom: 12px;
+  margin: 12px 0;
 }
 
 .voting-progress {
