@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { useTranslation } from "@/utils/i18n";
 import "@/components/common/vditor-editor.css";
 import { logger } from "@/lib/logger";
+import DOMPurify from "dompurify";
 
 export type ToolbarPreset = "simple" | "full" | "custom";
 
@@ -112,7 +113,7 @@ export default function VditorRichTextEditor({
                     reject(new Error("Failed to compress image"));
                     return;
                   }
-                  
+
                   // 如果文件仍然太大且质量可以继续降低，递归压缩
                   if (blob.size > maxSize && q > 0.5) {
                     tryCompress(q - 0.1);
@@ -151,24 +152,24 @@ export default function VditorRichTextEditor({
     // 检查文件类型
     const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "image/bmp", "image/svg+xml"];
     const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg"];
-    
+
     const fileName = file.name.toLowerCase();
     const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
     const hasValidType = validTypes.includes(file.type) || file.type.startsWith("image/");
 
     if (!hasValidType && !hasValidExtension) {
-      return { 
-        valid: false, 
-        error: t("editor.invalidFileType") || "Only image files are supported (JPG, PNG, GIF, WEBP, BMP, SVG)" 
+      return {
+        valid: false,
+        error: t("editor.invalidFileType") || "Only image files are supported (JPG, PNG, GIF, WEBP, BMP, SVG)"
       };
     }
 
     // 检查文件大小 (10MB 原始限制，压缩后 5MB)
     const MAX_ORIGINAL_SIZE = 10 * 1024 * 1024; // 10MB
     if (file.size > MAX_ORIGINAL_SIZE) {
-      return { 
-        valid: false, 
-        error: t("editor.fileTooLargeOriginal") || "File size cannot exceed 10MB. Large images will be automatically compressed." 
+      return {
+        valid: false,
+        error: t("editor.fileTooLargeOriginal") || "File size cannot exceed 10MB. Large images will be automatically compressed."
       };
     }
 
@@ -236,9 +237,9 @@ export default function VditorRichTextEditor({
         const MAX_RETRIES = 2;
         if (
           retryCount < MAX_RETRIES &&
-          (errorMessage.includes("network") || 
-           errorMessage.includes("timeout") ||
-           errorMessage.includes("fetch"))
+          (errorMessage.includes("network") ||
+            errorMessage.includes("timeout") ||
+            errorMessage.includes("fetch"))
         ) {
           logger.log(`Retrying upload (${retryCount + 1}/${MAX_RETRIES})...`);
           // 等待一段时间后重试
@@ -308,7 +309,7 @@ export default function VditorRichTextEditor({
       try {
         // 并发上传，但限制并发数
         const uploadPromises: Promise<void>[] = [];
-        
+
         for (let i = 0; i < Math.min(MAX_CONCURRENT_UPLOADS, files.length); i++) {
           uploadPromises.push(processNextFile());
         }
@@ -342,7 +343,7 @@ export default function VditorRichTextEditor({
         while (currentIndex < files.length) {
           const index = currentIndex++;
           const file = files[index];
-          
+
           try {
             // 更新进度
             toast.loading(
@@ -410,9 +411,9 @@ export default function VditorRichTextEditor({
     if (!isClient || !containerRef.current) return;
 
     // 检查是否需要重新初始化（mode、toolbarPreset 或 locale 变化时需要重新初始化）
-    const needsReinit = 
-      !isInitializedRef.current || 
-      lastModeRef.current !== mode || 
+    const needsReinit =
+      !isInitializedRef.current ||
+      lastModeRef.current !== mode ||
       lastToolbarPresetRef.current !== toolbarPreset ||
       lastLocaleRef.current !== locale;
 
@@ -505,7 +506,7 @@ export default function VditorRichTextEditor({
           "upload",
           "|",
           "table"
-         
+
         );
       }
     } else if (toolbarPreset === "simple") {
@@ -583,7 +584,7 @@ export default function VditorRichTextEditor({
               return "";
             }
             const markdown = await handleImageUploadRef.current(files);
-            
+
             // Vditor 的 handler 返回的字符串会被自动插入到编辑器中
             // 在 IR 模式下，Markdown 图片语法应该自动渲染为图片
             // 返回格式：每张图片之间用两个换行符分隔，确保正确渲染
@@ -592,7 +593,7 @@ export default function VditorRichTextEditor({
               // 添加换行符确保图片独立成行
               return "\n\n" + markdown + "\n\n";
             }
-            
+
             return "";
           } catch (error) {
             logger.error("Upload failed:");
@@ -771,9 +772,15 @@ export default function VditorRichTextEditor({
         // 内容变化时触发
         // 标记为用户输入，避免在同步 value 时导致失焦
         isUserInputRef.current = true;
+
+        // 防 XSS 攻击 sanitization
+        // 使用 DOMPurify 清洗 HTML 内容
+        // 主要是防止 <script> 标签等恶意代码
+        const sanitizedValue = DOMPurify.sanitize(newValue);
+
         // 使用 requestAnimationFrame 延迟 onChange 调用，避免立即触发外部状态更新导致失焦
         requestAnimationFrame(() => {
-          onChange(newValue);
+          onChange(sanitizedValue);
           // 在下一个帧重置标志，给外部状态更新足够的时间
           requestAnimationFrame(() => {
             isUserInputRef.current = false;
@@ -835,7 +842,7 @@ export default function VditorRichTextEditor({
   // 同步外部 value 变化到编辑器
   // 使用 ref 跟踪是否正在用户输入，避免在用户输入时更新导致失焦
   const isUserInputRef = useRef(false);
-  
+
   useEffect(() => {
     if (vditorRef.current && value !== undefined) {
       try {
@@ -843,7 +850,7 @@ export default function VditorRichTextEditor({
         // 确保 vditorRef.current 存在且有必要的属性
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const vditorInstance = vditorRef.current as any;
-        
+
         // 检查 Vditor 实例是否完全初始化（检查内部属性）
         if (
           vditorInstance &&
@@ -860,12 +867,12 @@ export default function VditorRichTextEditor({
             // 保存当前焦点状态和光标位置
             const editorElement = containerRef.current?.querySelector('.vditor-ir__editor, .vditor-wysiwyg__editor, .vditor-sv__editor') as HTMLElement;
             const hadFocus = document.activeElement === editorElement || editorElement?.contains(document.activeElement);
-            
+
             // 使用 requestAnimationFrame 确保在下一个渲染周期更新，避免失焦
             requestAnimationFrame(() => {
               if (vditorInstance && typeof vditorInstance.setValue === 'function') {
                 vditorInstance.setValue(value);
-                
+
                 // 如果之前有焦点，恢复焦点
                 if (hadFocus && editorElement) {
                   requestAnimationFrame(() => {

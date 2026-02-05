@@ -585,24 +585,8 @@ export default function ProposalVoting({
       <div className={`proposal-voting-card ${className}`} style={{ position: 'relative' }}>
         {/* 投票进行中遮罩层 */}
         {isVoting && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '8px',
-              pointerEvents: 'all',
-              cursor: 'not-allowed',
-            }}
-          >
-            <div style={{ color: '#fff', fontSize: '16px', fontWeight: '500' }}>
+          <div className="voting-overlay">
+            <div className="voting-overlay-text">
               {(messages.proposalPhase.proposalVoting as { voting?: string })?.voting || '投票处理中...'}
             </div>
           </div>

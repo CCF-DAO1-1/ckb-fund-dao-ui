@@ -332,7 +332,7 @@
     "createVote": "创建投票"
   },
   "proposalStatus": {
-    "draft": "草稿",
+    "draft": "社区评议中",
     "initiationVote": "立项投票",
     "waitingForStartFund": "等待启动金",
     "inProgress": "项目执行中",
@@ -750,7 +750,7 @@
     "ongoingProjects": "在建项目",
     "ongoingBudget": "在建项目预算",
     "all": "全部",
-    "draft": "草稿",
+    "draft": "社区评议中",
     "communityReview": "社区审议中",
     "voting": "投票中",
     "milestoneDelivery": "里程碑交付中",
