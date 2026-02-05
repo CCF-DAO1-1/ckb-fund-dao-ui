@@ -8,16 +8,18 @@ interface AvatarProps {
   className?: string;
   alt?: string;
   did?: string;
+  src?: string;
 }
 
 export default function Avatar({
   size = 24,
   className = '',
   alt = 'User Avatar',
-  did
+  did,
+  src
 }: AvatarProps) {
-  // 如果有 did 就用 getAvatarByDid，否则用默认头像
-  const avatarSrc = did ? getAvatarByDid(did) : getDefaultAvatar();
+  // 优先使用 src，如果有 did 就用 getAvatarByDid，否则用默认头像
+  const avatarSrc = src || (did ? getAvatarByDid(did) : getDefaultAvatar());
 
   return (
     <div className={`avatar-container ${className}`} style={{ width: size, height: size }}>

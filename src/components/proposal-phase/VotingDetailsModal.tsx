@@ -1,19 +1,10 @@
-'use client';
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from "@/utils/i18n";
 import Modal from "@/components/ui/modal/Modal";
 import { formatNumber } from "@/utils/proposalUtils";
+import { VotingDetailsData, Voter } from "@/types/voting";
+import VoterListModal from './VoterListModal';
 import './VotingDetailsModal.css';
-
-interface VotingDetailsData {
-    candidate_votes: Array<number | number[]>;
-    valid_vote_sum: number;
-    valid_votes: Array<Array<string | number>>;
-    valid_weight_sum: number;
-    vote_sum: number;
-    weight_sum: number;
-}
 
 interface VotingDetailsModalProps {
     isOpen: boolean;
@@ -27,6 +18,7 @@ export default function VotingDetailsModal({
     data,
 }: VotingDetailsModalProps) {
     const { t } = useTranslation();
+    const [currentVoterList, setCurrentVoterList] = useState<{ title: string, voters: Voter[] } | null>(null);
 
     if (!data) return null;
 
@@ -44,6 +36,10 @@ export default function VotingDetailsModal({
     const agreeVotes = getVoteWeight(1);
     const rejectVotes = getVoteWeight(2);
 
+    // Get voters list safely
+    const agreeVoters = (data.valid_votes && data.valid_votes[1]) ? data.valid_votes[1] : [];
+    const rejectVoters = (data.valid_votes && data.valid_votes[2]) ? data.valid_votes[2] : [];
+
     // Use valid_weight_sum as the total for percentages if available, otherwise sum of parts
     const totalWeight =
         data.valid_weight_sum > 0
@@ -55,128 +51,138 @@ export default function VotingDetailsModal({
         return ((value / totalWeight) * 100).toFixed(1);
     };
 
-    const options = [
+    const handleOptionClick = (title: string, voters: Voter[]) => {
+        setCurrentVoterList({ title, voters });
+    };
 
+    const options = [
         {
+            id: 1, // Index for Agree
             label: t("modal.voting.options.approve") || "Agree",
             value: agreeVotes,
             percentage: getPercentage(agreeVotes),
             color: "bg-green-brand",
-            textColor: "text-green-brand"
+            textColor: "text-green-brand",
+            voters: agreeVoters
         },
         {
+            id: 2, // Index for Reject
             label: t("modal.voting.options.reject") || "Reject",
             value: rejectVotes,
             percentage: getPercentage(rejectVotes),
             color: "bg-red-500",
-            textColor: "text-red-500"
+            textColor: "text-red-500",
+            voters: rejectVoters
         },
     ];
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            title={t("modal.voting.details.title") || "Voting Details"}
-            size="medium"
-            buttons={[
-                {
-                    text: t("common.close") || "Close",
-                    onClick: onClose,
-                    variant: "secondary",
-                },
-            ]}
-        >
-            <div className="voting-details-section">
-                {/* Summary Section */}
-                <div className="voting-summary-card">
-                    <h4 className="section-title">
-                        {t("modal.voting.details.summary") || "Summary"}
-                    </h4>
-                    <div className="voting-summary-grid">
-                        <div>
-                            <span className="summary-item-label">
-                                {t("modal.voting.details.totalVotes") || "Total Votes"}
-                            </span>
-                            <span className="summary-item-value">
-                                {data.vote_sum}
-                            </span>
+        <>
+            <Modal
+                isOpen={isOpen}
+                onClose={onClose}
+                title={t("modal.voting.details.title") || "Voting Details"}
+                size="medium"
+                buttons={[
+                    {
+                        text: t("common.close") || "Close",
+                        onClick: onClose,
+                        variant: "secondary",
+                    },
+                ]}
+            >
+                <div className="voting-details-section">
+                    <h5>{data.result}</h5>
+                    {/* Summary Section */}
+                    <div className="voting-summary-card mb-6">
+                        <h4 className="section-title text-lg font-bold mb-4 text-white">
+                            {t("modal.voting.details.summary") || "Summary"}
+                        </h4>
+
+                        <div className="voting-summary-grid">
+                            <div className="voting-summary-item">
+                                <span className="summary-item-label">
+                                    {t("modal.voting.details.totalVotes") || "Total Votes"}
+                                </span>
+                                <span className="summary-item-value">
+                                    {data.vote_sum}
+                                </span>
+                            </div>
+                            <div className="voting-summary-item">
+                                <span className="summary-item-label">
+                                    {t("modal.voting.details.validVotes") || "Valid Votes"}
+                                </span>
+                                <span className="summary-item-value highlight">
+                                    {data.valid_vote_sum}
+                                </span>
+                            </div>
+                            {data.weight_sum > 0 && (
+                                <>
+                                    <div className="voting-summary-item">
+                                        <span className="summary-item-label">
+                                            {t("modal.voting.details.totalWeight") || "Total Weight"}
+                                        </span>
+                                        <span className="summary-item-value">
+                                            {formatNumber(data.weight_sum / 100000000)}
+                                        </span>
+                                    </div>
+                                    <div className="voting-summary-item">
+                                        <span className="summary-item-label">
+                                            {t("modal.voting.details.validWeight") || "Valid Weight"}
+                                        </span>
+                                        <span className="summary-item-value highlight">
+                                            {formatNumber(data.valid_weight_sum / 100000000)}
+                                        </span>
+                                    </div>
+                                </>
+                            )}
                         </div>
-                        <div>
-                            <span className="summary-item-label">
-                                {t("modal.voting.details.validVotes") || "Valid Votes"}
-                            </span>
-                            <span className="summary-item-value highlight">
-                                {data.valid_vote_sum}
-                            </span>
-                        </div>
-                        {data.weight_sum > 0 && (
-                            <>
-                                <div>
-                                    <span className="summary-item-label">
-                                        {t("modal.voting.details.totalWeight") || "Total Weight"}
-                                    </span>
-                                    <span className="summary-item-value">
-                                        {formatNumber(data.weight_sum / 100000000)}
-                                    </span>
-                                </div>
-                                <div>
-                                    <span className="summary-item-label">
-                                        {t("modal.voting.details.validWeight") || "Valid Weight"}
-                                    </span>
-                                    <span className="summary-item-value highlight">
-                                        {formatNumber(data.valid_weight_sum / 100000000)}
-                                    </span>
-                                </div>
-                            </>
-                        )}
                     </div>
-                </div>
 
-                {/* Breakdown Section */}
-                <div>
-                    <h4 className="section-title">
-                        {t("modal.voting.details.breakdown") || "Breakdown"}
-                    </h4>
-                    <div className="voting-breakdown-card">
-                        <table className="voting-table">
-                            <thead>
-                                <tr>
-                                    <th style={{ width: '25%' }}>
-                                        {t("modal.voting.details.option") || "Option"}
-                                    </th>
-                                    <th className="text-right" style={{ width: '25%' }}>
-                                        {t("modal.voting.details.votes") || "Votes"}
-                                    </th>
-
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {options.map((option, index) => (
-                                    <tr key={index}>
-                                        <td className="option-cell">
-                                            {option.label}
-                                        </td>
-                                        <td className="text-right">
-                                            <div className="votes-cell-content">
-                                                <span>
+                    {/* Breakdown Section with Voters */}
+                    <div>
+                        <h4 className="section-title">
+                            {t("modal.voting.details.breakdown") || "Breakdown"}
+                        </h4>
+                        <div className="voting-breakdown-card">
+                            {options.map((option) => (
+                                <div key={option.id} className="option-group">
+                                    <div
+                                        className="option-header"
+                                        onClick={() => handleOptionClick(`${option.label} ${t("modal.voting.details.voterList") || "Voter List"}`, option.voters)}
+                                    >
+                                        <div className="option-label-container">
+                                            <div className={`option-color-dot ${option.color}`}></div>
+                                            <span className="option-label">{option.label}</span>
+                                        </div>
+                                        <div className="option-values-container">
+                                            <div className="option-values-wrapper">
+                                                <div className="option-value-text">
                                                     {option.value > 1000
                                                         ? formatNumber(option.value / 100000000)
                                                         : option.value}
-                                                </span>
-                                                <span className={`percentage-text ${option.textColor}`}>
+                                                </div>
+                                                <div className={`option-percentage ${option.textColor}`}>
                                                     {option.percentage}%
-                                                </span>
+                                                </div>
                                             </div>
-                                        </td>
-
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
-        </Modal>
+            </Modal>
+
+            {currentVoterList && (
+                <VoterListModal
+                    isOpen={!!currentVoterList}
+                    onClose={() => setCurrentVoterList(null)}
+                    title={currentVoterList.title}
+                    voters={currentVoterList.voters}
+                />
+            )}
+        </>
     );
 }

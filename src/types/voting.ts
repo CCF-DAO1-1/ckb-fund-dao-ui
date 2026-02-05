@@ -40,13 +40,32 @@ export interface UserVoteInfo {
 }
 
 // 投票详情数据（来自时间线事件消息）
+// 投票详情数据（来自时间线事件消息）
+export interface Author {
+  $type: string;
+  ckb_addr: string;
+  created: string;
+  did: string;
+  displayName: string;
+  handle: string;
+  avatar?: string;
+}
+
+export interface Voter {
+  author?: Author;
+  ckb_addr: string;
+  vote_index: number;
+  weight: number;
+}
+
 export interface VotingDetailsData {
   candidate_votes: Array<number | number[]>;
   valid_vote_sum: number;
-  valid_votes: Array<Array<string | number>>;
+  valid_votes: Array<Array<Voter>>;
   valid_weight_sum: number;
   vote_sum: number;
   weight_sum: number;
+  result?: string;
 }
 
 import { ProposalDetailResponse } from '@/server/proposal';

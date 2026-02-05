@@ -1089,7 +1089,11 @@
         "totalVotes": "总票数",
         "validVotes": "有效票数",
         "totalWeight": "总权重",
-        "validWeight": "有效权重"
+        "validWeight": "有效权重",
+        "voterList": "投票列表",
+        "voter": "投票人",
+        "weight": "权重",
+        "noVoters": "暂无投票"
       }
     }
   },
