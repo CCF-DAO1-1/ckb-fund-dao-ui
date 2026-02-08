@@ -1,3 +1,21 @@
+import DOMPurify from 'dompurify';
+
+/**
+ * HTML 转义函数
+ * @param text 要转义的文本
+ * @returns 转义后的文本
+ */
+const escapeHtml = (text: string): string => {
+  const map: { [key: string]: string } = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+  };
+  return text.replace(/[&<>"']/g, (char) => map[char]);
+};
+
 /**
  * 检测内容是否为 Markdown 格式
  * @param content 要检测的内容
@@ -49,24 +67,32 @@ export const markdownToHtml = (markdown: string): string => {
   const codeBlocks: string[] = [];
   html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
     const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
-    codeBlocks.push(`<pre><code>${code}</code></pre>`);
+    // ✅ 转义代码块内容，防止 XSS
+    codeBlocks.push(`<pre><code>${escapeHtml(code)}</code></pre>`);
     return placeholder;
   });
-  
+
   const inlineCodes: string[] = [];
   html = html.replace(/`([^`]+)`/g, (match, code) => {
     const placeholder = `__INLINE_CODE_${inlineCodes.length}__`;
-    inlineCodes.push(`<code>${code}</code>`);
+    // ✅ 转义内联代码内容，防止 XSS
+    inlineCodes.push(`<code>${escapeHtml(code)}</code>`);
     return placeholder;
   });
   
   html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, url) => {
-    const escapedUrl = url.replace(/"/g, '&quot;');
-    const escapedAlt = alt.replace(/"/g, '&quot;');
+    // ✅ 完整转义图片 URL 和 alt 文本
+    const escapedUrl = escapeHtml(url);
+    const escapedAlt = escapeHtml(alt);
     return `<img src="${escapedUrl}" alt="${escapedAlt}" style="max-width: 100%; height: auto; display: block; margin: 12px 0; border-radius: 6px;" />`;
   });
-  
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+  // ✅ 转义链接的文本和 URL
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+    const escapedUrl = escapeHtml(url);
+    const escapedText = escapeHtml(text);
+    return `<a href="${escapedUrl}" target="_blank" rel="noopener noreferrer">${escapedText}</a>`;
+  });
   
   inlineCodes.forEach((code, index) => {
     html = html.replace(`__INLINE_CODE_${index}__`, code);
@@ -110,7 +136,15 @@ export const markdownToHtml = (markdown: string): string => {
   if (!html.trim().match(/^<(ul|ol|blockquote|h[1-3]|pre|p)/)) {
     html = '<p>' + html + '</p>';
   }
-  
-  return html;
+
+  // ✅ 使用 DOMPurify 清洗 HTML，防止 XSS 攻击
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'p', 'br', 'strong', 'em', 'code', 'pre', 'a', 'img',
+      'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'blockquote'
+    ],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'style', 'target', 'rel'],
+    ALLOW_DATA_ATTR: false,
+  });
 };
 

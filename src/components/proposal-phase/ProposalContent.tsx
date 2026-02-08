@@ -18,6 +18,7 @@ import MilestoneList from "./MilestoneList";
 import { useRouter } from "next/navigation";
 import { postUriToHref } from "@/lib/postUriHref";
 import { isMarkdown, markdownToHtml } from "@/utils/markdownUtils";
+import DOMPurify from 'dompurify';
 
 import { logger } from '@/lib/logger';
 interface ProposalContentProps {
@@ -102,24 +103,32 @@ export default function ProposalContent({
   // 渲染内容（支持 Markdown 和 HTML）
   const renderContent = (content: string): string => {
     if (!content) return messages.proposalDetail.notFilled;
-    
-    // 如果内容已经是 HTML（包含 HTML 标签且不是 Markdown），直接返回
+
+    let html = content;
+
+    // 如果内容已经是 HTML（包含 HTML 标签且不是 Markdown），直接使用
     if (content.trim().startsWith('<') && !isMarkdown(content)) {
-      return content;
+      html = content;
     }
-    
     // 如果是 Markdown，转换为 HTML
-    if (isMarkdown(content)) {
+    else if (isMarkdown(content)) {
       try {
-        return markdownToHtml(content);
+        html = markdownToHtml(content);
       } catch (error) {
         logger.warn('Markdown rendering failed, falling back to raw content:');
-        return content;
+        html = content;
       }
     }
-    
-    // 默认情况：如果既不是 HTML 也不是 Markdown，按原样返回
-    return content;
+
+    // ✅ 使用 DOMPurify 清洗 HTML，防止 XSS 攻击
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'strong', 'em', 'code', 'pre', 'a', 'img',
+        'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'blockquote', 'div', 'span'
+      ],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'style', 'target', 'rel', 'class'],
+      ALLOW_DATA_ATTR: false,
+    });
   };
 
   if (!proposal) {

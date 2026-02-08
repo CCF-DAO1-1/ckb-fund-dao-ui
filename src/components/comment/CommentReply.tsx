@@ -8,25 +8,37 @@ import { CommentReplyProps } from "@/types/comment";
 import Avatar from "@/components/common/Avatar";
 import { getUserDisplayNameFromInfo } from "@/utils/userDisplayUtils";
 import { isMarkdown, markdownToHtml } from "@/utils/markdownUtils";
+import DOMPurify from 'dompurify';
 
 import { logger } from '@/lib/logger';
 const renderContent = (content: string): string => {
   if (!content) return '';
-  
+
+  let html = content;
+
+  // 如果内容已经是 HTML（包含 HTML 标签且不是 Markdown），直接使用
   if (content.trim().startsWith('<') && !isMarkdown(content)) {
-    return content;
+    html = content;
   }
-  
-  if (isMarkdown(content)) {
+  // 如果是 Markdown，转换为 HTML
+  else if (isMarkdown(content)) {
     try {
-      return markdownToHtml(content);
+      html = markdownToHtml(content);
     } catch (error) {
       logger.warn('Markdown rendering failed, falling back to raw content:');
-      return content;
+      html = content;
     }
   }
-  
-  return content;
+
+  // ✅ 使用 DOMPurify 清洗 HTML，防止 XSS 攻击
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'p', 'br', 'strong', 'em', 'code', 'pre', 'a', 'img',
+      'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'blockquote', 'div', 'span'
+    ],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'style', 'target', 'rel', 'class'],
+    ALLOW_DATA_ATTR: false,
+  });
 };
 
 export default function CommentReply({
