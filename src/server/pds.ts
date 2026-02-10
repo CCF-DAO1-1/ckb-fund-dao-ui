@@ -211,8 +211,14 @@ export async function createPDSRecord(params: {
   const res = await sessionWrapApi(() =>
     pdsClient.fans.web5.ckb.directWrites({
       repo: params.did,
-      signing_key: signingKey,
-      ckb_addr: localStorage?.walletAddress,
+      writes: [{
+        $type: "fans.web5.ckb.directWrites#create",
+        collection: newRecord.$type,
+        rkey,
+        value: newRecord
+      }],
+      signingKey: signingKey,
+      ckbAddr: localStorage?.walletAddress,
       root: {
         did: writerData.did,
         version: 3,
@@ -222,7 +228,7 @@ export async function createPDSRecord(params: {
         signedBytes: uint8ArrayToHex(commit.sig),
       },
     })
-  )
+  ) as unknown as { data: CreatePDSRecordResponse }
 
   return {
     uri: res.data.results[0].uri,
@@ -304,8 +310,14 @@ export async function updatePDSRecord(params: {
   const res = await sessionWrapApi(() =>
     pdsClient.fans.web5.ckb.directWrites({
       repo: params.did,
-      signing_key: signingKey,
-      ckb_addr: localStorage?.walletAddress,
+      writes: [{
+        $type: "fans.web5.ckb.directWrites#update",
+        collection: newRecord.$type,
+        rkey,
+        value: newRecord
+      }],
+      signingKey: signingKey,
+      ckbAddr: localStorage?.walletAddress,
       root: {
         did: writerData.did,
         version: 3,
@@ -315,7 +327,7 @@ export async function updatePDSRecord(params: {
         signedBytes: uint8ArrayToHex(commit.sig),
       },
     })
-  );
+  ) as unknown as { data: CreatePDSRecordResponse };
 
   return {
     uri: res.data.results[0].uri,
