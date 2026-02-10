@@ -579,18 +579,16 @@
   },
   "footer": {
     "companyName": "CKB Community Fund DAO",
-    "twitter": "Twitter",
+    "twitter": "X",
     "telegram": "Telegram",
     "discord": "Discord",
-    "medium": "Medium",
-    "support": "Support",
-    "privacyPolicy": "Privacy Policy",
-    "termsAndConditions": "Terms and Conditions",
-    "mediaKit": "Media Kit",
-    "link": "Link",
+    "reddit": "Reddit",
+    "resource": "Resource",
     "docs": "Docs",
-    "nervos": "Nervos",
-    "download": "Download"
+    "github": "GitHub",
+    "community": "Community",
+    "talk": "Talk",
+    "contributing": "Contributing"
   },
   "proposalItem": {
     "budgetApplication": "Budget Application",

@@ -619,18 +619,16 @@
   },
   "footer": {
     "companyName": "CKB Community Fund DAO",
-    "twitter": "Twitter",
+    "twitter": "X",
     "telegram": "Telegram",
     "discord": "Discord",
-    "medium": "Medium",
-    "support": "支持",
-    "privacyPolicy": "隐私政策",
-    "termsAndConditions": "条款和条件",
-    "mediaKit": "媒体包",
-    "link": "链接",
+    "reddit": "Reddit",
+    "resource": "资源",
     "docs": "文档",
-    "nervos": "Nervos",
-    "download": "下载"
+    "github": "GitHub",
+    "community": "社区",
+    "talk": "论坛",
+    "contributing": "贡献"
   },
   "proposalItem": {
     "budgetApplication": "申请预算",

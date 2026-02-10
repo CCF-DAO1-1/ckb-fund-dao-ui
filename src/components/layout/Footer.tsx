@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { AiFillDiscord } from "react-icons/ai";
+import { AiFillDiscord, AiFillGithub } from "react-icons/ai";
 import { RiTwitterXFill } from "react-icons/ri";
-import { FaTelegramPlane ,FaMediumM} from "react-icons/fa";
+import { FaTelegramPlane, FaReddit } from "react-icons/fa";
 import { useTranslation } from "@/utils/i18n";
 import isMobile from "is-mobile";
 
@@ -56,23 +56,23 @@ export default function Footer() {
             
             <div className="social-links">
               <div className="social-column">
-                <Link href="#" className="social-link">
+                <Link href="https://x.com/CkbDaoUpdates" className="social-link" target="_blank" rel="noopener noreferrer">
                   <RiTwitterXFill className="social-icon" />
                   <span>{t("footer.twitter")}</span>
                 </Link>
-                <Link href="#" className="social-link">
+                <Link href="https://t.me/NervosNetwork" className="social-link" target="_blank" rel="noopener noreferrer">
                   <FaTelegramPlane className="social-icon" />
                   <span>{t("footer.telegram")}</span>
                 </Link>
               </div>
               <div className="social-column">
-                <Link href="#" className="social-link">
+                <Link href="https://discord.gg/FKh8Zzvwqa" className="social-link" target="_blank" rel="noopener noreferrer">
                   <AiFillDiscord  className="social-icon" />
                   <span>{t("footer.discord")}</span>
                 </Link>
-                <Link href="#" className="social-link">
-                  <FaMediumM className="social-icon" />
-                  <span>{t("footer.medium")}</span>
+                <Link href="https://www.reddit.com/r/NervosNetwork/" className="social-link" target="_blank" rel="noopener noreferrer">
+                  <FaReddit className="social-icon" />
+                  <span>{t("footer.reddit")}</span>
                 </Link>
               </div>
             </div>
@@ -82,20 +82,18 @@ export default function Footer() {
         {/* 右侧：导航链接 */}
         <div className="footer-right">
           <div className="nav-section">
-            <h3 className="nav-heading">{t("footer.support")}</h3>
+            <h3 className="nav-heading">{t("footer.resource")}</h3>
             <ul className="nav-links">
-              <li><Link href="#">{t("footer.privacyPolicy")}</Link></li>
-              <li><Link href="#">{t("footer.termsAndConditions")}</Link></li>
-              <li><Link href="#">{t("footer.mediaKit")}</Link></li>
+              <li><Link href="https://docs.ccfdao.org" target="_blank" rel="noopener noreferrer">{t("footer.docs")}</Link></li>
+              <li><Link href="https://github.com/CCF-DAO1-1" target="_blank" rel="noopener noreferrer">{t("footer.github")}</Link></li>
             </ul>
           </div>
-          
+
           <div className="nav-section">
-            <h3 className="nav-heading">{t("footer.link")}</h3>
+            <h3 className="nav-heading">{t("footer.community")}</h3>
             <ul className="nav-links">
-              <li><Link href="#">{t("footer.docs")}</Link></li>
-              <li><Link href="#">{t("footer.nervos")}</Link></li>
-              <li><Link href="#">{t("footer.download")}</Link></li>
+              <li><Link href="https://talk.nervos.org" target="_blank" rel="noopener noreferrer">{t("footer.talk")}</Link></li>
+              <li><Link href="https://github.com/CCF-DAO1-1" target="_blank" rel="noopener noreferrer">{t("footer.contributing")}</Link></li>
             </ul>
           </div>
         </div>
