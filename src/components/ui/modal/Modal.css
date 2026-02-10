@@ -128,9 +128,9 @@
   cursor: pointer;
   transition: all 0.2s;
   border: none;
-  min-width: 80px;
-  line-height: 32px;
-  height: 32px;
+  min-width: 120px;
+  line-height: 36px;
+  height: 36px;
 }
 
 .modal-button-primary {

@@ -4,7 +4,6 @@
  */
 import { DID_PREFIX } from "@/constant/Network";
 import sessionWrapApi from "@/lib/wrapApiAutoSession";
-import server from "@/server";
 import getPDSClient from "@/lib/pdsClient";
 import storage from "@/lib/storage";
 import * as crypto from '@atproto/crypto'
@@ -208,25 +207,26 @@ export async function createPDSRecord(params: {
 
   const localStorage = storage.getToken()
 
-  const res = await server<CreatePDSRecordResponse>('/record/create', 'POST', {
-    repo: params.did,
-    rkey,
-    value: newRecord,
-    signing_key: signingKey,
-    ckb_addr: localStorage?.walletAddress,
-    root: {
-      did: writerData.did,
-      version: 3,
-      rev: writerData.rev,
-      prev: writerData.prev,
-      data: writerData.data,
-      signedBytes: uint8ArrayToHex(commit.sig),
-    },
-  })
+  // 🔧 改用 PDS 的 directWrites 接口，不再调用后端 API
+  const res = await sessionWrapApi(() =>
+    pdsClient.fans.web5.ckb.directWrites({
+      repo: params.did,
+      signing_key: signingKey,
+      ckb_addr: localStorage?.walletAddress,
+      root: {
+        did: writerData.did,
+        version: 3,
+        rev: writerData.rev,
+        prev: writerData.prev,
+        data: writerData.data,
+        signedBytes: uint8ArrayToHex(commit.sig),
+      },
+    })
+  )
 
   return {
-    uri: res.results[0].uri,
-    cid: res.results[0].cid
+    uri: res.data.results[0].uri,
+    cid: res.data.results[0].cid
   }
 }
 
@@ -300,25 +300,26 @@ export async function updatePDSRecord(params: {
 
   const localStorage = storage.getToken();
 
-  const res = await server<CreatePDSRecordResponse>("/record/update", "POST", {
-    repo: params.did,
-    rkey,
-    value: newRecord,
-    signing_key: signingKey,
-    ckb_addr: localStorage?.walletAddress,
-    root: {
-      did: writerData.did,
-      version: 3,
-      rev: writerData.rev,
-      prev: writerData.prev,
-      data: writerData.data,
-      signedBytes: uint8ArrayToHex(commit.sig),
-    },
-  });
+  // 🔧 改用 PDS 的 directWrites 接口，不再调用后端 API
+  const res = await sessionWrapApi(() =>
+    pdsClient.fans.web5.ckb.directWrites({
+      repo: params.did,
+      signing_key: signingKey,
+      ckb_addr: localStorage?.walletAddress,
+      root: {
+        did: writerData.did,
+        version: 3,
+        rev: writerData.rev,
+        prev: writerData.prev,
+        data: writerData.data,
+        signedBytes: uint8ArrayToHex(commit.sig),
+      },
+    })
+  );
 
   return {
-    uri: res.results[0].uri,
-    cid: res.results[0].cid,
+    uri: res.data.results[0].uri,
+    cid: res.data.results[0].cid,
   };
 }
 

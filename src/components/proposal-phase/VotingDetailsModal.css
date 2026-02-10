@@ -5,6 +5,12 @@
   gap: 0.25rem;
 }
 
+.voting-details-section h5 {
+  margin: 0;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
 .voting-summary-card {
   background-color: #141619;
   /* rounded-xl */
@@ -172,4 +178,12 @@
 
 .bg-red-500 {
   background-color: #ef4444;
+}
+
+/* 关闭按钮固定宽度 */
+.voting-details-modal .modal-button {
+  width: 120px !important;
+  min-width: 120px !important;
+  margin: 0 auto;
+
 }

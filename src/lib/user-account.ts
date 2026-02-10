@@ -1,5 +1,5 @@
 
-import getPDSClient from "@/lib/pdsClient";
+import getPDSClient, { setPDSClient } from "@/lib/pdsClient";
 import storage, { TokenStorageType } from "@/lib/storage";
 import { Secp256k1Keypair } from "@atproto/crypto";
 import { bytesFrom, hexFrom } from "@ckb-ccc/core";
@@ -7,8 +7,30 @@ import { FansWeb5CkbIndexAction, FansWeb5CkbPreIndexAction } from "web5-api";
 // import { showGlobalToast } from "@/provider/toast";
 import server from "@/server";
 import { UserProfileType } from "@/store/userInfo";
+import { DID_INDEXER } from "@/constant/Network";
+import axios from "axios";
 
 import { logger } from '@/lib/logger';
+
+/**
+ * 根据用户 DID 设置对应的 PDS 客户端
+ * 用于跨 PDS 登录场景
+ * @param did 用户 DID
+ */
+async function setLoginUserPDSClient(did: string) {
+  try {
+    const response = await axios.get(`${DID_INDEXER}/${did}`);
+    const service = response.data.services?.atproto_pds?.endpoint;
+    if (service) {
+      setPDSClient(service);
+      logger.log('✅ PDS 客户端已切换:', { did, service });
+    }
+  } catch (error) {
+    logger.error('获取用户 PDS 服务地址失败:', error);
+    // 使用默认 PDS 服务继续
+  }
+}
+
 export async function fetchUserProfile(did: string): Promise<UserProfileType> {
   const result = await server<UserProfileType>('/repo/profile', 'GET', {
     repo: did
@@ -17,10 +39,12 @@ export async function fetchUserProfile(did: string): Promise<UserProfileType> {
 }
 
 export async function userLogin(localStorage: TokenStorageType): Promise<FansWeb5CkbIndexAction.CreateSessionResult | undefined> {
+  const { did, signKey, walletAddress } = localStorage
 
+  // 🔧 跨 PDS 登录：根据用户 DID 动态设置 PDS 客户端
+  await setLoginUserPDSClient(did)
 
   const pdsClient = getPDSClient()
-  const { did, signKey, walletAddress } = localStorage
 
   const preLoginIndex = {
     $type: 'fans.web5.ckb.preIndexAction#createSession',

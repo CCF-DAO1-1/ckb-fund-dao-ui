@@ -5,6 +5,8 @@ import CopyButton from "@/components/ui/copy/CopyButton";
 import { Modal } from "@/components/ui/modal";
 import Avatar from "@/components/common/Avatar";
 import { useI18n } from '@/contexts/I18nContext';
+import { isMarkdown, markdownToHtml } from "@/utils/markdownUtils";
+import DOMPurify from 'dompurify';
 interface Milestone {
   id: string;
   index: number;
@@ -36,6 +38,37 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
   formData,
 }) => {
   const { messages } = useI18n();
+
+  // 渲染内容（支持 Markdown 和 HTML）
+  const renderContent = (content: string): string => {
+    if (!content) return messages.previewModal.notFilled;
+
+    let html = content;
+
+    // 如果内容已经是 HTML（包含 HTML 标签且不是 Markdown），直接使用
+    if (content.trim().startsWith('<') && !isMarkdown(content)) {
+      html = content;
+    }
+    // 如果是 Markdown，转换为 HTML
+    else if (isMarkdown(content)) {
+      try {
+        html = markdownToHtml(content);
+      } catch (error) {
+        console.warn('Markdown rendering failed, falling back to raw content:', error);
+        html = content;
+      }
+    }
+
+    // ✅ 使用 DOMPurify 清洗 HTML，防止 XSS 攻击
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'strong', 'em', 'code', 'pre', 'a', 'img',
+        'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'blockquote', 'div', 'span'
+      ],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'style', 'target', 'rel', 'class'],
+      ALLOW_DATA_ATTR: false,
+    });
+  };
 
   return (
     <Modal
@@ -88,7 +121,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
           <div
             className="proposal-html-content"
             dangerouslySetInnerHTML={{
-              __html: formData.background || messages.previewModal.notFilled,
+              __html: renderContent(formData.background || ''),
             }}
           />
         </div>
@@ -97,7 +130,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
           <h3>{messages.previewModal.projectGoals}</h3>
           <div
             className="proposal-html-content"
-            dangerouslySetInnerHTML={{ __html: formData.goals || messages.previewModal.notFilled }}
+            dangerouslySetInnerHTML={{ __html: renderContent(formData.goals || '') }}
           />
         </div>
 
@@ -105,7 +138,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
           <h3>{messages.previewModal.teamIntroduction}</h3>
           <div
             className="proposal-html-content"
-            dangerouslySetInnerHTML={{ __html: formData.team || messages.previewModal.notFilled }}
+            dangerouslySetInnerHTML={{ __html: renderContent(formData.team || '') }}
           />
         </div>
 
@@ -137,7 +170,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
                     <div
                       className="proposal-html-content"
                       dangerouslySetInnerHTML={{
-                        __html: milestone.description || messages.previewModal.notFilled,
+                        __html: renderContent(milestone.description || ''),
                       }}
                     />
                   </div>

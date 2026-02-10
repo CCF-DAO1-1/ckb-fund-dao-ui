@@ -2,6 +2,8 @@
 
 import { ProposalMilestone } from "@/server/proposal";
 import { useI18n } from "@/contexts/I18nContext";
+import { isMarkdown, markdownToHtml } from "@/utils/markdownUtils";
+import DOMPurify from 'dompurify';
 import "./proposal.css";
 
 interface MilestoneListProps {
@@ -10,6 +12,37 @@ interface MilestoneListProps {
 
 export default function MilestoneList({ milestones }: MilestoneListProps) {
   const { messages, locale } = useI18n();
+
+  // 渲染内容（支持 Markdown 和 HTML）
+  const renderContent = (content: string): string => {
+    if (!content) return messages.proposalDetail.notFilled;
+
+    let html = content;
+
+    // 如果内容已经是 HTML（包含 HTML 标签且不是 Markdown），直接使用
+    if (content.trim().startsWith('<') && !isMarkdown(content)) {
+      html = content;
+    }
+    // 如果是 Markdown，转换为 HTML
+    else if (isMarkdown(content)) {
+      try {
+        html = markdownToHtml(content);
+      } catch (error) {
+        console.warn('Markdown rendering failed, falling back to raw content:', error);
+        html = content;
+      }
+    }
+
+    // ✅ 使用 DOMPurify 清洗 HTML，防止 XSS 攻击
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'strong', 'em', 'code', 'pre', 'a', 'img',
+        'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'blockquote', 'div', 'span'
+      ],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'style', 'target', 'rel', 'class'],
+      ALLOW_DATA_ATTR: false,
+    });
+  };
 
   if (!milestones || milestones.length === 0) {
     return (
@@ -58,7 +91,7 @@ export default function MilestoneList({ milestones }: MilestoneListProps) {
             <div
               className="proposal-html-content"
               dangerouslySetInnerHTML={{
-                __html: milestone.description || messages.proposalDetail.notFilled,
+                __html: renderContent(milestone.description || ''),
               }}
             />
           </div>

@@ -1,0 +1,153 @@
+/* Voter List Modal Styles */
+.voter-list-modal-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 标题样式 */
+.voter-list-title {
+  font-size: 1.25rem;
+  /* 20px */
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 1.5rem 0;
+  letter-spacing: 0.05em;
+}
+
+/* 统计信息 */
+.voter-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+  margin-bottom: 1rem;
+}
+
+.voter-stats-votes {
+  font-size: 0.875rem;
+  /* 14px */
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.voter-stats-percentage {
+  font-size: 0.875rem;
+  /* 14px */
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* 分割线 - 虚线样式 */
+.voter-divider {
+  height: 0;
+  border: none;
+  border-top: 1px dashed rgba(255, 255, 255, 0.15);
+  margin: 0 1rem 1.5rem 1rem;
+}
+
+/* 投票者列表容器 */
+.voter-list-scroll {
+  min-height: 250px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0 0.5rem 0 1rem;
+}
+
+/* 自定义滚动条样式 */
+.voter-list-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.voter-list-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  margin: 4px 0;
+}
+
+.voter-list-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.voter-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* 投票者列表项容器 */
+.voter-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* 单个投票者项 */
+.voter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+/* 投票者左侧（头像 + 名字） */
+.voter-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/* 投票者名字 */
+.voter-name {
+  font-size: 0.875rem;
+  /* 14px */
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #ffffff;
+}
+
+.voter-name-green {
+  color: #00cc9b;
+}
+
+.voter-name-red {
+  color: #ef4444;
+}
+
+/* 投票权重 */
+.voter-item-weight {
+  font-size: 0.875rem;
+  /* 14px */
+  font-weight: 400;
+  color: #ffffff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  white-space: nowrap;
+  margin-left: 1rem;
+  letter-spacing: 0.02em;
+}
+
+/* 空状态 */
+.voter-list-empty {
+  text-align: center;
+  color: #9ca3af;
+  padding: 3rem 0;
+  font-size: 0.875rem;
+}
+
+/* 关闭按钮固定宽度 */
+.voter-list-modal .modal-button {
+  width: 120px !important;
+  min-width: 120px !important;
+  margin: 0 auto;
+}
+
+/* 颜色类 */
+.text-green-brand {
+  color: #00cc9b;
+}
+
+.text-red-500 {
+  color: #ef4444;
+}

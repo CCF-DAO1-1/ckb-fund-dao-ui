@@ -1049,7 +1049,11 @@
         "totalVotes": "Total Votes",
         "validVotes": "Valid Votes",
         "totalWeight": "Total Weight",
-        "validWeight": "Valid Weight"
+        "validWeight": "Valid Weight",
+        "voterList": "Voter List",
+        "voter": "Voter",
+        "weight": "Weight",
+        "noVoters": "No voters yet"
       }
     }
   },

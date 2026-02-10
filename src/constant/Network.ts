@@ -20,3 +20,5 @@ export const PDS_API_URL = process.env.NEXT_PUBLIC_PDS_SERVICE as string
 export const USER_DOMAIN = process.env.NEXT_PUBLIC_USER_DOMAIN as string
 
 export const DID_PREFIX = 'did:ckb:'
+
+export const DID_INDEXER = process.env.NEXT_PUBLIC_DID_INDEXER as string

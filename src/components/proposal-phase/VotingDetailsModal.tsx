@@ -18,7 +18,13 @@ export default function VotingDetailsModal({
     data,
 }: VotingDetailsModalProps) {
     const { t } = useTranslation();
-    const [currentVoterList, setCurrentVoterList] = useState<{ title: string, voters: Voter[] } | null>(null);
+    const [currentVoterList, setCurrentVoterList] = useState<{
+        title: string,
+        voters: Voter[],
+        totalVotes: number,
+        percentage: string,
+        colorTheme: 'green' | 'red'
+    } | null>(null);
 
     if (!data) return null;
 
@@ -51,27 +57,29 @@ export default function VotingDetailsModal({
         return ((value / totalWeight) * 100).toFixed(1);
     };
 
-    const handleOptionClick = (title: string, voters: Voter[]) => {
-        setCurrentVoterList({ title, voters });
+    const handleOptionClick = (title: string, voters: Voter[], totalVotes: number, percentage: string, colorTheme: 'green' | 'red') => {
+        setCurrentVoterList({ title, voters, totalVotes, percentage, colorTheme });
     };
 
     const options = [
         {
             id: 1, // Index for Agree
-            label: t("modal.voting.options.approve") || "Agree",
+            label: t("modal.voting.options.approve") || "赞成投票",
             value: agreeVotes,
             percentage: getPercentage(agreeVotes),
             color: "bg-green-brand",
             textColor: "text-green-brand",
+            colorTheme: 'green' as const,
             voters: agreeVoters
         },
         {
             id: 2, // Index for Reject
-            label: t("modal.voting.options.reject") || "Reject",
+            label: t("modal.voting.options.reject") || "反对投票",
             value: rejectVotes,
             percentage: getPercentage(rejectVotes),
             color: "bg-red-500",
             textColor: "text-red-500",
+            colorTheme: 'red' as const,
             voters: rejectVoters
         },
     ];
@@ -83,6 +91,7 @@ export default function VotingDetailsModal({
                 onClose={onClose}
                 title={t("modal.voting.details.title") || "Voting Details"}
                 size="medium"
+                className="voting-details-modal"
                 buttons={[
                     {
                         text: t("common.close") || "Close",
@@ -149,7 +158,7 @@ export default function VotingDetailsModal({
                                 <div key={option.id} className="option-group">
                                     <div
                                         className="option-header"
-                                        onClick={() => handleOptionClick(`${option.label} ${t("modal.voting.details.voterList") || "Voter List"}`, option.voters)}
+                                        onClick={() => handleOptionClick(option.label, option.voters, option.value, option.percentage, option.colorTheme)}
                                     >
                                         <div className="option-label-container">
                                             <div className={`option-color-dot ${option.color}`}></div>
@@ -181,6 +190,9 @@ export default function VotingDetailsModal({
                     onClose={() => setCurrentVoterList(null)}
                     title={currentVoterList.title}
                     voters={currentVoterList.voters}
+                    totalVotes={currentVoterList.totalVotes}
+                    percentage={currentVoterList.percentage}
+                    colorTheme={currentVoterList.colorTheme}
                 />
             )}
         </>
