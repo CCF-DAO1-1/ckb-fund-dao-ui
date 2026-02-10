@@ -1052,6 +1052,17 @@
         "voter": "Voter",
         "weight": "Weight",
         "noVoters": "No voters yet"
+      },
+      "result": {
+        "voting": "Voting in Progress",
+        "agree": "Approved",
+        "agreeLessThan51PCT": "Approval Below Majority (Less than 51%)",
+        "agreeLessThan67PCT": "Approval Below 2/3 Threshold (Less than 67%)",
+        "totalLessThan185000000CKB": "Insufficient Total Weight (Less than 185M CKB)",
+        "totalLessThan3X": "Insufficient Total Votes (Less than 3x Budget)",
+        "againstMoreThan51PCT": "Rejection Above Majority (More than 51%)",
+        "againstMoreThan67PCT": "Rejection Above 2/3 Threshold (More than 67%)",
+        "failed": "Vote Failed"
       }
     }
   },

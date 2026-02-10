@@ -1092,6 +1092,17 @@
         "voter": "投票人",
         "weight": "权重",
         "noVoters": "暂无投票"
+      },
+      "result": {
+        "voting": "投票进行中",
+        "agree": "赞成通过",
+        "agreeLessThan51PCT": "赞成票未过半（低于51%）",
+        "agreeLessThan67PCT": "赞成票未达到2/3（低于67%）",
+        "totalLessThan185000000CKB": "总投票权重不足（低于1.85亿CKB）",
+        "totalLessThan3X": "总投票数不足（低于预算的3倍）",
+        "againstMoreThan51PCT": "反对票过半（超过51%）",
+        "againstMoreThan67PCT": "反对票超过2/3（超过67%）",
+        "failed": "投票失败"
       }
     }
   },

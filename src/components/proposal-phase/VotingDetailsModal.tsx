@@ -28,6 +28,22 @@ export default function VotingDetailsModal({
 
     if (!data) return null;
 
+    // 翻译投票结果
+    const getVoteResultText = (result: string): string => {
+        const resultMap: { [key: string]: string } = {
+            'Voting': t("modal.voting.result.voting") || "投票进行中",
+            'Agree': t("modal.voting.result.agree") || "赞成通过",
+            'AgreeLessThan51PCT': t("modal.voting.result.agreeLessThan51PCT") || "赞成票未过半（低于51%）",
+            'AgreeLessThan67PCT': t("modal.voting.result.agreeLessThan67PCT") || "赞成票未达到2/3（低于67%）",
+            'TotalLessThan185000000CKB': t("modal.voting.result.totalLessThan185000000CKB") || "总投票权重不足（低于1.85亿CKB）",
+            'TotalLessThan3X': t("modal.voting.result.totalLessThan3X") || "总投票数不足（低于预算的3倍）",
+            'AgainstMoreThan51PCT': t("modal.voting.result.againstMoreThan51PCT") || "反对票过半（超过51%）",
+            'AgainstMoreThan67PCT': t("modal.voting.result.againstMoreThan67PCT") || "反对票超过2/3（超过67%）",
+            'Failed': t("modal.voting.result.failed") || "投票失败",
+        };
+        return resultMap[result] || result;
+    };
+
     // Helper to extract weight/votes from candidate_votes which might be number[] or [number, number][]
     const getVoteWeight = (index: number): number => {
         const item = data.candidate_votes[index];
@@ -101,7 +117,8 @@ export default function VotingDetailsModal({
                 ]}
             >
                 <div className="voting-details-section">
-                    <h5>{data.result}</h5>
+
+                    <h5>{getVoteResultText(data.result || "")}</h5>
                     {/* Summary Section */}
                     <div className="voting-summary-card mb-6">
                         <h4 className="section-title text-lg font-bold mb-4 text-white">
