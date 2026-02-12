@@ -88,7 +88,7 @@ export default function DiscussionRecordsTable({ className = '' }: DiscussionRec
       const proposalUri = comment.proposal?.uri;
       // 使用 text 字段作为评论内容（支持 HTML 和 Markdown 格式）
       const commentContent = renderContent(comment.text || '');
-      
+
       return {
         id: comment.uri || comment.cid,
         commentDate: formatDate(comment.created),
@@ -122,14 +122,38 @@ export default function DiscussionRecordsTable({ className = '' }: DiscussionRec
                 <span className="proposal-reference">
                   {messages.discussionRecords.proposalReference}{' '}
                   {record.proposalUri ? (
-                    <Link 
+                    <Link
                       href={`/${locale}/proposal/${postUriToHref(record.proposalUri)}`}
                       className="proposal-link"
+                      style={{
+                        maxWidth: '200px',
+                        display: 'inline-block',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'bottom'
+                      }}
+                      data-tooltip-id="my-tooltip"
+                      data-tooltip-content={record.proposalName}
                     >
                       {record.proposalName}
                     </Link>
                   ) : (
-                    <span className="proposal-link">{record.proposalName}</span>
+                    <span
+                      className="proposal-link"
+                      style={{
+                        maxWidth: '200px',
+                        display: 'inline-block',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'bottom'
+                      }}
+                      data-tooltip-id="my-tooltip"
+                      data-tooltip-content={record.proposalName}
+                    >
+                      {record.proposalName}
+                    </span>
                   )}
                   {messages.discussionRecords.commentIn}
                 </span>
@@ -138,12 +162,12 @@ export default function DiscussionRecordsTable({ className = '' }: DiscussionRec
                 {record.isReply && <div className="reply-indicator"></div>}
                 <div className="comment-block">
                   {record.userAvatar && record.userName && (
-                    <div className="user-info" style={{justifyContent:"flex-start"}}>
+                    <div className="user-info" style={{ justifyContent: "flex-start" }}>
                       <span className="user-avatar">{record.userAvatar}</span>
                       <span className="user-name">{record.userName}</span>
                     </div>
                   )}
-                  <div 
+                  <div
                     className="comment-text"
                     dangerouslySetInnerHTML={{ __html: record.commentContent }}
                   />

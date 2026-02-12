@@ -15,18 +15,18 @@ export default function ProposalDetail() {
   const { messages } = useI18n();
   const params = useParams();
   const uri = useMemo(() => params?.uri as string, [params?.uri]);
-  
+
   // 获取提案详情（用于面包屑和标题）
   const { proposal, loading, error } = useProposalDetail(uri);
-  
+
   // 获取评论列表（统一在主页面获取，避免重复请求）
-  const { 
-    comments: apiComments, 
-    loading: commentsLoading, 
-    error: commentsError, 
-    refetch: refetchComments 
+  const {
+    comments: apiComments,
+    loading: commentsLoading,
+    error: commentsError,
+    refetch: refetchComments
   } = useCommentList(proposal?.uri || null);
-  
+
   // 引用文本状态（用于从 ProposalContent 传递到 ProposalComments）
   const [quotedText, setQuotedText] = useState("");
 
@@ -35,12 +35,12 @@ export default function ProposalDetail() {
   //   const handleHashChange = () => {
   //     const hash = window.location.hash;
   //     const buttons = document.querySelectorAll('.proposal-actions a');
-      
+
   //     buttons.forEach(button => {
   //       button.classList.remove('primary-btn');
   //       button.classList.add('secondary-btn');
   //     });
-      
+
   //     if (hash === '#proposal-detail') {
   //       const detailButton = document.querySelector('a[href="#proposal-detail"]');
   //       if (detailButton) {
@@ -61,10 +61,10 @@ export default function ProposalDetail() {
   //     window.location.hash = '#proposal-detail';
   //   }
   //   handleHashChange();
-    
+
   //   // 监听hash变化
   //   window.addEventListener('hashchange', handleHashChange);
-    
+
   //   return () => {
   //     window.removeEventListener('hashchange', handleHashChange);
   //   };
@@ -139,7 +139,20 @@ export default function ProposalDetail() {
           <div className="breadcrumb">
             <span>{messages.proposalDetail.governanceHome}</span>
             <span className="breadcrumb-separator">&gt;</span>
-            <span>{proposal.record.data.title}</span>
+            <span
+              style={{
+                maxWidth: '400px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                display: 'inline-block',
+                verticalAlign: 'bottom'
+              }}
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content={proposal.record.data.title}
+            >
+              {proposal.record.data.title}
+            </span>
           </div>
 
           <div className="proposal-content-wrapper">
@@ -151,8 +164,8 @@ export default function ProposalDetail() {
                 onQuote={handleQuote}
                 commentSubmitFn={commentSubmitRef.current || undefined}
               />
-              <ProposalComments 
-                proposal={proposal} 
+              <ProposalComments
+                proposal={proposal}
                 apiComments={apiComments || []}
                 commentsLoading={commentsLoading}
                 commentsError={commentsError}

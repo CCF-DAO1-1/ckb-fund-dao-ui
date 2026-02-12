@@ -183,11 +183,37 @@ export default function VotingRecordsTable({ className = '' }: VotingRecordsTabl
                 <tr key={record.id}>
                   <td className="proposal-name">
                     {record.proposalUri ? (
-                      <Link href={`/${locale}/proposal/${postUriToHref(record.proposalUri)}`} className="hover:text-primary hover:underline">
+                      <Link
+                        href={`/${locale}/proposal/${postUriToHref(record.proposalUri)}`}
+                        className="hover:text-primary hover:underline"
+                        style={{
+                          maxWidth: '200px',
+                          display: 'inline-block',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          verticalAlign: 'bottom'
+                        }}
+                        data-tooltip-id="my-tooltip"
+                        data-tooltip-content={record.proposalName}
+                      >
                         {record.proposalName}
                       </Link>
                     ) : (
-                      record.proposalName
+                      <span
+                        style={{
+                          maxWidth: '200px',
+                          display: 'inline-block',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          verticalAlign: 'bottom'
+                        }}
+                        data-tooltip-id="my-tooltip"
+                        data-tooltip-content={record.proposalName}
+                      >
+                        {record.proposalName}
+                      </span>
                     )}
                   </td>
                   <td className="voting-stage">{record.votingStage}</td>

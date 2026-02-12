@@ -81,8 +81,20 @@ export default function ProposalItem({ proposal }: ProposalItemProps) {
       onClick={handleClick}
       style={{ cursor: 'pointer' }}
     >
-      <h4>
-        <span>{title + ' '}</span>
+      <h4 style={{ display: 'flex', alignItems: 'center' }}>
+        <span
+          style={{
+            flex: 1,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            marginRight: '8px'
+          }}
+          data-tooltip-id="my-tooltip"
+          data-tooltip-content={title}
+        >
+          {title}
+        </span>
         <Tag status={proposal.state} size="sm" />
       </h4>
       <div className="proposal_person">

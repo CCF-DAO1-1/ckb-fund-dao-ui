@@ -148,7 +148,7 @@ export default function ProposalContent({
       {/* 提案头部信息 */}
       <div className="proposal-header-card">
         <div className="proposal-title-section">
-          <h1 className="proposal-main-title">
+          <h1 className="proposal-main-title" style={{ wordBreak: 'break-word' }}>
             {proposal.record.data.title}
             {userInfo?.did === proposal.author.did && (
               <img
