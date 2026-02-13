@@ -64,6 +64,15 @@ export default function ProposalContent({
     setIsLiking(true);
 
     try {
+      // 解析 handle 获取 PDS 服务域名
+      let serviceEndpoint = undefined;
+      // 检查 handle 是否包含自定义域名 (例如: user.web5.bbsfans.dev containing multiple parts)
+      // 通常 handle 格式为 <name>.<domain>
+      if (userInfo.handle && userInfo.handle.includes('.')) {
+        const domain = userInfo.handle.substring(userInfo.handle.indexOf('.') + 1);
+        serviceEndpoint = `https://${domain}`;
+      }
+
       const result = await createPDSRecord({
         record: {
           $type: 'app.dao.like',
@@ -71,6 +80,7 @@ export default function ProposalContent({
           viewer: userInfo.did,
         },
         did: userInfo.did,
+        serviceEndpoint: serviceEndpoint,
       });
 
       if (result) {
@@ -78,7 +88,7 @@ export default function ProposalContent({
         setLikeCount(prev => prev + 1);
       }
     } catch (error) {
-      logger.error('点赞失败:');
+      logger.error('点赞失败:', error);
     } finally {
       setIsLiking(false);
     }

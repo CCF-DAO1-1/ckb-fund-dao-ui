@@ -211,9 +211,17 @@ export default function ProposalComments({
         }
       }
 
+      // 解析 handle 获取 PDS 服务域名
+      let serviceEndpoint = undefined;
+      if (userInfo.handle && userInfo.handle.includes('.')) {
+        const domain = userInfo.handle.substring(userInfo.handle.indexOf('.') + 1);
+        serviceEndpoint = `https://${domain}`;
+      }
+
       const result = await createPDSRecord({
         record,
         did: userInfo.did,
+        serviceEndpoint: serviceEndpoint,
       });
 
       if (result) {
@@ -247,7 +255,7 @@ export default function ProposalComments({
         toast.success(t('proposalComments.success') || '评论发布成功');
       }
     } catch (error) {
-      logger.error('发布评论失败:');
+      logger.error('发布评论失败:', error);
 
       // 检查是否是 session 过期错误
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -290,6 +298,13 @@ export default function ProposalComments({
         return comment;
       }));
 
+      // 解析 handle 获取 PDS 服务域名
+      let serviceEndpoint = undefined;
+      if (userInfo.handle && userInfo.handle.includes('.')) {
+        const domain = userInfo.handle.substring(userInfo.handle.indexOf('.') + 1);
+        serviceEndpoint = `https://${domain}`;
+      }
+
       await createPDSRecord({
         record: {
           $type: 'app.dao.like',
@@ -297,9 +312,10 @@ export default function ProposalComments({
           viewer: userInfo.did,
         },
         did: userInfo.did,
+        serviceEndpoint: serviceEndpoint,
       });
     } catch (error) {
-      logger.error('评论点赞失败:');
+      logger.error('评论点赞失败:', error);
 
       setComments(comments.map(comment => {
         if (comment.id === commentId) {

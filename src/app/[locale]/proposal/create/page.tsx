@@ -13,6 +13,7 @@ import TeamIntroduction from "@/components/proposal-steps/TeamIntroduction";
 import ProjectBudget from "@/components/proposal-steps/ProjectBudget";
 import ProjectMilestones from "@/components/proposal-steps/ProjectMilestones";
 import { createPDSRecord } from "@/server/pds";
+import { getProposalDetail } from "@/server/proposal";
 import useUserInfoStore from "@/store/userInfo";
 import { useI18n } from "@/contexts/I18nContext";
 import { postUriToHref } from "@/lib/postUriHref";
@@ -424,6 +425,15 @@ export default function CreateProposal() {
     try {
       logger.log("提交提案:", formData);
 
+      // 解析 handle 获取 PDS 服务域名
+      let serviceEndpoint = undefined;
+      if (userInfo.handle && userInfo.handle.includes('.')) {
+        // user handle: jack-0xkn.web5.bbsfans.dev
+        // domain: web5.bbsfans.dev
+        const domain = userInfo.handle.substring(userInfo.handle.indexOf('.') + 1);
+        serviceEndpoint = `https://${domain}`;
+      }
+
       // 调用 createPDSRecord 发布提案到 PDS
       const result = await createPDSRecord({
         record: {
@@ -440,6 +450,7 @@ export default function CreateProposal() {
           },
         },
         did: userInfo.did,
+        serviceEndpoint: serviceEndpoint,
       });
 
       // 删除草稿
@@ -448,8 +459,48 @@ export default function CreateProposal() {
       }
 
       toast.success(t("proposalCreate.messages.submitSuccess"));
-      // 跳转到详情页面，传递 cid 参数
-      router.push(`/${locale}/proposal/${postUriToHref(result.uri)}`);
+
+      // 延迟5秒
+      const loadingToastId = toast.loading(t("proposalCreate.messages.processing") || "正在处理中，请稍候...");
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      // 轮询检查提案是否已上链/索引
+      const maxRetries = 30; // 30次 * 2秒 = 60秒超时
+      let retries = 0;
+      let pollingSuccess = false;
+
+      while (retries < maxRetries) {
+        try {
+          const detail = await getProposalDetail({
+            uri: result.uri,
+            viewer: userInfo.did
+          });
+
+          if (detail) {
+            pollingSuccess = true;
+            break;
+          }
+        } catch (error) {
+          // 忽略错误，继续轮询
+          console.log("Polling proposal detail failed, retrying...", error);
+        }
+
+        // 等待2秒
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        retries++;
+      }
+
+      toast.dismiss(loadingToastId);
+
+      if (pollingSuccess) {
+        // 跳转到详情页面，传递 cid 参数
+        router.push(`/${locale}/proposal/${postUriToHref(result.uri)}`);
+      } else {
+        // 即使轮询超时也跳转，可能只是索引慢
+        toast.error(t("proposalCreate.errors.pollingTimeout") || "处理超时，请稍后在列表页查看");
+        router.push(`/${locale}/proposal/${postUriToHref(result.uri)}`);
+      }
+
     } catch (err) {
       toast.error(t("proposalCreate.errors.submitFailed"));
       setError(t("proposalCreate.errors.submitFailed"));

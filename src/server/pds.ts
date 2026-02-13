@@ -16,29 +16,29 @@ import dayjs from "dayjs";
 
 import { logger } from '@/lib/logger';
 // PDS 记录类型
-export type PDSRecordType = 
+export type PDSRecordType =
   | {
-      $type: 'app.dao.reply'
-      proposal: string    // 提案的uri
-      to?: string   // 对方did（可选，有就是回复某人）
-      text: string  // 评论内容
-      parent?: string  // 父评论的uri（可选，用于回复评论）
-    }
+    $type: 'app.dao.reply'
+    proposal: string    // 提案的uri
+    to?: string   // 对方did（可选，有就是回复某人）
+    text: string  // 评论内容
+    parent?: string  // 父评论的uri（可选，用于回复评论）
+  }
   | {
-      $type: 'app.actor.profile'
-      displayName: string;
-      handle: string;
-      [key: string]: unknown;
-    }
+    $type: 'app.actor.profile'
+    displayName: string;
+    handle: string;
+    [key: string]: unknown;
+  }
   | {
-      $type: 'app.dao.proposal'
-      [key: string]: unknown;
-    }
+    $type: 'app.dao.proposal'
+    [key: string]: unknown;
+  }
   | {
-      $type: 'app.dao.like'
-      to: string; // 点赞的帖子uri或者评论\回复的uri
-      viewer: string;//点赞的人的did
-    };
+    $type: 'app.dao.like'
+    to: string; // 点赞的帖子uri或者评论\回复的uri
+    viewer: string;//点赞的人的did
+  };
 
 // 创建记录响应类型
 export interface CreatePDSRecordResponse {
@@ -85,10 +85,10 @@ export async function uploadImage(file: File, did: string): Promise<string> {
   }
 
   try {
-    const result = await sessionWrapApi(() => 
+    const result = await sessionWrapApi(() =>
       pdsClient.fans.web5.ckb.uploadBlob(file, { encoding: file.type })
     );
-    
+
     // 检查返回结果
     if (!result || !result.data) {
       throw new Error("Invalid response from upload service");
@@ -116,30 +116,37 @@ export async function uploadImage(file: File, did: string): Promise<string> {
 
     // 构建图片 URL: https://<pds>/blocks/<did>/<cid>
     const imageUrl = `${server}blocks/${didSlice}/${blobRefStr}`;
-    
+
     return imageUrl;
   } catch (error) {
     logger.error('图片上传错误:');
-    
+
     // 提供更详细的错误信息
     if (error instanceof Error) {
       // 如果是已知的错误类型，直接抛出
       if (error.message.includes("No file provided") ||
-          error.message.includes("Only image files") ||
-          error.message.includes("File size exceeds") ||
-          error.message.includes("User DID is required") ||
-          error.message.includes("Invalid response") ||
-          error.message.includes("Invalid blob data") ||
-          error.message.includes("Blob server URL")) {
+        error.message.includes("Only image files") ||
+        error.message.includes("File size exceeds") ||
+        error.message.includes("User DID is required") ||
+        error.message.includes("Invalid response") ||
+        error.message.includes("Invalid blob data") ||
+        error.message.includes("Blob server URL")) {
         throw error;
       }
       // 其他错误，包装成更友好的错误信息
       throw new Error(`Upload failed: ${error.message}`);
     }
-    
+
     throw new Error("Upload failed: Unknown error");
   }
 }
+
+/**
+ * 创建 PDS 记录（提案、评论、点赞等）
+ * @param params 创建参数
+ * @returns 创建的记录 URI 和 CID
+ */
+import { AtpAgent } from "web5-api";
 
 /**
  * 创建 PDS 记录（提案、评论、点赞等）
@@ -150,8 +157,19 @@ export async function createPDSRecord(params: {
   record: PDSRecordType
   did: string
   rkey?: string
+  serviceEndpoint?: string
 }) {
-  const pdsClient = getPDSClient()
+  let pdsClient = getPDSClient()
+
+  // 如果指定了 PDS 服务地址，使用新的 Agent
+  if (params.serviceEndpoint) {
+    const newAgent = new AtpAgent({ service: params.serviceEndpoint });
+    // 同步 session
+    if (pdsClient.sessionManager.session) {
+      newAgent.sessionManager.session = pdsClient.sessionManager.session;
+    }
+    pdsClient = newAgent;
+  }
 
   const rkey = params.rkey || TID.next().toString()
 
@@ -241,12 +259,28 @@ export async function createPDSRecord(params: {
  * @param params 更新参数
  * @returns 更新的记录 URI 和 CID
  */
+/**
+ * 更新 PDS 记录（提案编辑等）
+ * @param params 更新参数
+ * @returns 更新的记录 URI 和 CID
+ */
 export async function updatePDSRecord(params: {
   record: PDSRecordType;
   did: string;
   rkey: string;
+  serviceEndpoint?: string;
 }) {
-  const pdsClient = getPDSClient();
+  let pdsClient = getPDSClient();
+
+  // 如果指定了 PDS 服务地址，使用新的 Agent
+  if (params.serviceEndpoint) {
+    const newAgent = new AtpAgent({ service: params.serviceEndpoint });
+    // 同步 session
+    if (pdsClient.sessionManager.session) {
+      newAgent.sessionManager.session = pdsClient.sessionManager.session;
+    }
+    pdsClient = newAgent;
+  }
 
   const rkey = params.rkey; // rkey is required for update
 

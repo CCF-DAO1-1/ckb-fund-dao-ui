@@ -350,6 +350,15 @@ export default function EditProposal({ params }: EditProposalProps) {
             const rkey = fullUri.split('/').pop();
             if (!rkey) throw new Error("Invalid Proposal URI");
 
+            // 解析 handle 获取 PDS 服务域名
+            let serviceEndpoint = undefined;
+            if (userInfo.handle && userInfo.handle.includes('.')) {
+                // user handle: jack-0xkn.web5.bbsfans.dev
+                // domain: web5.bbsfans.dev
+                const domain = userInfo.handle.substring(userInfo.handle.indexOf('.') + 1);
+                serviceEndpoint = `https://${domain}`;
+            }
+
             await updatePDSRecord({
                 record: {
                     $type: "app.dao.proposal",
@@ -366,9 +375,42 @@ export default function EditProposal({ params }: EditProposalProps) {
                 },
                 did: userInfo.did,
                 rkey: rkey,
+                serviceEndpoint: serviceEndpoint,
             });
 
-            toast.success(t("proposalCreate.messages.submitSuccess")); // Or "Update Success"
+            toast.success(t("proposalCreate.messages.updateSuccess") || "更新成功");
+
+            // 延迟5秒
+            const loadingToastId = toast.loading(t("proposalCreate.messages.processing") || "正在处理中，请稍候...");
+            await new Promise(resolve => setTimeout(resolve, 5000));
+
+            // 轮询检查提案是否已更新
+            const maxRetries = 30; // 30次 * 2秒 = 60秒超时
+            let retries = 0;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            let pollingSuccess = false;
+
+            while (retries < maxRetries) {
+                try {
+                    const detail = await getProposalDetail({
+                        uri: fullUri,
+                        viewer: userInfo.did
+                    });
+
+                    if (detail) {
+                        // 这里可以加一个逻辑判断是否真的是新的数据，但比较复杂，暂时只要能获取到详情就认为成功
+                        pollingSuccess = true;
+                        break;
+                    }
+                } catch (error) {
+                    console.log("Polling proposal detail failed, retrying...", error);
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                retries++;
+            }
+
+            toast.dismiss(loadingToastId);
             router.push(`/${locale}/proposal/${uri}`);
         } catch (err) {
             toast.error(t("proposalCreate.errors.submitFailed"));

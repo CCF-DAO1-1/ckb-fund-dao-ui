@@ -94,6 +94,13 @@ const useUserInfoStore = createSelectors(
       if (!userInfo || (userProfile && userProfile.displayName)) return 'NO_NEED'
 
       try {
+        // 解析 handle 获取 PDS 服务域名
+        let serviceEndpoint = undefined;
+        if (userInfo.handle && userInfo.handle.includes('.')) {
+          const domain = userInfo.handle.substring(userInfo.handle.indexOf('.') + 1);
+          serviceEndpoint = `https://${domain}`;
+        }
+
         await createPDSRecord({
           record: {
             $type: "app.actor.profile",
@@ -101,7 +108,8 @@ const useUserInfoStore = createSelectors(
             handle: userInfo.handle
           },
           did: userInfo.did,
-          rkey: "self"
+          rkey: "self",
+          serviceEndpoint: serviceEndpoint,
         })
         return 'SUCCESS'
       } catch (e) {
