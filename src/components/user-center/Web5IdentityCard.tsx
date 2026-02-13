@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { GoDatabase ,GoCopy,GoCheckCircle} from "react-icons/go";
+import { GoDatabase, GoCopy, GoCheckCircle } from "react-icons/go";
 import CopyButton from '@/components/ui/copy/CopyButton';
 import { MdOutlinePrivacyTip, MdQrCode2, MdOutlineDescription } from "react-icons/md";
 import storage from '@/lib/storage';
@@ -39,12 +39,17 @@ export default function Web5IdentityCard({ className = '' }: Web5IdentityCardPro
 
     // 获取 PDS 地址
     try {
-      const pdsClient = getPDSClient();
-      if (pdsClient?.serviceUrl?.origin) {
-        setPds(pdsClient.serviceUrl.origin);
+      if (userInfo?.handle && userInfo.handle.includes('.')) {
+        const domain = userInfo.handle.substring(userInfo.handle.indexOf('.') + 1);
+        setPds(`https://${domain}`);
+      } else {
+        const pdsClient = getPDSClient();
+        if (pdsClient?.serviceUrl?.origin) {
+          setPds(pdsClient.serviceUrl.origin);
+        }
       }
     } catch (error) {
-      logger.error(t('web5.getPDSFailed'), error);
+      logger.error('获取 PDS 地址失败:', error);
     }
   }, [userInfo]);
 
@@ -65,7 +70,7 @@ export default function Web5IdentityCard({ className = '' }: Web5IdentityCardPro
   return (
     <div className={`web5-identity-card ${className}`}>
       <h3 className="card-title">{t('web5.title')}</h3>
-      
+
       <div className="identity-section">
         <div className="field-group">
           <label className="field-label">{t('web5.did')}</label>
@@ -107,18 +112,18 @@ export default function Web5IdentityCard({ className = '' }: Web5IdentityCardPro
 
       <div className="privacy-section">
         <div className="privacy-header">
-        <MdOutlinePrivacyTip />
+          <MdOutlinePrivacyTip />
           <h4 className="privacy-title">{t('web5.privacyControl')}</h4>
         </div>
-        
+
         <div className="privacy-settings">
           {privacySettings.map((setting, index) => (
             <div key={index} className="privacy-item">
               <span className="privacy-label">{setting.label}</span>
               <div className="privacy-status">
-              <span className="status-icon"><GoCheckCircle /></span>
+                <span className="status-icon"><GoCheckCircle /></span>
                 <span className="status-text">{setting.status}</span>
-              
+
               </div>
             </div>
           ))}
