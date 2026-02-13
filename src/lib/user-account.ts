@@ -25,8 +25,8 @@ async function setLoginUserPDSClient(did: string) {
       setPDSClient(service);
       logger.log('✅ PDS 客户端已切换:', { did, service });
     }
-  } catch (error: any) {
-    if (error.response && error.response.status === 404) {
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
       logger.warn('未找到用户 PDS 配置，使用默认服务', { did });
     } else {
       logger.error('获取用户 PDS 服务地址失败:', error);
