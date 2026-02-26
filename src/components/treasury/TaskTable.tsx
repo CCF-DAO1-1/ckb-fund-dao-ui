@@ -50,7 +50,7 @@ export default function TaskTable({
             <table>
                 <thead>
                     <tr>
-                        <th>{t("management.proposalTitle")}</th>
+                        <th style={{ maxWidth: '200px' }}>{t("management.proposalTitle")}</th>
                         <th>{t("managementCenter.type")}</th>
                         <th>{t("management.status")}</th>
                         <th>{t("managementCenter.taskType")}</th>

@@ -31,8 +31,8 @@ export default function TaskRow({ proposal, onAction }: TaskRowProps) {
     return (
         <tr>
             <td>
-                <div className="proposal-name">
-                    {proposal.name}
+                <div className="proposal-name" title={proposal.name}>
+                    <span className="proposal-name-text">{proposal.name}</span>
                     {proposal.isNew && <span className="new-tag">NEW</span>}
                 </div>
             </td>

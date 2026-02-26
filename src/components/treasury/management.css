@@ -65,7 +65,7 @@
 }
 
 .filter-button {
- 
+
   border: 1px solid #8A949E;
   color: #8A949E;
   padding: 0px 12px;
@@ -151,6 +151,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  max-width: 400px;
+}
+
+.proposal-name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .new-tag {
@@ -301,20 +308,20 @@
     align-items: stretch;
     gap: 16px;
   }
-  
+
   .filter-buttons {
     justify-content: center;
   }
-  
+
   .management-search-input {
     width: 100%;
     min-width: auto;
   }
-  
+
   .proposals-table {
     overflow-x: auto;
   }
-  
+
   .proposals-table table {
     min-width: 600px;
   }
@@ -324,16 +331,16 @@
   .management-center {
     padding: 16px;
   }
-  
+
   .filter-buttons {
     gap: 8px;
   }
-  
+
   .filter-button {
     padding: 6px 12px;
     font-size: 12px;
   }
-  
+
   .proposals-table th,
   .proposals-table td {
     padding: 12px 8px;
