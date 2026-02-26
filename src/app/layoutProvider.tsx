@@ -5,21 +5,20 @@ import { CSSProperties } from "react";
 import React, { useEffect } from "react";
 import { WalletProvider } from "@/provider/WalletProvider";
 import useUserInfoStore from "@/store/userInfo";
+import { IS_MAINNET } from "@/constant/Network";
 
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const { initialize, initialized } = useUserInfoStore();
-  
-  const defaultClient = React.useMemo(() => {
-    const isMainnet = process.env.NEXT_PUBLIC_IS_MAINNET === "true";
 
-    return isMainnet
+  const defaultClient = React.useMemo(() => {
+    return IS_MAINNET
       ? new ccc.ClientPublicMainnet()
       : new ccc.ClientPublicTestnet();
   }, []);
 
   // 初始化用户信息store（使用 useRef 避免依赖 initialize 函数引用变化）
   const initRef = React.useRef(false);
-  
+
   useEffect(() => {
     if (!initialized && !initRef.current) {
       initRef.current = true;
