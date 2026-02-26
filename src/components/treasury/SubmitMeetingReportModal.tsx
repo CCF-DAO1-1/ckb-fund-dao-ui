@@ -11,6 +11,7 @@ import VditorRichTextEditor from "@/components/common/VditorRichTextEditor";
 import MeetingSelect, { MeetingItem } from "./MeetingSelect";
 import { useWallet } from "@/provider/WalletProvider";
 
+import { IS_MAINNET } from '@/constant/Network';
 import { logger } from '@/lib/logger';
 import { ccc } from "@ckb-ccc/core";
 import { updateMetaTxHash } from "@/server/proposal";
@@ -83,7 +84,7 @@ export default function SubmitMeetingReportModal({
       const fromAddress = addresses[0];
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cccClient = (signer as any).client_ || new ccc.ClientPublicTestnet();
+      const cccClient = (signer as any).client_ || (IS_MAINNET ? new ccc.ClientPublicMainnet() : new ccc.ClientPublicTestnet());
       const { script: lock } = await ccc.Address.fromString(fromAddress, cccClient);
 
       if (!response.outputsData || response.outputsData.length === 0) {

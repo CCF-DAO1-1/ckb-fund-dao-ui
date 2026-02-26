@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { Suspense } from "react";
+import { IS_MAINNET } from '@/constant/Network';
 import { useWallet } from "@/provider/WalletProvider";
 import { ccc } from "@ckb-ccc/core";
 import toast from "react-hot-toast";
@@ -61,7 +63,7 @@ export default function TransactionDebugTool() {
 
             // 获取 lock script
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const cccClient = (signer as any).client_ || new ccc.ClientPublicTestnet();
+            const cccClient = (signer as any).client_ || (IS_MAINNET ? new ccc.ClientPublicMainnet() : new ccc.ClientPublicTestnet());
             const { script: lock } = await ccc.Address.fromString(fromAddress, cccClient);
 
             // 创建交易

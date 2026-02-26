@@ -12,8 +12,10 @@ export const getRpcUrl = () => {
     return NETWORK === 'mainnet' ? MAINNET_RPC_URL : TESTNET_RPC_URL;
 };
 
-// 获取 CKB Client
 export const getCkbClient = () => {
+    if (NETWORK === 'mainnet') {
+        return new ccc.ClientPublicMainnet({ url: getRpcUrl() });
+    }
     return new ccc.ClientPublicTestnet({ url: getRpcUrl() });
 };
 

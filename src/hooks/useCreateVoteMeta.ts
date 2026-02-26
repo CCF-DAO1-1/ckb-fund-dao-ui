@@ -12,6 +12,8 @@ import { useTranslation } from "@/utils/i18n";
 import { ccc } from "@ckb-ccc/core";
 
 import { logger } from '@/lib/logger';
+import { VoteMetaItem } from '@/utils/proposalUtils';
+import { IS_MAINNET } from '@/constant/Network';
 /**
  * 发起立项投票的 Hook
  * 提供提交立项投票到 /api/proposal/initiation_vote 接口的功能
@@ -249,7 +251,7 @@ export function useCreateVoteMeta() {
 
       // 获取锁定脚本和客户端
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cccClient = (typedSigner as any).client_ || new ccc.ClientPublicTestnet();
+      const cccClient = (typedSigner as any).client_ || (IS_MAINNET ? new ccc.ClientPublicMainnet() : new ccc.ClientPublicTestnet());
       const { script: lock } = await ccc.Address.fromString(fromAddress, cccClient);
 
       // 解析 outputsData（每个元素是十六进制字符串，代表编码后的输出数据）
