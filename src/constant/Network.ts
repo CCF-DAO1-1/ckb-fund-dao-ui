@@ -2,7 +2,7 @@
 import { logger } from '@/lib/logger';
 export type NETWORK_ENUM = 'testnet' | 'mainnet'
 
-export const NETWORK = (process.env.NEXT_PUBLIC_CHAIN_NETWORK as NETWORK_ENUM) || 'testnet'
+export const NETWORK = ((process.env.NEXT_PUBLIC_CHAIN_NETWORK || '').trim() as NETWORK_ENUM) || 'testnet'
 if (!NETWORK) {
   logger.error('env network not detected:', NETWORK);
 }
