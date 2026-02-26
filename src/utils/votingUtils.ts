@@ -4,6 +4,7 @@ import { PrepareVoteResponse, ProposalDetailResponse } from '@/server/proposal';
 import enMessages from '../locales/en.json';
 import zhMessages from '../locales/zh.json';
 import { logger } from '@/lib/logger';
+import { votingConfig } from '@/constant/token';
 
 // 获取当前语言环境
 function getCurrentLocale(): 'en' | 'zh' {
@@ -460,10 +461,9 @@ export const buildAndSendVoteTransaction = async (
 
     logger.log("vote meta cell dep:", voteMetaCellDep);
 
-    // vote contract cell dep (需要从配置或 API 获取)
-    // 这里使用示例中的值，实际应该从配置或 API 获取
+    // vote contract cell dep (需要从配置获取)
     const voteContractOutpoint = {
-      txHash: "0x024ec56c1d2ad4940a96edfd5cfd736bdb0c7d7342da9e74d3033872bdb9cbc1",
+      txHash: votingConfig.voteContractTxHash,
       index: 0,
     };
     const voteContractCellDep = {
@@ -471,10 +471,9 @@ export const buildAndSendVoteTransaction = async (
       depType: "code" as const,
     };
 
-    // depGroup cell dep（如果需要）
-    // 根据实际交易数据，可能需要添加这个 depGroup
+    // depGroup cell dep
     const depGroupOutpoint = {
-      txHash: "0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37",
+      txHash: votingConfig.depGroupTxHash,
       index: 0,
     };
     const depGroupCellDep = {
@@ -521,7 +520,7 @@ export const buildAndSendVoteTransaction = async (
 
 
     const voteTypeScript = {
-      codeHash: "0xb140de2d7d1536cfdcb82da7520475edce5785dff90edae9073c1143d88f50c5",
+      codeHash: votingConfig.voteTypeCodeHash as `0x${string}`,
       args: voteTypeArgs,
       hashType: "type" as const,
     };
