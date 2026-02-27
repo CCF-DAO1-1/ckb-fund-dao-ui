@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { IS_MAINNET } from '@/constant/Network';
 import { IoMdInformationCircleOutline, IoMdRefresh } from "react-icons/io";
 import { MdOutlineAccountBalanceWallet, MdClose } from "react-icons/md";
 import { AiOutlineExport } from "react-icons/ai";
@@ -60,7 +61,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
   const generateBindInfo = useCallback(async () => {
     logger.log("Generating bind info");
     const timestamp = Date.now();
-    const cccClient = new ccc.ClientPublicTestnet();
+    const cccClient = IS_MAINNET ? new ccc.ClientPublicMainnet() : new ccc.ClientPublicTestnet();
     const toAddr =
       (await ccc.Address.fromString(walletAddress, cccClient)) || "";
     const bindInfoLike = {
@@ -80,9 +81,9 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
   // 把要解绑的 from 地址的 lockscript 放到 bindinfo 的 to 字段
   const generateUnbindInfo = useCallback(async (fromAddress: string) => {
     const timestamp = Date.now();
-    const cccClient = new ccc.ClientPublicTestnet();
+    const cccClient = IS_MAINNET ? new ccc.ClientPublicMainnet() : new ccc.ClientPublicTestnet();
     const fromAddr = await ccc.Address.fromString(fromAddress, cccClient);
-    
+
     // unbind: 把要解绑的 from 地址的 lockscript 放到 bindinfo 的 to 字段
     const unbindInfoLike = {
       to: fromAddr.script,
@@ -115,30 +116,30 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
       if (trimmedSignature.startsWith('0x') || trimmedSignature.startsWith('0X')) {
         // 移除0x前缀
         const hexString = trimmedSignature.slice(2);
-        
+
         // 如果0x后面为空，尝试按base64处理
         if (!hexString) {
           throw new Error("0x前缀后没有内容，尝试base64解码");
         }
-        
+
         // 验证是否为有效的十六进制（允许空字符串的情况已在上方处理）
         if (/^[0-9a-fA-F]+$/i.test(hexString)) {
           return hexString.toLowerCase();
         }
-        
+
         // 如果不是有效的十六进制，尝试按base64处理
         logger.warn("0x格式的签名不是有效的十六进制，尝试base64解码");
       }
-      
+
       // 检查是否为纯十六进制字符串（没有0x前缀）
       if (/^[0-9a-fA-F]+$/i.test(trimmedSignature)) {
         return trimmedSignature.toLowerCase();
       }
-      
+
       // 尝试按base64处理
       // 移除可能的填充字符和空格
       const cleanBase64 = trimmedSignature.replace(/[\s\-_]/g, '').replace(/[^A-Za-z0-9+/=]/g, '');
-      
+
       if (!cleanBase64) {
         throw new Error("无法解析签名格式");
       }
@@ -187,19 +188,19 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
     try {
       setIsLoadingBindList(true);
       const response = await getBindList({ did: userInfo.did });
-      
+
       // API 返回格式: {code: 200, data: [{from: "...", timestamp: ...}], message: "OK"}
       // requestAPI 会自动提取 data 字段，所以 response 应该是 BindItem[] 数组
       // 每个元素格式: {from: "ckt1...", timestamp: 1762155209433}
       let walletAddresses: string[] = [];
-      
+
       if (Array.isArray(response)) {
         // 从绑定项中提取钱包地址（from 字段）
         walletAddresses = response
           .map((item) => item?.from || item?.to || item?.address || '')
           .filter((addr: string) => typeof addr === 'string' && addr.length > 0);
       }
-      
+
       setNeuronWallets(walletAddresses);
     } catch {
       setNeuronWallets([]);
@@ -221,7 +222,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
     setShowSignatureModal(true);
   };
 
-  const handleSignatureBind = async(signature: string) => {
+  const handleSignatureBind = async (signature: string) => {
     if (!signer) {
       toast.error(t("wallet.signerNotConnected"));
       return;
@@ -233,15 +234,15 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
     }
 
     const tx = ccc.Transaction.default();
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await tx.completeInputsAtLeastOne(signer as any);
-    
+
     // 判断签名类型并处理
     let sigHex: string;
-    
+
     // 统一使用 trim() 处理，避免空格影响判断
     const trimmedSignature = signature.trim();
-   
+
     // 如果 signature 以 { 开头，说明是 JSON 字符串，先验证格式
     if (trimmedSignature.startsWith('{')) {
       const validation = validateJsonSignature(trimmedSignature);
@@ -249,16 +250,16 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
         toast.error(validation.error || t("wallet.signatureConversionFailed"));
         return;
       }
-      
+
       const encoder = new TextEncoder();
       const sigBytes = encoder.encode(signature); // 使用原始 signature，保留可能的格式
       sigHex = hexFrom(sigBytes);
       logger.log("Signature hex generated for JSON signature");
-      
-    } 
+
+    }
     // 如果 signature 以 0x 开头且长度是 132，说明是 neuron 签名
     // 使用 trim() 后的长度检查，确保一致性
-  
+
     else if (trimmedSignature.startsWith('0x') && trimmedSignature.length === 132) {
       logger.log("Processing Neuron signature (0x prefix, 132 chars)");
       // 将签名转换为十六进制（兼容base64和0x格式）
@@ -280,9 +281,9 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
       bind_info: bindInfo,
       sig: sigHex.startsWith('0x') ? sigHex : `0x${sigHex}`
     })
-  
+
     const bindInfoWithSigBytes = bindInfoWithSig.toBytes();
-  
+
     // 修正: 确保 WitnessArgs 已正确定义且 imported，并使用 const
     const witnessArgs = ccc.WitnessArgs.from({
       inputType: bindInfoWithSigBytes,
@@ -311,16 +312,16 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
   // 刷新投票权重和绑定列表
   const handleRefresh = async () => {
     if (isRefreshing) return;
-    
+
     try {
       setIsRefreshing(true);
-      
+
       // 同时刷新投票权重和绑定列表
       await Promise.all([
         refreshVoteWeight(),
         fetchBindList()
       ]);
-      
+
       // 显示成功提示
       toast.success(t("wallet.refreshSuccessMessage"));
     } catch (error) {
@@ -346,7 +347,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
 
     try {
       setIsUnbinding(true);
-      
+
       // 生成解绑信息
       const { unbindInfo } = await generateUnbindInfo(walletToUnbind);
 
@@ -381,7 +382,7 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
       // 关闭确认弹窗
       setShowUnbindConfirmModal(false);
       setWalletToUnbind(null);
-      
+
       // 显示成功提示
       toast.success(t("wallet.unbindSuccessMessage"));
       setSuccessMessage(t("wallet.unbindSuccessMessage"));
@@ -431,16 +432,16 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
               data-tooltip-content={t("wallet.votingPowerExplanation")}
             />
             <button
-            className={`refresh-button ${isRefreshing ? 'rotating' : ''}`}
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            title={t("wallet.refresh") || "刷新"}
-            aria-label={t("wallet.refresh") || "刷新"}
-          >
-            <IoMdRefresh size={18} />
-          </button>
+              className={`refresh-button ${isRefreshing ? 'rotating' : ''}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              title={t("wallet.refresh") || "刷新"}
+              aria-label={t("wallet.refresh") || "刷新"}
+            >
+              <IoMdRefresh size={18} />
+            </button>
           </h4>
-          
+
         </div>
         <div className="voting-power-amount">
           {isLoadingVoteWeight ? t("wallet.loading") : formatVoteWeight(voteWeight)} CKB
@@ -455,8 +456,8 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
               {isLoadingAddress
                 ? t("wallet.gettingAddress")
                 : isConnected
-                ? formatWalletAddress(walletAddress)
-                : t("wallet.notConnected")}
+                  ? formatWalletAddress(walletAddress)
+                  : t("wallet.notConnected")}
             </span>
           </div>
         </div>
@@ -468,8 +469,8 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
               {isLoadingBalance
                 ? t("wallet.gettingBalance")
                 : isConnected
-                ? formatBalance(walletBalance, true)
-                : t("wallet.notConnected")}
+                  ? formatBalance(walletBalance, true)
+                  : t("wallet.notConnected")}
             </span>
           </div>
           {/* <div className="balance-item">
@@ -484,16 +485,16 @@ export default function WalletDaoCard({ className = "" }: WalletDaoCardProps) {
       </div>
 
       <div className="action-buttons">
-        <a 
-          href="https://www.nervdao.com/" 
-          target="_blank" 
+        <a
+          href="https://www.nervdao.com/"
+          target="_blank"
           rel="noopener noreferrer"
           className="action-button stake-button"
         >
-        
+
           {t("wallet.stakeCKB")}
           <AiOutlineExport />
-           
+
         </a>
 
         <div className="neuron-dropdown-container" ref={dropdownRef}>

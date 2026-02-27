@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   },
   env: {
     // 配置API服务器地址，可以通过环境变量覆盖
-    NEXT_PUBLIC_API_ADDRESS: process.env.NEXT_PUBLIC_API_ADDRESS || "https://app.ccfdao.dev",
+    NEXT_PUBLIC_API_ADDRESS: process.env.NEXT_PUBLIC_API_ADDRESS || "https://app.ccfdao.org",
   },
 };
 

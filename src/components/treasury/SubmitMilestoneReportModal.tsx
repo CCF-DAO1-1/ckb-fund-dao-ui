@@ -8,6 +8,7 @@ import useUserInfoStore from "@/store/userInfo";
 import { submitMilestoneReport, SubmitMilestoneReportResponse } from "@/server/task";
 import { generateSignature } from "@/lib/signature";
 import VditorRichTextEditor from "@/components/common/VditorRichTextEditor";
+import { IS_MAINNET } from '@/constant/Network';
 import { logger } from "@/lib/logger";
 import { useWallet } from "@/provider/WalletProvider";
 import { ccc } from "@ckb-ccc/core";
@@ -87,7 +88,7 @@ export default function SubmitMilestoneReportModal({
             const fromAddress = addresses[0];
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const cccClient = (signer as any).client_ || new ccc.ClientPublicTestnet();
+            const cccClient = (signer as any).client_ || (IS_MAINNET ? new ccc.ClientPublicMainnet() : new ccc.ClientPublicTestnet());
             const { script: lock } = await ccc.Address.fromString(fromAddress, cccClient);
 
             if (!response.outputsData || response.outputsData.length === 0) {

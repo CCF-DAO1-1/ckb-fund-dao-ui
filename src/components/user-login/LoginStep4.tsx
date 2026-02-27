@@ -34,15 +34,15 @@ export default function LoginStep4({ accountName }: LoginStep4Props) {
               <Image src="/nervos-planet.png" alt="planet" width={60} height={32} />
             </div>
             <div className="card-name">
-              {accountName }
+              {accountName}
             </div>
           </div>
           <div className="success-details">
             <div className="success-name">
-              {accountName}.ccfdao.dev
+              {accountName}.ccfdao.org
             </div>
             <div className="success-address" onClick={handleCopyAddress} style={{ cursor: 'pointer' }}>
-              {isLoadingAddress ? t("loginStep4.gettingAddress") : formatAddress(walletAddress)} 
+              {isLoadingAddress ? t("loginStep4.gettingAddress") : formatAddress(walletAddress)}
               <CopyButton text={walletAddress} className="copy-button" ariaLabel="copy-wallet-address" />
             </div>
           </div>

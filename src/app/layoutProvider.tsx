@@ -44,20 +44,25 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         } as CSSProperties,
       }}
       defaultClient={defaultClient}
-      clientOptions={[
-        {
-          name: "CKB Testnet",
-          client: new ccc.ClientPublicTestnet(),
-        },
-        {
-          name: "CKB Mainnet",
-          client: new ccc.ClientPublicMainnet(),
-        },
-      ]}
+      clientOptions={
+        IS_MAINNET
+          ? [
+            {
+              name: "CKB Mainnet",
+              client: new ccc.ClientPublicMainnet(),
+            },
+          ]
+          : [
+            {
+              name: "CKB Testnet",
+              client: new ccc.ClientPublicTestnet(),
+            },
+          ]
+      }
     >
       <WalletProvider>
         {children}
       </WalletProvider>
-    </ccc.Provider>
+    </ccc.Provider >
   );
 }
