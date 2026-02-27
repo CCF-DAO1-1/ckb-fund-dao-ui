@@ -53,7 +53,7 @@ export interface CommentListResponse {
  * 获取评论列表
  * POST /api/reply/list
  * 
- * 参考文档: https://app.ccfdao.dev/apidoc#tag/reply/post/api/reply/list
+ * 参考文档: https://app.ccfdao.org/apidoc#tag/reply/post/api/reply/list
  */
 export const getCommentList = defineAPI<
   GetCommentListParams,

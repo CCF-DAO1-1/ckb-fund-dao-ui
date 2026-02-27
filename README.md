@@ -36,7 +36,7 @@ pnpm install
 
 3. Create a `.env.local` file in the root directory:
 ```env
-NEXT_PUBLIC_API_ADDRESS=https://app.ccfdao.dev
+NEXT_PUBLIC_API_ADDRESS=https://app.ccfdao.org
 ```
 
 4. Run the development server:
@@ -102,7 +102,7 @@ Language files are located in `src/locales/` and `src/content/`.
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `NEXT_PUBLIC_API_ADDRESS` | API server address | `https://app.ccfdao.dev` |
+| `NEXT_PUBLIC_API_ADDRESS` | API server address | `https://app.ccfdao.org` |
 
 ## 🤝 Contributing
 

@@ -428,8 +428,8 @@ export default function CreateProposal() {
       // 解析 handle 获取 PDS 服务域名
       let serviceEndpoint = undefined;
       if (userInfo.handle && userInfo.handle.includes('.')) {
-        // user handle: jack-0xkn.web5.bbsfans.dev
-        // domain: web5.bbsfans.dev
+        // user handle: jack-0xkn.web5.bbs.fans
+        // domain: web5.bbs.fans
         const domain = userInfo.handle.substring(userInfo.handle.indexOf('.') + 1);
         serviceEndpoint = `https://${domain}`;
       }
