@@ -5,7 +5,7 @@ import getPDSClient from "@/lib/pdsClient";
 import storage, { TokenStorageType } from "@/lib/storage";
 import { Secp256k1Keypair } from "@atproto/crypto";
 import { bytesFrom, hexFrom, ccc, Script, numFrom, fixedPointToString } from "@ckb-ccc/core";
-import { FansWeb5CkbIndexAction, FansWeb5CkbPreIndexAction } from "web5-api";
+import { FansWeb5CkbIndexAction, FansWeb5CkbPreIndexAction, FansWeb5CkbCreateAccount } from "web5-api";
 import * as cbor from "@ipld/dag-cbor";
 import { tokenConfig, DEFAULT_FEE_RATE } from "@/constant/token";
 import { useWallet } from "@/provider/WalletProvider";
@@ -168,7 +168,7 @@ export async function deleteErrUser(did: string, address: string, signKey: strin
 export default function useCreateAccount({ createSuccess }: {
   createSuccess?: () => void
 }) {
-  const { createUser, resetUserStore } = useUserInfoStore()
+  const { storageUserInfo, resetUserStore } = useUserInfoStore()
   const { signer, walletClient } = useWallet()
 
   const [extraIsEnough, setExtraIsEnough] = useState<ExtraIsEnoughState>({
@@ -351,11 +351,25 @@ export default function useCreateAccount({ createSuccess }: {
     // 移除0x前缀并确保是有效的十六进制字符串
     const cleanSignKey = signKeyStr.startsWith('0x') ? signKeyStr.slice(2) : signKeyStr;
 
-
     const keyPair = await Secp256k1Keypair.import(cleanSignKey)
-
     const signingKey = keyPair.did()
 
+    let txHash;
+    const createdTx = createUserParamsRef.current.createdTx
+
+    try {
+      // 1. 先发送上链交易
+      txHash = await signer?.sendTransaction(createdTx! as unknown as never)
+    } catch (error) {
+      logger.error('发送交易失败:');
+      throw new Error(SEND_TRANSACTION_ERR_MESSAGE);
+    }
+
+    if (!txHash) return
+
+    logger.log('txHash received', { txHash })
+
+    // 2. 调用 preCreateAccount
     const res = await getPDSClient().fans.web5.ckb.preCreateAccount({
       handle: normalizedHandle,
       signingKey,
@@ -364,23 +378,14 @@ export default function useCreateAccount({ createSuccess }: {
 
     const preCreateResult = res.data
 
-    // 直接使用服务器提供的unSignBytes，不进行任何计算
-
     // 将十六进制字符串转换为Uint8Array用于签名
     const encoded = hexToUint8Array(preCreateResult.unSignBytes);
 
     // 手动签名commit
     const sig = await keyPair.sign(encoded)
-    const commit = {
-      did: preCreateResult.did,
-      version: 3,
-      rev: preCreateResult.rev,
-      prev: preCreateResult.prev ?? null,
-      data: preCreateResult.data,
-      sig,
-    }
 
-    await createUser({
+    // 3. 调用 web5CreateAccount 提交到 PDS
+    const createParams: FansWeb5CkbCreateAccount.InputSchema = {
       handle: normalizedHandle!,
       password: signKey,
       signingKey,
@@ -391,22 +396,21 @@ export default function useCreateAccount({ createSuccess }: {
         rev: preCreateResult.rev,
         prev: preCreateResult.prev,
         data: preCreateResult.data,
-        signedBytes: uint8ArrayToHex(commit.sig),
+        signedBytes: uint8ArrayToHex(sig),
       },
-    })
-
-    let txHash;
-    const createdTx = createUserParamsRef.current.createdTx
-
-    try {
-      txHash = await signer?.sendTransaction(createdTx! as unknown as never)
-    } catch (error) {
-      logger.error('发送交易失败:');
-      throw new Error(SEND_TRANSACTION_ERR_MESSAGE);
     }
 
-    if (!txHash) return
+    const createRes = await getPDSClient().web5CreateAccount(createParams)
+    const userInfo = createRes.data
 
+    // 4. 保存用户信息
+    storageUserInfo({
+      signKey,
+      ckbAddr: address,
+      userInfo
+    })
+
+    // 5. 等待交易确认
     const txRes = await walletClient?.waitTransaction(txHash, 0, 60000 * 2)
 
     if (txRes?.status !== 'committed') {
