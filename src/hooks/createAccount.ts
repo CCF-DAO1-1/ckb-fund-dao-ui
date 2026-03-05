@@ -271,7 +271,7 @@ export default function useCreateAccount({ createSuccess }: {
         }
       }
 
-      logger.log('📊 找到的 cells 数量:', cells.length)
+      logger.log('📊 找到的 cells 数量:', { count: cells.length })
 
       if (!cell) {
         startPolling(normalizedHandle)
