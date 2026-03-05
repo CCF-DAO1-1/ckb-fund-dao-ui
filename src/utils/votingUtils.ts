@@ -526,20 +526,32 @@ export const buildAndSendVoteTransaction = async (
     };
 
     // 6. 创建投票交易
+    // 首先获取用户地址用于找零输出
+    const userAddress = await signer.getRecommendedAddress();
+    const userLock = userAddress.script;
+
     const tx = Transaction.from({
       cellDeps: cellDeps,
       outputs: [
         {
           lock: voteAddr.script,
           type: voteTypeScript,
+        },
+        // 预留找零输出 - 初始容量为0，completeInputsByCapacity会自动计算并填充
+        {
+          lock: userLock,
+          type: undefined,
         }
       ],
       // outputsData 应该是 bytes 格式，使用 hexFrom 将 bytes 转换为 hex 字符串
-      outputsData: [hexFrom(voteDataBytes)],
+      // 为投票输出和找零输出都提供data（找零输出的data为空）
+      outputsData: [hexFrom(voteDataBytes), '0x'],
     });
 
     // 7. 完成输入和费用
+    // completeInputsByCapacity 会自动填充所有输出的容量
     await tx.completeInputsByCapacity(signer);
+    // completeFeeBy 会计算手续费并相应调整找零输出的容量
     await tx.completeFeeBy(signer);
 
     // 8. 设置 vote proof 到 witness
