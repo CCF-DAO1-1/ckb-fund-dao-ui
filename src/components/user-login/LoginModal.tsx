@@ -203,8 +203,8 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     // 真实检查CKB余额
     if (signerInfo) {
       try {
-        // 检查简单余额（需要355 CKB）
-        const balanceResult = await checkSimpleBalance(signerInfo, BigInt(355 * 10**8));
+        // 检查简单余额（需要455 CKB）
+        const balanceResult = await checkSimpleBalance(signerInfo, BigInt(455 * 10**8));
         
         if (balanceResult.isEnough) {
           // 余额充足，开始创建账户
@@ -245,27 +245,14 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const handleRecheckBalance = async () => {
     if (signerInfo) {
       try {
-        const balanceResult = await checkSimpleBalance(signerInfo, BigInt(355 * 10**8));
+        const balanceResult = await checkSimpleBalance(signerInfo, BigInt(455 * 10**8));
         logger.log("Balance check result received");
         if (balanceResult.isEnough) {
           setShowInsufficientFunds(false);
           logger.log(t("loginModal.recheckBalancePassed"));
-          
-          // 调用创建账户方法
-          if (signerInfo?.signer && wallet) {
-            // 从signer中获取钱包地址
-            const addresses = await signerInfo.signer.getAddresses();
-            const walletAddress = addresses[0];
-            
-            await createAccount(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              signerInfo.signer as any, // 类型转换
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              wallet as any, // 类型转换
-              `${accountName}.${USER_DOMAIN}`,
-              walletAddress, // 使用从signer获取的地址
-            );
-          }
+
+          // 余额充足，触发与 handleDrop 相同的逻辑来创建账户
+          await handleDrop({ preventDefault: () => {} } as React.DragEvent);
         } else {
           setShowInsufficientFunds(true);
           logger.log(t("loginModal.stillInsufficientBalance"));
