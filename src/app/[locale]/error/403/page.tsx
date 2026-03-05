@@ -9,7 +9,6 @@ export default function NoPermission() {
     const { t } = useTranslation();
     const router = useRouter();
     const { locale } = useI18n();
-
     return (
         <div className="error-page-container">
             <div className="error-icon-wrapper">
