@@ -46,7 +46,7 @@ type CreateUserParamsType = {
   createdSignKeyPriv?: string
 }
 
-const initialCapacity = 355
+const initialCapacity = 455
 const SEND_TRANSACTION_ERR_MESSAGE = 'SendTransaction Error'
 
 export async function fetchUserProfile(did: string): Promise<UserProfileType> {
@@ -251,19 +251,27 @@ export default function useCreateAccount({ createSuccess }: {
         signer.client as never,
       )
 
+      // 移除 outputDataLenRange 限制，允许查找所有可用 cell
+      // 将 limit 设为 undefined 以查找所有符合条件的 cell
       let cell = null
-
+      const cells = []
       for await (const c of signer.findCells(
         {
           scriptLenRange: [0, 1],
-          outputDataLenRange: [0, 1],
+          // 移除 outputDataLenRange 限制条件
         },
         true,
         'desc',
-        1,
+        undefined,
       )) {
-        cell = c
+        cells.push(c)
+        // 只取第一个 cell 作为输入（其他 cell 会通过 completeInputsByCapacity 自动聚合）
+        if (!cell) {
+          cell = c
+        }
       }
+
+      logger.log('📊 找到的 cells 数量:', cells.length)
 
       if (!cell) {
         startPolling(normalizedHandle)
@@ -361,60 +369,72 @@ export default function useCreateAccount({ createSuccess }: {
       // 1. 先发送上链交易
       txHash = await signer?.sendTransaction(createdTx! as unknown as never)
     } catch (error) {
-      logger.error('发送交易失败:');
+      logger.error('发送交易失败:', error);
       throw new Error(SEND_TRANSACTION_ERR_MESSAGE);
     }
 
     if (!txHash) return
-
     logger.log('txHash received', { txHash })
 
-    // 2. 调用 preCreateAccount
-    const res = await getPDSClient().fans.web5.ckb.preCreateAccount({
-      handle: normalizedHandle,
-      signingKey,
-      did: createUserParamsRef.current.did || '',
-    })
+    let pdsAccountDid: string | undefined;
 
-    const preCreateResult = res.data
+    try {
+      // 2. 调用 preCreateAccount
+      const res = await getPDSClient().fans.web5.ckb.preCreateAccount({
+        handle: normalizedHandle,
+        signingKey,
+        did: createUserParamsRef.current.did || '',
+      })
 
-    // 将十六进制字符串转换为Uint8Array用于签名
-    const encoded = hexToUint8Array(preCreateResult.unSignBytes);
+      const preCreateResult = res.data
+      pdsAccountDid = preCreateResult.did;
 
-    // 手动签名commit
-    const sig = await keyPair.sign(encoded)
+      // 将十六进制字符串转换为Uint8Array用于签名
+      const encoded = hexToUint8Array(preCreateResult.unSignBytes);
 
-    // 3. 调用 web5CreateAccount 提交到 PDS
-    const createParams: FansWeb5CkbCreateAccount.InputSchema = {
-      handle: normalizedHandle!,
-      password: signKey,
-      signingKey,
-      ckbAddr: address,
-      root: {
-        did: preCreateResult.did,
-        version: 3,
-        rev: preCreateResult.rev,
-        prev: preCreateResult.prev,
-        data: preCreateResult.data,
-        signedBytes: uint8ArrayToHex(sig),
-      },
+      // 手动签名commit
+      const sig = await keyPair.sign(encoded)
+
+      // 3. 调用 web5CreateAccount 提交到 PDS
+      const createParams: FansWeb5CkbCreateAccount.InputSchema = {
+        handle: normalizedHandle!,
+        password: signKey,
+        signingKey,
+        ckbAddr: address,
+        root: {
+          did: preCreateResult.did,
+          version: 3,
+          rev: preCreateResult.rev,
+          prev: preCreateResult.prev,
+          data: preCreateResult.data,
+          signedBytes: uint8ArrayToHex(sig),
+        },
+      }
+
+      const createRes = await getPDSClient().web5CreateAccount(createParams)
+      const userInfo = createRes.data
+
+      // 4. 保存用户信息
+      storageUserInfo({
+        signKey,
+        ckbAddr: address,
+        userInfo
+      })
+    } catch (error) {
+      // PDS 操作失败，但上链交易已发送
+      // 这里暂时不做处理，让用户重新尝试
+      logger.error('PDS 操作失败:', error);
+      throw error;
     }
-
-    const createRes = await getPDSClient().web5CreateAccount(createParams)
-    const userInfo = createRes.data
-
-    // 4. 保存用户信息
-    storageUserInfo({
-      signKey,
-      ckbAddr: address,
-      userInfo
-    })
 
     // 5. 等待交易确认
     const txRes = await walletClient?.waitTransaction(txHash, 0, 60000 * 2)
 
     if (txRes?.status !== 'committed') {
-      await deleteErrUser(preCreateResult.did, address, signKey!)
+      // 只有当 PDS 账户创建成功后，上链交易失败时才需要删除
+      if (pdsAccountDid) {
+        await deleteErrUser(pdsAccountDid, address, signKey!)
+      }
     }
 
     setCreateLoading(false)
@@ -426,7 +446,7 @@ export default function useCreateAccount({ createSuccess }: {
       txRes,
       userHandle: normalizedHandle,
       address,
-      did: preCreateResult.did
+      did: pdsAccountDid
     });
 
     createSuccess?.()
@@ -460,10 +480,8 @@ export default function useCreateAccount({ createSuccess }: {
       const errorMessage = err instanceof Error ? err.message : String(err)
       logger.error('创建账户过程中发生错误:', err)
 
-      if (errorMessage === SEND_TRANSACTION_ERR_MESSAGE) {
-        const params = createUserParamsRef.current
-        await deleteErrUser(params.did!, address, params.createdSignKeyPriv!)
-      }
+      // 只有当 PDS 账户已创建成功但上链交易失败时才需要删除
+      // 这里我们不再删除，因为在 prepareAccount 中已经处理了
 
       resetUserStore()
 
