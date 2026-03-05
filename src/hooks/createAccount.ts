@@ -251,27 +251,18 @@ export default function useCreateAccount({ createSuccess }: {
         signer.client as never,
       )
 
-      // 移除 outputDataLenRange 限制，允许查找所有可用 cell
-      // 将 limit 设为 undefined 以查找所有符合条件的 cell
       let cell = null
-      const cells = []
       for await (const c of signer.findCells(
         {
           scriptLenRange: [0, 1],
-          // 移除 outputDataLenRange 限制条件
+          outputDataLenRange: [0, 1],
         },
         true,
         'desc',
-        undefined,
+        1,
       )) {
-        cells.push(c)
-        // 只取第一个 cell 作为输入（其他 cell 会通过 completeInputsByCapacity 自动聚合）
-        if (!cell) {
-          cell = c
-        }
+        cell = c
       }
-
-      logger.log('📊 找到的 cells 数量:', { count: cells.length })
 
       if (!cell) {
         startPolling(normalizedHandle)
