@@ -68,7 +68,7 @@ export const votingConfig = withNetwork({
     voteContractTxHash: '0x024ec56c1d2ad4940a96edfd5cfd736bdb0c7d7342da9e74d3033872bdb9cbc1',
   },
   mainnet: {
-    voteTypeCodeHash: '0xd8cb3f3b109ab35e51cb0c849f2b66159e376e125c6b701d193a6a636eb3247d',
-    voteContractTxHash: '0x38716b429cb139405d32ff86a916827862b2fa819916894848d8460da8953afb',
+    voteTypeCodeHash: '0x38716b429cb139405d32ff86a916827862b2fa819916894848d8460da8953afb',
+    voteContractTxHash: '0xd8cb3f3b109ab35e51cb0c849f2b66159e376e125c6b701d193a6a636eb3247d',
   }
 });
