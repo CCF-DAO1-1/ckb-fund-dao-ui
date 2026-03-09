@@ -160,7 +160,7 @@ export const generateVotingInfo = (
     return {
       proposalId: proposalId,
       title: proposalTitle,
-      endTime: voteMeta.end_time,
+      endTime: voteMeta.end_time ? String(voteMeta.end_time) : '',
       totalVotes,
       approveVotes,
       rejectVotes,
