@@ -471,18 +471,7 @@ export const buildAndSendVoteTransaction = async (
       depType: "code" as const,
     };
 
-    // depGroup cell dep
-    const depGroupOutpoint = {
-      txHash: votingConfig.depGroupTxHash,
-      index: 0,
-    };
-    const depGroupCellDep = {
-      outPoint: depGroupOutpoint,
-      depType: "depGroup" as const,
-    };
-
-    // 构建 cell deps 数组，避免重复
-    // 检查 vote meta tx_hash 是否与其他 cell deps 重复
+    // 构建 cell deps 数组
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cellDeps: any[] = [voteContractCellDep];
 
@@ -490,9 +479,6 @@ export const buildAndSendVoteTransaction = async (
     if (voteData.vote_meta.tx_hash.toLowerCase() !== voteContractOutpoint.txHash.toLowerCase()) {
       cellDeps.push(voteMetaCellDep);
     }
-
-    // 添加 depGroup cell dep
-    cellDeps.push(depGroupCellDep);
 
     // 5. 构建 vote type script
     // vote type args 应该是 vote meta outpoint 的 hash 的前 20 字节（blake160）
