@@ -80,7 +80,7 @@ export default function ProposalVoting({
         title: title || '',
         // 尝试从 proposal.vote_meta 获取 end_time (如果是同一个投票)，否则置空
         endTime: (voteMetaId && 'vote_meta' in proposal && proposal.vote_meta?.id === voteMetaId)
-          ? proposal.vote_meta.end_time
+          ? String(proposal.vote_meta.end_time)
           : '',
         totalVotes,
         approveVotes,
@@ -154,7 +154,7 @@ export default function ProposalVoting({
           return {
             proposalId: '',
             title: title || '', // Use prop title if available
-            endTime: voteDetail.vote_meta?.end_time || '',
+            endTime: voteDetail.vote_meta?.end_time ? String(voteDetail.vote_meta.end_time) : '',
             totalVotes,
             approveVotes,
             rejectVotes,
@@ -265,7 +265,7 @@ export default function ProposalVoting({
             const newState = {
               proposalId: '',
               title: '',
-              endTime: voteDetail.vote_meta?.end_time || '',
+              endTime: voteDetail.vote_meta?.end_time ? String(voteDetail.vote_meta.end_time) : '',
               totalVotes,
               approveVotes,
               rejectVotes,
