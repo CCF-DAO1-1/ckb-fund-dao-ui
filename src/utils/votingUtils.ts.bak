@@ -505,8 +505,8 @@ export const buildAndSendVoteTransaction = async (
 
     // 调试日志：检查 votingConfig
     logger.log("votingConfig:", votingConfig);
-    logger.log("votingConfig.voteTypeCodeHash:", { hash: votingConfig?.voteTypeCodeHash });
-    logger.log("votingConfig.voteContractTxHash:", { hash: votingConfig?.voteContractTxHash });
+    logger.log("votingConfig.voteTypeCodeHash:", votingConfig?.voteTypeCodeHash);
+    logger.log("votingConfig.voteContractTxHash:", votingConfig?.voteContractTxHash);
 
     if (!votingConfig || !votingConfig.voteTypeCodeHash) {
       throw new Error("votingConfig or votingConfig.voteTypeCodeHash is undefined");
@@ -514,11 +514,11 @@ export const buildAndSendVoteTransaction = async (
 
     const voteTypeScript = {
       codeHash: votingConfig.voteTypeCodeHash as `0x${string}`,
-      args: voteTypeArgs,
+      args: vote: Args,
       hashType: "type" as const,
     };
 
-    // 6. 创建投票交易
+    // 6. 创建投票交易（不预先添加找零输出，让 completeInputsByCapacity 和 completeFeeBy 自动处理）
     const tx = Transaction.from({
       cellDeps: cellDeps,
       outputs: [
@@ -534,28 +534,94 @@ export const buildAndSendVoteTransaction = async (
     logger.log(ccc.stringify(tx));
     logger.log("==================");
 
-    // 7. 处理输入与初始手续费
+
+    // 7. 完成输入和费用
+    // completeInputsByCapacity 会自动填充所有输出的容量
     await tx.completeInputsByCapacity(signer);
+    // completeFeeBy 会计算手续费并相应调整找零输出的容量
     await tx.completeFeeBy(signer);
 
-    // 8. 植入投票证明 (Vote Proof) 到第一个 witness 中
-    // 参考官方 user-vote-example.ts，解开由 CCC 生成的 witness 增加 outputType 再重新封存回去
-    let witness: InstanceType<typeof WitnessArgs>;
-    if (tx.witnesses[0] && tx.witnesses[0] !== '0x') {
-      let witnessBytes: Uint8Array;
-      if (typeof tx.witnesses[0] === 'string') {
-        const { bytesFrom } = await import('@ckb-ccc/core');
-        witnessBytes = bytesFrom(tx.witnesses[0]);
-      } else {
-        witnessBytes = new Uint8Array(tx.witnesses[0] as ArrayLike<number>);
-      }
-      witness = WitnessArgs.fromBytes(witnessBytes);
-    } else {
-      witness = WitnessArgs.from({});
+    // 8. 设置 vote proof 到 witness
+    // 检查 inputs 数量，确保 witnesses 数组有足够的元素
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const inputs = (tx as any).inputs || [];
+    const inputsCount = inputs.length;
+
+
+
+    // 如果 witnesses 为空或数量不足，需要初始化
+    if (!tx.witnesses || tx.witnesses.length < inputsCount) {
+      // 初始化 witnesses 数组，每个 input 需要一个 witness
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (tx as any).witnesses = new Array(inputsCount).fill('0x');
     }
 
-    witness.outputType = hexFrom(voteProofBytes);
-    tx.witnesses[0] = hexFrom(witness.toBytes());
+    // 获取第一个 witness（对应第一个 input）
+    const firstWitness = tx.witnesses[0];
+
+    // 创建或更新 witness
+    // 根据示例代码，vote proof 应该放在 witness 的 outputType 字段中
+    let witness: InstanceType<typeof WitnessArgs>;
+    if (!firstWitness || firstWitness === '0x') {
+      // 如果第一个 witness 为空，创建一个新的 WitnessArgs，只设置 outputType
+      witness = WitnessArgs.from({
+        outputType: hexFrom(voteProofBytes),
+      });
+    } else {
+      // 如果第一个 witness 已存在，解析它并更新 outputType
+      let witnessBytes: Uint8Array;
+      if (typeof firstWitness === 'string') {
+        // 如果是 hex 字符串，需要转换为 bytes
+        const { bytesFrom } = await import('@ckb-ccc/core');
+        witnessBytes = bytesFrom(firstWitness);
+      } else {
+        // 假设是 Uint8Array 或其他可转换为 bytes 的类型
+        try {
+          witnessBytes = new Uint8Array(firstWitness as ArrayLike<number>);
+        } catch (e) {
+          const errorMsg = getT('modal.voting.errors.witnessFormatError', t, { error: String(e) });
+          throw new Error(errorMsg);
+        }
+      }
+
+      witness = WitnessArgs.fromBytes(witnessBytes);
+      // 更新 outputType，保留其他字段（如 inputType）
+      witness.outputType = hexFrom(voteProofBytes);
+      logger.log("更新现有 witness 的 outputType");
+    }
+
+
+
+    // 设置 witness 到交易中
+    // 使用 setWitnessArgsAt 方法（如果存在）或直接设置
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (typeof (tx as any).setWitnessArgsAt === 'function') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (tx as any).setWitnessArgsAt(0, witness);
+    } else {
+      tx.witnesses[0] = hexFrom(witness.toBytes());
+    }
+
+
+
+    // 在设置 witness 之后重新计算费用，确保费用充足
+    // 因为 witness 的大小会影响交易费用
+    // 注意：completeFeeBy 可能会添加找零输出，需要确保 outputsData 数组长度匹配
+    await tx.completeFeeBy(signer);
+
+    // 确保 outputsData 数组长度与 outputs 数组长度匹配
+    // completeFeeBy 可能会添加找零输出，需要为这些输出添加空的 outputsData
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const currentOutputs = (tx as any).outputs || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const currentOutputsData = (tx as any).outputsData || [];
+
+    // 如果 outputs 数量大于 outputsData 数量，为新增的输出添加空的 outputsData
+    if (currentOutputs.length > currentOutputsData.length) {
+      const additionalOutputsData = new Array(currentOutputs.length - currentOutputsData.length).fill('0x');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (tx as any).outputsData = [...currentOutputsData, ...additionalOutputsData];
+    }
 
 
 
@@ -565,7 +631,7 @@ export const buildAndSendVoteTransaction = async (
 
     const txHash = await client.sendTransaction(signedTx);
     const txHashLogMsg = getT('modal.voting.logs.txHash', t);
-    logger.log(`${txHashLogMsg}:`, { txHash });
+    logger.log(`${txHashLogMsg}:`, txHash);
 
     return { success: true, txHash };
   } catch (error) {

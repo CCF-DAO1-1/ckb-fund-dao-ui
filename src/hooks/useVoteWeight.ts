@@ -45,9 +45,17 @@ export function useVoteWeight() {
         setError(null);
 
         const response = await getVoteWeight({ ckb_addr: walletAddress });
-        
+
         if (response && typeof response.weight === 'number') {
-          setVoteWeight(response.weight / 100000000);
+          // 调试日志：显示原始 weight 值和转换后的值
+          const originalWeight = response.weight;
+          const convertedWeight = originalWeight / 100000000;
+          logger.log("getVoteWeight response:", {
+            originalWeight,  // shannon
+            originalWeightCKB: originalWeight / 100000000,  // CKB
+            convertedWeight,  // 设置的值
+          });
+          setVoteWeight(convertedWeight);
         } else {
           throw new Error("Response data error");
         }

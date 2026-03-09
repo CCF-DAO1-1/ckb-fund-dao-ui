@@ -255,16 +255,11 @@ export async function requestAPI(url: string, config: RequestConfig) {
     const isTokenExpiredBody = responseData && typeof responseData === 'object' && responseData !== null && (
       // 标准 401 code
       ('code' in responseData && (responseData as { code?: number }).code === 401) ||
-      // 标准 ExpiredToken error
+      // 标准 ExpiredTokenError
       ('error' in responseData && (responseData as { error?: string }).error === 'ExpiredToken') ||
-      // InvalidRequest + BadJwt
-      ('error' in responseData && (responseData as { error?: string }).error === 'InvalidRequest' &&
-        ('message' in responseData && (responseData as { message?: string }).message?.includes('BadJwt'))) ||
-      // 通用消息包含 Token has expired 或 BadJwt
-      ('message' in responseData && (
-        (responseData as { message?: string }).message?.includes('Token has expired') ||
-        (responseData as { message?: string }).message?.includes('BadJwt')
-      ))
+      // InvalidRequest + BadJwt: Token has expired
+      ('error' in responseData && (responseData as { error?: string }).error === 'InvalidRequest') ||
+      ('message' in responseData && (responseData as { message?: string }).message?.includes('BadJwt'))
     );
 
     const isTokenExpired = isUnauthorized || isTokenExpiredBody;
@@ -361,7 +356,15 @@ export async function requestAPI(url: string, config: RequestConfig) {
   const responseData = response?.data;
 
   // 处理响应中的 401 错误（业务层面的 token 过期）
-  if (responseData?.code === 401) {
+  const isTokenExpiredResponse = responseData?.code === 401 || (
+    responseData && typeof responseData === 'object' && responseData !== null && (
+      ('error' in responseData && (responseData as { error?: string }).error === 'ExpiredToken') ||
+      ('error' in responseData && (responseData as { error?: string }).error === 'InvalidRequest') ||
+      ('message' in responseData && (responseData as { message?: string }).message?.includes('BadJwt'))
+    )
+  );
+
+  if (isTokenExpiredResponse) {
     if (pdsClient.session?.refreshJwt) {
       // 有 refreshJwt，尝试刷新并重试
       try {
