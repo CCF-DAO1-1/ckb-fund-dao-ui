@@ -23,13 +23,13 @@ export default function Management() {
             <div className="team_item">
               <Image src="/avatar/manager-0.svg" alt="avatar" width={40} height={40} />
               <div className="name">
-                <h3>Alice</h3>
+                <h3>zz_tovarishch</h3>
                 <h4>{t("managementPage.daoManager")}</h4>
-                <p>did:ckb:ckt1qvqr...7q2h</p>
+                <p>did:ckb:gmoxmkybdlp25f4serelfjsigiw2ypjr</p>
                 <p>
-                  Twitter:
-                  <Link href="https://twitter.com/Alice">
-                    https://twitter.com/Alice
+                  X:
+                  <Link href="https://x.com/c_hongzhou" target="_blank" rel="noopener noreferrer">
+                    @c_hongzhou
                   </Link>
                 </p>
               </div>
@@ -37,13 +37,13 @@ export default function Management() {
             <div className="team_item">
               <Image src="/avatar/manager-1.svg" alt="avatar" width={40} height={40} />
               <div className="name">
-                <h3>Bob</h3>
+                <h3>NightLantern</h3>
                 <h4>{t("managementPage.daoManager")}</h4>
-                <p>did:ckb:ckt1qvqr...7q2h</p>
+                <p>did:ckb:s6hh4xa32blzhvwg6x5hypvpohktunm7</p>
                 <p>
-                  Twitter:
-                  <Link href="https://twitter.com/Bob">
-                    https://twitter.com/Bob
+                  X:
+                  <Link href="https://x.com/nightlantern87" target="_blank" rel="noopener noreferrer">
+                    @nightlantern87
                   </Link>
                 </p>
               </div>
@@ -51,13 +51,13 @@ export default function Management() {
             <div className="team_item">
               <Image src="/avatar/manager-2.svg" alt="avatar" width={40} height={40} />
               <div className="name">
-                <h3>Carol</h3>
+                <h3>Magicsheep</h3>
                 <h4>{t("managementPage.daoManager")}</h4>
-                <p>did:ckb:ckt1qvqr...7q2h</p>
+                <p>did:ckb:k5it2gk4zexb5ekexcviiaqb7locsa4z</p>
                 <p>
-                  Twitter:
-                  <Link href="https://twitter.com/Carol">
-                    https://twitter.com/Carol
+                  X:
+                  <Link href="https://x.com/MagicS86643" target="_blank" rel="noopener noreferrer">
+                    @MagicS86643
                   </Link>
                 </p>
               </div>
