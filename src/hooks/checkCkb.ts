@@ -65,7 +65,7 @@ const DEFAULT_TOKEN_CONFIG: TokenConfig = {
 const CKB_TESTNET_CONFIG = {
   rpcUrl: "https://testnet.ckb.dev",
   networkId: "testnet",
-  minCapacity: BigInt(355 * 10**8), // 355 CKB in shannons
+  minCapacity: BigInt(455 * 10**8), // 455 CKB in shannons
 };
 
 // 工具函数（暂时未使用）

@@ -11,7 +11,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const { initialize, initialized } = useUserInfoStore();
 
   const defaultClient = React.useMemo(() => {
-    console.log("Current built environment: ", process.env.NEXT_PUBLIC_CHAIN_NETWORK, "IS_MAINNET: ", IS_MAINNET);
+
     return IS_MAINNET
       ? new ccc.ClientPublicMainnet()
       : new ccc.ClientPublicTestnet();

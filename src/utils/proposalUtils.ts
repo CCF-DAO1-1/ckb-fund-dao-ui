@@ -59,13 +59,15 @@ export interface VoteMetaItem {
   id: number; // 投票ID
   proposal_uri: string; // 提案URI
   candidates: string[]; // 候选人列表（如 ["Abstain", "Agree", "Against"]）
-  start_time: string; // 投票开始时间（ISO 8601格式）
-  end_time: string; // 投票结束时间（ISO 8601格式）
+  start_time: number | string; // 投票开始时间（毫秒时间戳或 ISO 8601格式）
+  end_time: number | string; // 投票结束时间（毫秒时间戳或 ISO 8601格式）
   created: string; // 创建时间（ISO 8601格式）
-  creater: string; // 创建者DID
+  creator: string; // 创建者DID（注意拼写是 creator 不是 creater）
   state: number; // 投票状态
   tx_hash: string | null; // 交易哈希
   whitelist_id?: string; // 白名单ID
+  proposal_state?: number; // 提案状态
+  results?: unknown; // 投票结果
 }
 
 // 提案接口

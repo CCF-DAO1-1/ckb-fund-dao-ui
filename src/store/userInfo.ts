@@ -33,11 +33,11 @@ const STORAGE_VISITOR = '@dao:visitor'
 type UserInfoStore = UserInfoStoreValue & {
 
   setStoreData: (storeData: UserInfoStoreValue) => void
-  createUser: (obj: FansWeb5CkbCreateAccount.InputSchema) => Promise<void>
+  storageUserInfo: (params: { signKey: string; ckbAddr: string; userInfo: FansWeb5CkbCreateAccount.OutputSchema }) => void
   web5Login: () => Promise<void>
   getUserProfile: () => Promise<UserProfileType | undefined>;
   logout: () => void
-  writeProfile: () => Promise<'NO_NEED' | 'SUCCESS' | 'FAIL'>
+  writeProfile: () => Promise<'NO_NEED' | 'SUCCESS' | 'FAIL' | 'NOT_LOGGED_IN'>
   resetUserStore: () => void
   initialize: (signer?: ccc.Signer) => Promise<void>
   importUserDid: (info: TokenStorageType) => Promise<void>
@@ -61,21 +61,18 @@ const useUserInfoStore = createSelectors(
       set(() => ({ ...params }))
     },
 
-    createUser: async (params) => {
-      const pdsClient = getPDSClient()
-      const createRes = await pdsClient.web5CreateAccount(params)
-      const userInfo = createRes.data
-
+    storageUserInfo: async ({ signKey, ckbAddr, userInfo }) => {
       // 在客户端环境下存储 token
       if (typeof window !== 'undefined') {
         storage.setToken({
           did: userInfo.did,
-          signKey: params.password ?? '',
-          walletAddress: params.ckbAddr
+          signKey,
+          walletAddress: ckbAddr
         })
       }
 
       // 🔧 关键修复：通过 sessionManager 设置 session，这样后续请求才能带上 accessJwt
+      const pdsClient = getPDSClient()
       pdsClient.sessionManager.session = {
         ...userInfo,
         active: true
@@ -91,7 +88,8 @@ const useUserInfoStore = createSelectors(
 
     writeProfile: async () => {
       const { userInfo, userProfile } = get();
-      if (!userInfo || (userProfile && userProfile.displayName)) return 'NO_NEED'
+      if (!userInfo) return 'NOT_LOGGED_IN';
+      if (userProfile && userProfile.displayName) return 'NO_NEED'
 
       try {
         // 解析 handle 获取 PDS 服务域名
@@ -200,7 +198,7 @@ const useUserInfoStore = createSelectors(
             const profile = await fetchUserProfile(userInfo.did)
             // 更新缓存
             storage.setUserProfileCache(profile);
-            set(() => ({ userProfile: profile }))
+            set(() => ({ userProfile: { ...profile, handle: userInfo.handle }, isWhiteListUser: !!profile.highlight }))
             return profile
           }
         }

@@ -103,15 +103,27 @@ export function handleAuthError(error: APIError): void {
     errorCode: error.errorCode,
   });
 
-  // TODO: 触发登出逻辑
-  // 可以使用 Zustand store 或其他状态管理
-  // const { logout } = useUserInfoStore.getState();
-  // logout();
-
-  // 可选：重定向到登录页
   if (!isServer && typeof window !== 'undefined') {
-    // const locale = window.location.pathname.split('/')[1] || 'zh';
-    // window.location.href = `/${locale}/login`;
+    // 异步触发登出逻辑以避免循环依赖或同步阻塞
+    import('@/store/userInfo').then(({ default: useUserInfoStore }) => {
+      const { logout } = useUserInfoStore.getState();
+      if (logout) {
+        logout();
+      }
+    }).catch(err => {
+      logger.error('Failed to import useUserInfoStore for logout:', err);
+    });
+
+    // 重定向到首页（让首页重新引导登录）
+    // 为了防止在已登出页面无限刷新，仅当不在首页时刷新
+    const currentPath = window.location.pathname;
+    const isHomePage = currentPath === '/' || currentPath === '/zh' || currentPath === '/en';
+
+    if (!isHomePage) {
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500); // 稍微延迟以让用户看到 Toast 提示
+    }
   }
 }
 
