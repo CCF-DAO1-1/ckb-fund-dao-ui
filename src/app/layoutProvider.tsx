@@ -2,7 +2,6 @@
 
 import { ccc } from "@ckb-ccc/ccc";
 import { ccc as cccReact } from "@ckb-ccc/connector-react";
-import { JoyId } from "@ckb-ccc/joy-id";
 import { CSSProperties } from "react";
 import React, { useEffect, useMemo } from "react";
 import { WalletProvider } from "@/provider/WalletProvider";
@@ -18,21 +17,6 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
       : new ccc.ClientPublicTestnet();
   }, []);
 
-  const signersController = React.useMemo(() => {
-    if (typeof window === "undefined") {
-      return undefined;
-    }
-
-    return new ccc.SignersController(
-      JoyId.getJoyIdSigners(
-        defaultClient as unknown as ccc.Client,
-        "CKB Fund DAO",
-        undefined,
-        IS_MAINNET ? ["mainnet"] : ["testnet"]
-      )
-    );
-  }, [defaultClient]);
-
   // 初始化用户信息store（使用 useRef 避免依赖 initialize 函数引用变化）
   const initRef = React.useRef(false);
 
@@ -45,6 +29,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <cccReact.Provider
+      name="CKB Fund DAO"
       connectorProps={{
         style: {
           //   "--background": "#00CC9B",
@@ -59,20 +44,22 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
           //   "--tip-color": "#666",
         } as CSSProperties,
       }}
-      defaultClient={defaultClient}
-      signersController={signersController}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      defaultClient={defaultClient as any}
       clientOptions={
         IS_MAINNET
           ? [
             {
               name: "CKB Mainnet",
-              client: new ccc.ClientPublicMainnet(),
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              client: new ccc.ClientPublicMainnet() as any,
             },
           ]
           : [
             {
               name: "CKB Testnet",
-              client: new ccc.ClientPublicTestnet(),
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              client: new ccc.ClientPublicTestnet() as any,
             },
           ]
       }
