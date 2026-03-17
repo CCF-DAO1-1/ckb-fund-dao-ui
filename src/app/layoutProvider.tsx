@@ -1,8 +1,10 @@
 "use client";
 
-import { ccc } from "@ckb-ccc/connector-react";
+import { ccc } from "@ckb-ccc/ccc";
+import { ccc as cccReact } from "@ckb-ccc/connector-react";
+import { JoyId } from "@ckb-ccc/joy-id";
 import { CSSProperties } from "react";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { WalletProvider } from "@/provider/WalletProvider";
 import useUserInfoStore from "@/store/userInfo";
 import { IS_MAINNET } from "@/constant/Network";
@@ -11,11 +13,25 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const { initialize, initialized } = useUserInfoStore();
 
   const defaultClient = React.useMemo(() => {
-
     return IS_MAINNET
       ? new ccc.ClientPublicMainnet()
       : new ccc.ClientPublicTestnet();
   }, []);
+
+  const signersController = React.useMemo(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    return new ccc.SignersController(
+      JoyId.getJoyIdSigners(
+        defaultClient as unknown as ccc.Client,
+        "CKB Fund DAO",
+        undefined,
+        IS_MAINNET ? ["mainnet"] : ["testnet"]
+      )
+    );
+  }, [defaultClient]);
 
   // 初始化用户信息store（使用 useRef 避免依赖 initialize 函数引用变化）
   const initRef = React.useRef(false);
@@ -28,7 +44,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   }, [initialized]); // 只依赖 initialized，不依赖 initialize 函数
 
   return (
-    <ccc.Provider
+    <cccReact.Provider
       connectorProps={{
         style: {
           //   "--background": "#00CC9B",
@@ -44,6 +60,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         } as CSSProperties,
       }}
       defaultClient={defaultClient}
+      signersController={signersController}
       clientOptions={
         IS_MAINNET
           ? [
@@ -63,6 +80,6 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
       <WalletProvider>
         {children}
       </WalletProvider>
-    </ccc.Provider >
+    </cccReact.Provider >
   );
 }

@@ -29,6 +29,9 @@ importers:
       '@ckb-ccc/core':
         specifier: ^1.12.2
         version: 1.12.2(typescript@5.9.2)(zod@3.25.76)
+      '@ckb-ccc/joy-id':
+        specifier: ^1.0.32
+        version: 1.0.32(typescript@5.9.2)(zod@3.25.76)
       '@ipld/dag-cbor':
         specifier: ^9.2.4
         version: 9.2.5
@@ -797,6 +800,9 @@ packages:
   '@ckb-ccc/core@1.12.2':
     resolution: {integrity: sha512-fiDn2ox4CWUF5hxTYxPDITnstbyZaPGK93OlO+Jlz7w0/zw64b9Y8tz+A0G29Q5s50nr9zT+aapEE4AbV01tuA==}
 
+  '@ckb-ccc/core@1.12.5':
+    resolution: {integrity: sha512-iJxv/R9O2xrcyOpZZbfxMlokl6rI9o7iz+4wdB4L0kqW8nEuXgsTqJxJgpM2uECBUlOfRZb7ljpW/7i6CBs4eQ==}
+
   '@ckb-ccc/eip6963@1.0.28':
     resolution: {integrity: sha512-uI+IrI90bbl6bn7It/JivG9qnvYD4P8lZWWlbZ5sT3BPL9dwYASejDplDitEvokbUTuxX8Mg78FqHVRJyRtb0A==}
 
@@ -808,6 +814,9 @@ packages:
 
   '@ckb-ccc/joy-id@1.0.29':
     resolution: {integrity: sha512-hEd3+gIXK7MazIVbZlVCHEKFj8ilZDVrjecW2anP6ilScVO2yW+zyEuPdWj2/OeLfKdv5zEA0QhDAsp3AxvkGg==}
+
+  '@ckb-ccc/joy-id@1.0.32':
+    resolution: {integrity: sha512-7yBU7qnQVCeR8jRZLpxtUqRRcBHw8FwEiAwwdpeYWN50BRZjBtSck+N+rC2qkI+XeKxtluVjpLpObzWJ2XhKbA==}
 
   '@ckb-ccc/nip07@1.0.28':
     resolution: {integrity: sha512-FEUb7JrgYQfgbZdbNg5kTL0+qPXpgyXQ1UaK2pv98SUQCqXA2f3sSelsW57JUcodcP+fSSIxst9tjxyPiYnSUg==}
@@ -4504,6 +4513,25 @@ snapshots:
       - utf-8-validate
       - zod
 
+  '@ckb-ccc/core@1.12.5(typescript@5.9.2)(zod@3.25.76)':
+    dependencies:
+      '@joyid/ckb': 1.1.2(typescript@5.9.2)(zod@3.25.76)
+      '@noble/ciphers': 0.5.3
+      '@noble/curves': 1.9.7
+      '@noble/hashes': 1.8.0
+      bech32: 2.0.0
+      bs58check: 4.0.0
+      buffer: 6.0.3
+      ethers: 6.15.0
+      isomorphic-ws: 5.0.0(ws@8.18.3)
+      ws: 8.18.3
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - typescript
+      - utf-8-validate
+      - zod
+
   '@ckb-ccc/eip6963@1.0.28(typescript@5.9.2)(zod@3.25.76)':
     dependencies:
       '@ckb-ccc/core': 1.12.1(typescript@5.9.2)(zod@3.25.76)
@@ -4539,6 +4567,18 @@ snapshots:
   '@ckb-ccc/joy-id@1.0.29(typescript@5.9.2)(zod@3.25.76)':
     dependencies:
       '@ckb-ccc/core': 1.12.2(typescript@5.9.2)(zod@3.25.76)
+      '@joyid/ckb': 1.1.2(typescript@5.9.2)(zod@3.25.76)
+      '@joyid/common': 0.2.1(typescript@5.9.2)(zod@3.25.76)
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - typescript
+      - utf-8-validate
+      - zod
+
+  '@ckb-ccc/joy-id@1.0.32(typescript@5.9.2)(zod@3.25.76)':
+    dependencies:
+      '@ckb-ccc/core': 1.12.5(typescript@5.9.2)(zod@3.25.76)
       '@joyid/ckb': 1.1.2(typescript@5.9.2)(zod@3.25.76)
       '@joyid/common': 0.2.1(typescript@5.9.2)(zod@3.25.76)
     transitivePeerDependencies:

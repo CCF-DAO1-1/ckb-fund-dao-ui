@@ -17,6 +17,7 @@
     "@ckb-ccc/ccc": "^1.1.16",
     "@ckb-ccc/connector-react": "1.0.28",
     "@ckb-ccc/core": "^1.12.2",
+    "@ckb-ccc/joy-id": "^1.0.32",
     "@ipld/dag-cbor": "^9.2.4",
     "@scure/base": "^2.0.0",
     "@types/react-datepicker": "^7.0.0",
