@@ -65,7 +65,7 @@ export interface VoteMetaItem {
   creator: string; // 创建者DID（注意拼写是 creator 不是 creater）
   state: number; // 投票状态
   tx_hash: string | null; // 交易哈希
-  whitelist_id?: string; // 白名单ID
+  voterList_id?: string; // voterList ID
   proposal_state?: number; // 提案状态
   results?: unknown; // 投票结果
 }

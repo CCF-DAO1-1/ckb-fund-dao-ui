@@ -12,7 +12,7 @@ import { logger } from '@/lib/logger';
 export type UserProfileType = {
   did: string
   displayName?: string
-  highlight?: string  // 在白名单内才有这个字段
+  highlight?: string  // 在voterList内才有这个字段
   post_count?: string
   comment_count?: string
   created?: string
@@ -23,7 +23,7 @@ type UserInfoStoreValue = {
   userInfo?: ComAtprotoServerCreateSession.OutputSchema
   initialized?: boolean
   userProfile?: UserProfileType
-  isWhiteListUser?: boolean
+  isVoterListUser?: boolean
   visitorId?: string
 }
 
@@ -54,7 +54,7 @@ const useUserInfoStore = createSelectors(
     userInfo: undefined,
     initialized: undefined,
     userProfile: undefined,
-    isWhiteListUser: undefined,
+    isVoterListUser: undefined,
     visitorId: undefined,
 
     setStoreData: (params) => {
@@ -152,7 +152,7 @@ const useUserInfoStore = createSelectors(
     resetUserStore() {
       getPDSClient().logout()
       storage.clearUserCache()  // 清除所有用户相关缓存
-      set(() => ({ userInfo: undefined, userProfile: undefined, isWhiteListUser: false }))
+      set(() => ({ userInfo: undefined, userProfile: undefined, isVoterListUser: false }))
     },
 
     getUserProfile: async () => {
@@ -171,7 +171,7 @@ const useUserInfoStore = createSelectors(
         // 缓存有效，直接使用
         set(() => ({
           userProfile: { ...cachedProfile, handle: userInfo.handle },
-          isWhiteListUser: !!cachedProfile.highlight,
+          isVoterListUser: !!cachedProfile.highlight,
         }))
         return cachedProfile
       }
@@ -186,7 +186,7 @@ const useUserInfoStore = createSelectors(
 
         set(() => ({
           userProfile: { ...result, handle: userInfo.handle },
-          isWhiteListUser: !!result.highlight,
+          isVoterListUser: !!result.highlight,
         }))
 
         // 没有displayName说明需要补充写入profile
@@ -198,7 +198,7 @@ const useUserInfoStore = createSelectors(
             const profile = await fetchUserProfile(userInfo.did)
             // 更新缓存
             storage.setUserProfileCache(profile);
-            set(() => ({ userProfile: { ...profile, handle: userInfo.handle }, isWhiteListUser: !!profile.highlight }))
+            set(() => ({ userProfile: { ...profile, handle: userInfo.handle }, isVoterListUser: !!profile.highlight }))
             return profile
           }
         }
@@ -232,7 +232,7 @@ const useUserInfoStore = createSelectors(
           if (cachedUserProfile && cachedUserProfile.did === cachedUserInfo.did) {
             set(() => ({
               userProfile: { ...cachedUserProfile, handle: cachedUserInfo.handle },
-              isWhiteListUser: !!cachedUserProfile.highlight,
+              isVoterListUser: !!cachedUserProfile.highlight,
             }))
           } else {
             // 缓存中没有 userProfile 或 did 不匹配，尝试获取（但不阻塞初始化）

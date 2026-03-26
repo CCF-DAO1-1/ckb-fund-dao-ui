@@ -4,6 +4,9 @@ import { logger } from "@/lib/logger";
 import { handleAPIError, handleAuthError, handle404Error } from "@/lib/errorHandler";
 import { APIError } from "@/types/errors";
 
+// 并发刷新锁：多个并发请求同时 401 时，只执行一次 refreshSession
+let refreshPromise: Promise<void> | null = null;
+
 const isServer = typeof window === "undefined";
 
 // 修正找不到 'next-runtime-env'
@@ -108,12 +111,27 @@ export async function requestAPI(url: string, config: RequestConfig) {
 
     const isTokenExpired = isUnauthorized || isTokenExpiredBody;
 
-    // 如果是 token 过期，直接触发登出逻辑（我们不再在此处静默刷新）
+    // 如果是 token 过期，先尝试静默刷新，成功则重试请求，失败才登出
     if (isTokenExpired) {
-      logger.warn('Token 过期，触发登出', { url });
-      const apiError = APIError.fromAxiosError(error);
-      handleAuthError(apiError);
-      throw apiError;
+      logger.warn('Token 过期，尝试静默刷新...', { url });
+      try {
+        // 并发保护：多个请求同时 401 时，共享同一次刷新操作
+        if (!refreshPromise) {
+          refreshPromise = getPDSClient().sessionManager.refreshSession()
+            .finally(() => { refreshPromise = null; });
+        }
+        await refreshPromise;
+
+        // 刷新成功，使用新 token 重试原请求
+        const newToken = getPDSClient().session?.accessJwt;
+        logger.log('Token 刷新成功，重试请求', { url });
+        response = await makeRequest(newToken);
+      } catch (refreshError) {
+        logger.error('Token 刷新失败，触发登出', { url, refreshError });
+        const apiError = APIError.fromAxiosError(error);
+        handleAuthError(apiError);
+        throw apiError;
+      }
     } else {
       // 其他错误，使用统一的错误处理
       const apiError = handleAPIError(error, {
