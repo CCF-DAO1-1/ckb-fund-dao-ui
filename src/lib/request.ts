@@ -1,11 +1,27 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 import getPDSClient from "@/lib/pdsClient";
 import { logger } from "@/lib/logger";
-import { handleAPIError, handleAuthError, handle404Error } from "@/lib/errorHandler";
+import { handleAPIError, handle404Error } from "@/lib/errorHandler";
 import { APIError } from "@/types/errors";
+import { userLogin } from "@/lib/user-account";
+import storage from "@/lib/storage";
+import toast from 'react-hot-toast';
 
-// 并发刷新锁：多个并发请求同时 401 时，只执行一次 refreshSession
+// 并发刷新锁：多个并发请求同时 401 时，只执行一次重新登录
 let refreshPromise: Promise<void> | null = null;
+
+/**
+ * 重新走签名登录流程，获取新的 accessJwt。
+ * 该 Web5 PDS 不支持标准 refreshSession 端点，所以用 signKey 重签。
+ */
+async function reLogin(): Promise<void> {
+  const tokenInfo = storage.getToken();
+  if (!tokenInfo) throw new Error('No stored credentials for re-login');
+  const newSession = await userLogin(tokenInfo);
+  if (!newSession) throw new Error('Re-login returned empty session');
+  storage.setUserInfoCache(newSession);
+  logger.log('request: 重新登录成功，已获取新 token');
+}
 
 const isServer = typeof window === "undefined";
 
@@ -115,9 +131,9 @@ export async function requestAPI(url: string, config: RequestConfig) {
     if (isTokenExpired) {
       logger.warn('Token 过期，尝试静默刷新...', { url });
       try {
-        // 并发保护：多个请求同时 401 时，共享同一次刷新操作
+        // 并发保护：多个请求同时 401 时，共享同一次重新登录操作
         if (!refreshPromise) {
-          refreshPromise = getPDSClient().sessionManager.refreshSession()
+          refreshPromise = reLogin()
             .finally(() => { refreshPromise = null; });
         }
         await refreshPromise;
@@ -127,9 +143,10 @@ export async function requestAPI(url: string, config: RequestConfig) {
         logger.log('Token 刷新成功，重试请求', { url });
         response = await makeRequest(newToken);
       } catch (refreshError) {
-        logger.error('Token 刷新失败，触发登出', { url, refreshError });
+        logger.error('Token 刷新失败', { url, refreshError });
+        // 只提示用户，不触发登出
+        toast.error('登录已过期，请重新连接钱包', { duration: 4000 });
         const apiError = APIError.fromAxiosError(error);
-        handleAuthError(apiError);
         throw apiError;
       }
     } else {
@@ -161,9 +178,8 @@ export async function requestAPI(url: string, config: RequestConfig) {
   );
 
   if (isTokenExpiredResponse) {
-    logger.warn('响应返回 401，说明业务 Token 过期或未授权，触发登出', { url });
-    const apiError = new APIError('认证失败', 401, 'AUTH_ERROR');
-    handleAuthError(apiError);
+    logger.warn('响应返回 401，说明业务 Token 过期或未授权', { url });
+    toast.error('登录已过期，请重新连接钱包', { duration: 4000 });
   }
 
   // 处理 404 错误，跳转到 404 页面
