@@ -1278,5 +1278,9 @@
       "milestoneDescriptionRequired": "请填写里程碑详细描述",
       "milestonesRequiredWhenBudgetProvided": "如果填写了预算，必须填写里程碑"
     }
+  },
+  "auth": {
+    "sessionRefreshed": "登录已自动续期，请刷新页面后继续操作",
+    "sessionExpired": "登录已过期，请重新连接钱包"
   }
 }

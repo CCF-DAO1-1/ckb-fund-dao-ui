@@ -1,6 +1,15 @@
 import getPDSClient from "@/lib/pdsClient";
 import storage from "@/lib/storage";
 import toast from 'react-hot-toast';
+import en from '@/locales/en.json';
+import zh from '@/locales/zh.json';
+
+function getAuthMessages() {
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/zh')) {
+    return zh.auth;
+  }
+  return en.auth;
+}
 
 export default async function sessionWrapApi<T>(callback: () => Promise<T>): Promise<T> {
   try {
@@ -22,13 +31,11 @@ export default async function sessionWrapApi<T>(callback: () => Promise<T>): Pro
           }
         }
 
-        // 提示用户刷新页面以使用新 token
-        toast('登录已自动续期，请刷新页面后继续操作', {
-          icon: '🔄',
-          duration: 5000,
-        })
+        const msg = getAuthMessages()
+        toast(msg.sessionRefreshed, { icon: '🔄', duration: 5000 })
       } catch {
-        toast.error('登录已过期，请重新连接钱包', { duration: 4000 });
+        const msg = getAuthMessages()
+        toast.error(msg.sessionExpired, { duration: 4000 });
       }
     }
     throw error
