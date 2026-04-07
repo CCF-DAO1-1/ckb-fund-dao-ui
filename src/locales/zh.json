@@ -51,7 +51,7 @@
     },
     "records": {
       "proposals": "提案记录",
-      "voting": "投票纪录",
+      "voting": "投票记录",
       "discussion": "讨论记录",
       "proposal": "提案",
       "type": "类型",
@@ -1140,7 +1140,7 @@
   "recordsTable": {
     "tabs": {
       "proposals": "提案记录",
-      "voting": "投票纪录",
+      "voting": "投票记录",
       "discussion": "讨论记录"
     },
     "tableHeaders": {
