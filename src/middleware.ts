@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
   // 跳过静态资源文件
-  if (/\.(svg|png|jpg|jpeg|gif|ico|webp)$/.test(pathname)) {
+  if (/\.(svg|png|jpg|jpeg|gif|ico|webp|csv)$/.test(pathname)) {
     return NextResponse.next();
   }
   
